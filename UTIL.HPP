@@ -3,7 +3,10 @@
 
 #include "string.hpp"
 
+extern bool fileWasWritten;
+
 String currentTimeString();
 String stringFromFile(const String &fileName);
+void stringToFile(const String &string,const String &fileName);
 
 #endif //__UTIL_HPP__

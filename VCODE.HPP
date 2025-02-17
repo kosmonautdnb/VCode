@@ -8,12 +8,14 @@
 #include "blit.hpp"
 #include "vga.hpp"
 
+void updateSyntaxHiLight(const String &text, String &colors);
 
 class VCode : public VBase {
 public:
   String text;
   String colors;
   String message;
+  String fileName;
   Point textPos;
   int cursorX;
   int cursorY;
@@ -28,7 +30,6 @@ public:
   int selectionStart;
   int selectionEnd;
   int textLastLine;
-  String zwischenAblage;
 
   virtual setRect(int x0, int y0, int x1, int y1) {VBase::setRect(x0,y0,x1,y1);}
   virtual setRect(const Point &p0, const Size &size) {VBase::setRect(p0,size);}
@@ -66,9 +67,11 @@ public:
     popRect();
   }
 
-  void init(const String &_text) {
+  void init(const String &_text, const String &_fileName) {
+    fileName = _fileName;
     text = _text;
     colors = _text;
+    updateSyntaxHiLight(text,colors);
     textPos = Point(0,0);
   }
 

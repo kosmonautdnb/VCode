@@ -18,6 +18,8 @@ public:
   IFiles *directory;
   VPreview *preview;
   String searchText;
+  bool reload;
+  String lastPathName;
   virtual setRect(int x0, int y0, int x1, int y1) {VStrLst::setRect(x0,y0,x1,y1);}
   virtual setRect(const Point &p0, const Size &size) {VStrLst::setRect(p0,size);}
   virtual setRect(const Point &p0, const Point &p1) {VStrLst::setRect(p0,p1);}
@@ -29,6 +31,8 @@ public:
   virtual void setList(IStrLst *list, int listWidth);
 
   void init(const Rect &r,const String &path) {
+    lastPathName = path;
+    reload = false;
     directory = new IFiles();
     directory->files = getFiles(path);
     setRect(r.x0, r.y0, r.x1, r.y1);
@@ -41,7 +45,6 @@ public:
     int yp = 140*frameBufferHeight/200;
     preview->setRect(position.x+xp,position.y+yp,position.x+xp+previewSize,position.y+yp+previewSize);
   }
-
 };
 
 void VTree::searchTextUpdated() {
@@ -108,6 +111,14 @@ void VTree::draw() {
 
 void VTree::update() {
   VStrLst::update();
+  if (reload) {
+    int sortedBy = directory->sortedBy;
+    bool sortedAscending = directory->sortedAscending;
+    directory->files = getFiles(lastPathName);
+    directory->sort(-1,false);
+    directory->sort(sortedBy,sortedAscending);
+    reload = false;
+  }
   if (hasKeyboardFocus(this)) {
     if (key==VK_ENTER) {
       int selected = directory->sorting[selectedLine];
@@ -121,6 +132,7 @@ void VTree::update() {
           if (i != -1) pathName = pathName.substr(0,i)+pathName.substr(twoDots+4)+"/";
         }
         directory->files = getFiles(pathName);
+        lastPathName=pathName;
         setList(directory,4);
         directory->sort(0,true);
       }
@@ -152,6 +164,11 @@ void displayFileSelector() {
       }
       treeLeft->draw();
       treeRight->draw();
+      if (fileWasWritten) {
+        treeLeft->reload = true;
+        treeRight->reload = true;
+        fileWasWritten = false;
+      }
       drawMouse();
       frameBufferToScreen(frameBuffer);
       while(mouseB==1) updateMouse();
@@ -175,8 +192,8 @@ void main()
     currentWorkingDirectory = getCWD();
     disableControlBreak();
     int gfxMode = getBiosGraphicsMode();
-    graphicsMode320x200x256();
-    //graphicsMode640x480x16();
+    //graphicsMode320x200x256();
+    graphicsMode640x480x16();
 
     displayFileSelector();
 

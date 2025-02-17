@@ -31,6 +31,8 @@
 #define VK_DELETE 8
 #define VK_C_CTRL 3
 #define VK_V_CTRL 22
+#define VK_S_CTRL 19
+#define VK_L_CTRL 12
 
 #define EGA_COLOR_BLACK         0x00
 #define EGA_COLOR_BLUE          0x01

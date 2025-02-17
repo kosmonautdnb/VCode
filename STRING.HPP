@@ -147,6 +147,10 @@ public:
                 return data[index];
         }
 
+        bool empty() {
+                return length()==0;
+        }
+
         char *c_str() const {
                 return data;
         }

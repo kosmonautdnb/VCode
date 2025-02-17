@@ -56,10 +56,12 @@ public:
                                 extension == ".asm" ||
                                 extension == ".inc" ||
                                 extension == ".lst" ||
+                                extension == ".log" ||
+                                extension == ".bak" ||
                                 extension == ".txt" ||
                                 extension == ".mak" ||
                                 extension == ".bat") {
-                                        code->init(stringFromFile(string));
+                                        code->init(stringFromFile(string),string);
                                         code->setRect(0,0,frameBufferWidth,frameBufferHeight);
                                         code->setMessage(fileName);
                                         code->doModal();

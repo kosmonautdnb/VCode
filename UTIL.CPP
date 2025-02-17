@@ -4,6 +4,7 @@
 #include <conio.h>
 
 String dosFileName(const String &fileName);
+bool fileWasWritten = false;
 
 const char *weekdays[8] = {"non","sun","mon","tue","wed","thu","fri","sat"};
 
@@ -43,4 +44,13 @@ String stringFromFile(const String &fileName) {
     return r;
   }
   return NIL;
+}
+
+void stringToFile(const String &string,const String &fileName) {
+  fileWasWritten = true;
+  FILE *out = fopen(dosFileName(fileName).c_str(),"wb");
+  if (out != NULL) {
+    fwrite(&(string[0]),1,string.length(),out);
+    fclose(out);
+  }
 }
