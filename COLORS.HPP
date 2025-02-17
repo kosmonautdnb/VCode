@@ -1,14 +1,49 @@
 #ifndef __COLORS_HPP__
 #define __COLORS_HPP__
 
+#define _EGA_COLOR_BLACK         0xff000000
+#define _EGA_COLOR_BLUE          0xff800000
+#define _EGA_COLOR_GREEN         0xff008000
+#define _EGA_COLOR_CYAN          0xff808000
+#define _EGA_COLOR_RED           0xff000080
+#define _EGA_COLOR_VIOLET        0xff800080
+#define _EGA_COLOR_BROWN         0xff008080
+#define _EGA_COLOR_GREY_LIGHT    0xffc0c0c0
+#define _EGA_COLOR_GREY_DARK     0xff404040
+#define _EGA_COLOR_BLUE_LIGHT    0xffff0000
+#define _EGA_COLOR_GREEN_LIGHT   0xff00ff00
+#define _EGA_COLOR_CYAN_LIGHT    0xffffff00
+#define _EGA_COLOR_RED_LIGHT     0xff0000ff
+#define _EGA_COLOR_VIOLET_LIGHT  0xffff00ff
+#define _EGA_COLOR_YELLOW        0xff00ffff
+#define _EGA_COLOR_WHITE         0xffffffff
+
 #define COLOR_BLACK 0xff000000
 #define COLOR_WHITE 0xffffffff
+#define COLOR_RED 0xff0000c0
+#define COLOR_YELLOW 0xff00ffff
 #define COLOR_MENUBACKGROUND 0xffff2020
 #define COLOR_MENUTEXT 0xffffffff
 #define COLOR_SELECTEDLINE 0xff0000ff
-#define COLOR_MOUSEOVERLINE 0xff40c0ff
-#define COLOR_HEADERLINE 0xff404080
-#define COLOR_HEADERTEXT 0xff80ffff
+#define COLOR_CURRENTLINE 0xffffff00
+#define COLOR_CURRENTLINESELECTED 0xffff80c0
+#define COLOR_MOUSEOVERLINE 0xffff4000
+#define COLOR_HEADERLINE _EGA_COLOR_VIOLET
+#define COLOR_HEADERTEXT 0xffc0ffff
 #define COLOR_PROMPTTEXT 0xffc0ffff
+#define COLOR_STATUSBARTEXT 0xff00ffff
+#define COLOR_STATUSBAR 0xff800000
+#define COLOR_TEXT 0xff909090
+#define COLOR_TEXTBACKGROUND 0xffffffff
+#define COLOR_HILIGHT_NONE COLOR_TEXT
+#define COLOR_HILIGHT_SPECIAL 0xffff80c0
+#define COLOR_HILIGHT_MATH 0xffffff80
+#define COLOR_HILIGHT_NUMBER 0xff8080ff
+#define COLOR_HILIGHT_BOOLEAN 0xffffff80
+#define COLOR_HILIGHT_SCOPE 0xff804080
+#define COLOR_HILIGHT_STRING 0xff0000ff
+#define COLOR_LINENUMBERS 0xffc0c0c0
+#define COLOR_CURSOR 0xff4080ff
+#define COLOR_SELECTION 0xffc0c0ff
 
 #endif //__COLORS_HPP__

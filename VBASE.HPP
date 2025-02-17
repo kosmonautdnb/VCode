@@ -15,6 +15,7 @@ public:
         void setRect(const Point &p0, const Point &p1) {position=p0; size.width=p1.x-p0.x; size.height=p1.y-p0.y;}
         virtual void draw() = 0;
         virtual void update() = 0;
+        virtual void doModal() {}
 };
 
 extern VBase *keyboardFocus;

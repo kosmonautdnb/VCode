@@ -1,6 +1,23 @@
 #include <direct.h>
-#include "Dos.hpp"
+#include "dos.hpp"
 #include <stdio.h>
+#include <string.h>
+#include <conio.h>
+#include <i86.h>
+
+String unixFileName(const String &dir) {
+  String r = String(dir);
+  for (int i = 0; i < r.length(); i++) if (r[i]=='\\') r[i]='/';
+  return r;
+}
+
+String getCWD() {
+  String currentWorkingDirectory;
+  currentWorkingDirectory.resize(2048);
+  getcwd(&(currentWorkingDirectory[0]),currentWorkingDirectory.length());
+  currentWorkingDirectory.resize(strlen(currentWorkingDirectory.c_str()));
+  return unixFileName(currentWorkingDirectory+"/");
+}
 
 String getExtension(const String &fileName) {
   return fileName.substr(fileName.findLast("."));
@@ -88,4 +105,20 @@ Array<File> getFiles(const String &dir) {
     closedir( dirp );
   }
   return ret;
+}
+
+int rtcRead(int reg) {
+  int volatile v=0;
+  for (int j=1; j < 100; j++) {v++;}
+  outp(0x70,reg & 0xff);
+  for (int i=1; i < 100; i++) {v++;}
+  return inp(0x71) & 0xff;
+}
+
+void disableControlBreak() {
+  union REGS regs;
+  regs.h.ah = 0x33;
+  regs.h.al = 1;
+  regs.h.dl = 0;
+  int386(0x21, &regs, &regs);
 }

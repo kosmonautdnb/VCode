@@ -151,6 +151,29 @@ public:
                 return data;
         }
 
+        void erase(int pos, int count) {
+                memcpy(data+pos,data+pos+count,length()-(pos+count));
+                dataLength -= count;
+        }
+
+        void insert(int pos, const String &str) {
+                int l = length();
+                dataLength = l+str.length()+1;
+                char *newData = (char*)malloc(dataLength);
+                memcpy(newData,data,pos);
+                memcpy(newData+pos,str.data,str.length());
+                memcpy(newData+pos+str.length(),data+pos,l-pos);
+                newData[dataLength-1] = 0;
+                if (data != NULL) free(data);
+                data = newData;
+        }
+
+        void insert(int pos, const char c) {
+                String k=" ";
+                k[0]=c;
+                insert(pos,k);
+        }
+
         String substr(int firstIndex) const {
                 if (firstIndex == -1) return "";
                 String r;

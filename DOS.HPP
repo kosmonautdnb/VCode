@@ -29,10 +29,14 @@ typedef struct File {
   bool directory;
 } File;
 
+String getCWD();
 String getExtension(const String &path);
 String dosFileName(const String &dir);
 String dateString(const FileTime &time);
 String sizeString(long size);
 Array<File> getFiles(const String &dir);
+
+int rtcRead(int reg);
+void disableControlBreak();
 
 #endif //__DOS_HPP__

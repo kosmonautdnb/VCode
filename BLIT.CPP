@@ -4,13 +4,37 @@
 #include "string.hpp"
 #include "array.hpp"
 #include "constant.hpp"
-#include "vga.hpp"
+#include "colors.hpp"
+#include "input.hpp"
+#include "util.hpp"
 #include <string.h>
 
 unsigned int *frameBuffer = NULL;
 unsigned int *capturedFrameBuffer = NULL;
 unsigned int frameBufferWidth;
 unsigned int frameBufferHeight;
+
+const char *mouseShape=
+  "00000."
+  "011110"
+  "01110."
+  "0110.."
+  "010..."
+  ".0....";
+
+void drawMouse() {
+  for (int y = 0; y < 6; y++) {
+    for (int x = 0; x < 6; x++) {
+      char c = mouseShape[x+y*6];
+      if (c == '0') setPixel(mouseX+x,mouseY+y,COLOR_BLACK);
+      if (c == '1') setPixel(mouseX+x,mouseY+y,COLOR_WHITE);
+    }
+  }
+  drawString(mouseX+7,mouseY,String(key & 255)+":"+String(key>>8),COLOR_WHITE);
+  String s = currentTimeString();
+  drawStringOutlined(frameBufferWidth-s.pixelWidth(),frameBufferHeight-CHAR_HEIGHT,s,COLOR_WHITE,COLOR_BLACK);
+}
+
 
 void captureFrameBuffer() {
   memcpy(capturedFrameBuffer, frameBuffer, frameBufferHeight*frameBufferWidth*sizeof(unsigned int));
@@ -66,7 +90,7 @@ void popRect() {
   clipStack.pop_back();
 }
 
-void drawCharacter(int &x, int &y, char c, unsigned int color) {
+void drawChar(int &x, int &y, char c, unsigned int color) {
   Letter *l = getLetter(c);
   if (l == NULL) return;
   if (y < clipRect.y1 && y + CHAR_HEIGHT > clipRect.y0) {
@@ -82,8 +106,24 @@ void drawCharacter(int &x, int &y, char c, unsigned int color) {
 
 void drawString(int x, int y, const String &str, unsigned int color) {
   for (int l = 0; l < str.length(); l++) {
-    drawCharacter(x,y,str[l],color);
+    drawChar(x,y,str[l],color);
   }
+}
+
+void drawStringOutlined(int x, int y, const String &str, unsigned int color, unsigned int outlineColor) {
+  drawString(x-1,y,str,outlineColor);
+  drawString(x+1,y,str,outlineColor);
+  drawString(x,y-1,str,outlineColor);
+  drawString(x,y+1,str,outlineColor);
+  drawString(x-1,y-1,str,outlineColor);
+  drawString(x+1,y-1,str,outlineColor);
+  drawString(x-1,y-1,str,outlineColor);
+  drawString(x-1,y+1,str,outlineColor);
+  drawString(x-1,y+1,str,outlineColor);
+  drawString(x+1,y+1,str,outlineColor);
+  drawString(x+1,y-1,str,outlineColor);
+  drawString(x+1,y+1,str,outlineColor);
+  drawString(x,y,str,color);
 }
 
 void setPixel(int x, int y, unsigned int color) {

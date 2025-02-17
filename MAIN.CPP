@@ -9,62 +9,107 @@
 #include "vpreview.hpp"
 #include "ifiles.hpp"
 #include "constant.hpp"
+#include "input.hpp"
 
-const char *mouseShape=
-  "00000."
-  "011110"
-  "01110."
-  "0110.."
-  "010..."
-  ".0....";
-
-void drawMouse() {
-  for (int y = 0; y < 6; y++) {
-    for (int x = 0; x < 6; x++) {
-      char c = mouseShape[x+y*6];
-      if (c == '0') setPixel(mouseX+x,mouseY+y,0xff000000);
-      if (c == '1') setPixel(mouseX+x,mouseY+y,0xffffffff);
-    }
-  }
-  drawString(mouseX+7,mouseY,String(key & 255)+":"+String(key>>8),COLOR_WHITE);
-}
+String currentWorkingDirectory;
 
 class VTree : public VStrLst {
 public:
-        IFiles *directory;
-        VPreview *preview;
-        virtual setRect(int x0, int y0, int x1, int y1) {VStrLst::setRect(x0,y0,x1,y1);}
-        virtual setRect(const Point &p0, const Size &size) {VStrLst::setRect(p0,size);}
-        virtual setRect(const Point &p0, const Point &p1) {VStrLst::setRect(p0,p1);}
-        virtual void draw();
-        virtual void update();
-        virtual void setList(IStrLst *list, int listWidth);
+  IFiles *directory;
+  VPreview *preview;
+  String searchText;
+  virtual setRect(int x0, int y0, int x1, int y1) {VStrLst::setRect(x0,y0,x1,y1);}
+  virtual setRect(const Point &p0, const Size &size) {VStrLst::setRect(p0,size);}
+  virtual setRect(const Point &p0, const Point &p1) {VStrLst::setRect(p0,p1);}
 
-        void init(const Rect &r,const String &path) {
-          directory = new IFiles();
-          directory->files = getFiles(path);
-          setRect(r.x0, r.y0, r.x1, r.y1);
-          setList(directory,4);
-          directory->sort(0,true);
-          setKeyboardFocus(this);
-        }
+  void searchTextUpdated();
+
+  virtual void draw();
+  virtual void update();
+  virtual void setList(IStrLst *list, int listWidth);
+
+  void init(const Rect &r,const String &path) {
+    directory = new IFiles();
+    directory->files = getFiles(path);
+    setRect(r.x0, r.y0, r.x1, r.y1);
+    setList(directory,4);
+    directory->sort(0,true);
+    setKeyboardFocus(this);
+    preview = new VPreview();
+    int previewSize = 50*frameBufferWidth/320;
+    int xp = 100*frameBufferWidth/320;
+    int yp = 140*frameBufferHeight/200;
+    preview->setRect(position.x+xp,position.y+yp,position.x+xp+previewSize,position.y+yp+previewSize);
+  }
+
 };
+
+void VTree::searchTextUpdated() {
+  String c = toLower(searchText);
+  int y = 0;
+  int found = -1;
+  int ll = -1;
+  do {
+    String a = directory->getString(0,y);
+    String b = directory->getString(1,y);
+    if (a==NIL||b==NIL)
+      break;
+    a = toLower(a+b);
+    int l = 0;
+    for (int i = 0; i < c.length(); i++) {
+      if (i < a.length()) {
+        int o = a[i]-c[i];
+        l += (o==0)?1:0;
+      } else {
+        break;
+      }
+    }
+    if (l > ll && l != 0) {found = y; ll = l;}
+    y++;
+  } while(1==1);
+  if (found != -1) selectedLine=found;
+}
 
 void VTree::draw() {
   VStrLst::draw();
   if (hasKeyboardFocus(this)) {
-    pushRect(0,position.y+size.height,320,200);
+    if ((key>='a'&&key<='z')||(key>='0'&&key<='9')||(key>='A'&&key<='Z')||key=='.'||key=='!'||key=='_'||key=='/'||key=='\\') {
+      String k=" ";k[0]=key;
+      searchText+=k;
+      searchTextUpdated();
+    } else {
+      if (key!=VK_NONE) searchText="";
+    }
+    pushRect(0,position.y+size.height,frameBufferWidth,frameBufferHeight);
+    String siz = directory->getString(2,selectedLine);
     String fileName = directory->getString(4,selectedLine);
-    preview->setFileName(fileName, key == 13);
-    drawString(0,position.y+size.height+1,fileName,COLOR_PROMPTTEXT);
+    if (siz != "<DIR>")
+      preview->setFileName(fileName, key == VK_F3);
+    drawString(0,position.y+size.height+1,searchText+">"+fileName,COLOR_PROMPTTEXT);
+    int selecteds = 0;
+    int selectedBytes = 0;
+    for (int i = 0; i < directory->selection.size(); i++) {
+      if (directory->selection[i]) {
+        selecteds++;
+        int y = i;
+        if (y<directory->sorting.size()) y = directory->sorting[y];
+        selectedBytes += directory->files[y].size;
+      }
+    }
+    String status = "";
+    if (selecteds>0) status += "Selected:"+String(selecteds) + (selecteds == 1 ? " File " : " Files ") + sizeString(selectedBytes);
+    if (status == "") status = "<F3> View <F4> Edit";
+    drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
+    drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
     popRect();
   }
+  preview->draw();
 }
 
 void VTree::update() {
   VStrLst::update();
   if (hasKeyboardFocus(this)) {
-    if (key==13) {
+    if (key==VK_ENTER) {
       int selected = directory->sorting[selectedLine];
       if (directory->files[selected].directory) {
         String pathName = directory->files[selected].name.path+"/";
@@ -92,13 +137,8 @@ void displayFileSelector() {
     captureFrameBuffer();
     VTree *treeLeft = new VTree();
     VTree *treeRight = new VTree();
-    treeLeft->init(Rect(0,CHAR_HEIGHT,159,192),"c:/");
-    treeRight->init(Rect(160,CHAR_HEIGHT,319,192),"c:/");
-    VPreview *preview = new VPreview();
-    int previewSize = 50;
-    preview->setRect(100,140,100+previewSize,140+previewSize);
-    treeLeft->preview = preview;
-    treeRight->preview = preview;
+    treeLeft->init(Rect(0,CHAR_HEIGHT,frameBufferWidth/2-1,frameBufferHeight-16),"c:/");
+    treeRight->init(Rect(frameBufferWidth/2,CHAR_HEIGHT,frameBufferWidth-1,frameBufferHeight-16),currentWorkingDirectory);
 
     do {
       updateMouse();
@@ -112,22 +152,34 @@ void displayFileSelector() {
       }
       treeLeft->draw();
       treeRight->draw();
-      preview->draw();
       drawMouse();
       frameBufferToScreen(frameBuffer);
       while(mouseB==1) updateMouse();
-    } while(key!=27);
+    } while(key!=VK_ESCAPE);
+}
+
+void graphicsMode320x200x256() {
+    setBiosGraphicsMode(0x13);
+    allocFrameBuffer(320,200);
+    randomPalette();
+}
+
+void graphicsMode640x480x16() {
+    setBiosGraphicsMode(0x12);
+    allocFrameBuffer(640,480);
+    palette16Colors();
 }
 
 void main()
 {
-    setBiosGraphicsMode(0x13);
-    allocFrameBuffer(320,200);
-    randomPalette();
+    currentWorkingDirectory = getCWD();
+    disableControlBreak();
+    int gfxMode = getBiosGraphicsMode();
+    graphicsMode320x200x256();
+    //graphicsMode640x480x16();
 
     displayFileSelector();
 
     freeFrameBuffer();
-    setBiosGraphicsMode(2);
-
+    setBiosGraphicsMode(gfxMode);
 }

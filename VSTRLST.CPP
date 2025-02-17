@@ -1,7 +1,7 @@
 #include "vstrlst.hpp"
 #include "blit.hpp"
 #include "constant.hpp"
-#include "vga.hpp"
+#include "input.hpp"
 
 void VStrLst::draw() {
   update();
@@ -41,9 +41,12 @@ void VStrLst::draw() {
           setKeyboardFocus(this);
         }
       }
+      if (items->selected(yi)) {
+          drawBox(c0.x,y,c1.x,y+CHAR_HEIGHT,COLOR_SELECTEDLINE);
+      }
       if (yi == selectedLine) {
         if (hasKeyboardFocus(this))
-          drawBox(c0.x,y,c1.x,y+CHAR_HEIGHT,COLOR_SELECTEDLINE);
+          drawBox(c0.x,y,c1.x,y+CHAR_HEIGHT,items->selected(yi) ? COLOR_CURRENTLINESELECTED : COLOR_CURRENTLINE);
       }
       if (k != NIL)
         drawString(x,y, k, textColor);
@@ -61,11 +64,25 @@ void VStrLst::draw() {
 
 void VStrLst::update() {
   if (hasKeyboardFocus(this)) {
-    if (key == 72<<8) {selectedLine--; if (selectedLine < 0) selectedLine = 0;}
-    if (key == 80<<8) {if (items->getString(0,selectedLine+1)!=NIL) selectedLine++;}
-    if (key == 73<<8) {selectedLine-=16; if (selectedLine < 0) selectedLine = 0;}
-    if (key == 81<<8) {for (int i = 0; i < 16; i++) {if (items->getString(0,selectedLine+1)!=NIL) selectedLine++;}}
-    if (key == 77<<8) {scrollX++;if (scrollX+size.width>separators[listItemCountX])scrollX=separators[listItemCountX]-size.width;if (scrollX<0) scrollX = 0;}
-    if (key == 75<<8) {scrollX--;if(scrollX<0)scrollX=0;}
+    int selectedLineBefore = selectedLine;
+    if (key == VK_UP) {selectedLine--; if (selectedLine < 0) selectedLine = 0;}
+    if (key == VK_DOWN) {if (items->getString(0,selectedLine+1)!=NIL) selectedLine++;}
+    if (key == VK_PAGEUP) {selectedLine-=16; if (selectedLine < 0) selectedLine = 0;}
+    if (key == VK_PAGEDOWN) {for (int i = 0; i < 16; i++) {if (items->getString(0,selectedLine+1)!=NIL) selectedLine++;}}
+    if (key == VK_RIGHT) {scrollX+=CHAR_HEIGHT;if (scrollX+size.width>separators[listItemCountX])scrollX=separators[listItemCountX]-size.width;if (scrollX<0) scrollX = 0;}
+    if (key == VK_LEFT) {scrollX-=CHAR_HEIGHT;if(scrollX<0)scrollX=0;}
+    if (shiftKey) {
+      if (selectedLineBefore != selectedLine) {
+        if (selectedLineBefore<selectedLine) {
+          for (int i = selectedLineBefore; i < selectedLine; i++) {
+            items->select(i,!items->selected(i));
+          }
+        } else {
+          for (int i = selectedLine+1; i <= selectedLineBefore; i++) {
+            items->select(i,!items->selected(i));
+          }
+        }
+      }
+    }
   }
 }

@@ -39,5 +39,10 @@ call _BUILD\CC.BAT VBASE.CPP                    VBASE.OBJ
 call _BUILD\CC.BAT VSTRLST.CPP                  VSTRLST.OBJ
 call _BUILD\CC.BAT VPREVIEW.CPP                 VPREVIEW.OBJ
 call _BUILD\CC.BAT IFILES.CPP                   IFILES.OBJ
+call _BUILD\CC.BAT VTEXT.CPP                    VTEXT.OBJ
+call _BUILD\CC.BAT VCODE.CPP                    VCODE.OBJ
+call _BUILD\CC.BAT INPUT.CPP                    INPUT.OBJ
+call _BUILD\CC.BAT UTIL.CPP                     UTIL.OBJ
+call _BUILD\CC.BAT POINT.CPP                    POINT.OBJ
 call _BUILD\AL.BAT _BUILD\LINK.LNK              MAIN.EXE
 me LOGS.LOG

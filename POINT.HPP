@@ -8,4 +8,7 @@ public:
         int x,y;
 };
 
+Point operator+(const Point &a, const Point &b);
+Point operator-(const Point &a, const Point &b);
+
 #endif //__POINT_HPP__

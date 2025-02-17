@@ -12,6 +12,8 @@ extern unsigned int frameBufferHeight;
 
 extern Rect clipRect;
 
+void drawMouse();
+
 void captureFrameBuffer();
 void drawCapturedFrameBuffer();
 
@@ -22,8 +24,9 @@ void pushRect(const Point &p0, const Point &p1);
 void pushRect(const Point &p0, const Size &size);
 void popRect();
 
-void drawCharacter(int &x, int &y, char c, unsigned int color);
+void drawChar(int &x, int &y, char c, unsigned int color);
 void drawString(int x, int y, const String &str, unsigned int color);
+void drawStringOutlined(int x, int y, const String &str, unsigned int color,unsigned int outlineColor);
 void setPixel(int x, int y, unsigned int color);
 void drawRectangle(int x0, int y0, int x1, int y1, unsigned int color);
 void drawBox(int x0, int y0, int x1, int y1, unsigned int color);

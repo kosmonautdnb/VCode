@@ -1,42 +1,22 @@
+#include "colors.hpp"
+#include "constants.hpp"
 #include <i86.h>
 #include <conio.h>
 #include <stdlib.h>
 
 unsigned int palette[256] = {0};
 
-int mouseX = 0;
-int mouseY = 0;
-int mouseB = 0;
-int key = 0;
-
-void updateKeyboard() {
-    union REGS regs;
-    regs.x.eax = 0x0600;
-    regs.x.edx = 0xff;
-    int386(0x21, &regs, &regs);
-    key = regs.x.eax & 0xff;
-    if (key == 0) {
-      regs.x.eax = 0x0600;
-      regs.x.edx = 0xff;
-      int386(0x21, &regs, &regs);
-      key += (regs.x.eax & 0xff)<<8;
-    }
-}
-
-void updateMouse() {
-    union REGS regs;
-    regs.x.eax = 0x03;
-    int386(0x33, &regs, &regs);
-    mouseX = regs.x.ecx & 0xffff;
-    mouseY = regs.x.edx & 0xffff;
-    mouseB = regs.x.ebx & 0xffff;
-    mouseX /= 2;
-}
-
 void setBiosGraphicsMode(int mode) {
     union REGS regs;
     regs.x.eax = mode;
     int386(0x10, &regs, &regs);
+}
+
+int getBiosGraphicsMode() {
+    union REGS regs;
+    regs.w.ax = 0x0f00;
+    int386 (0x10, &regs, &regs);
+    return regs.h.al;
 }
 
 void setBiosCursor(int x, int y) {
@@ -56,7 +36,15 @@ void setPalette(int index, unsigned int color) {
   palette[index] = color;
 }
 
-unsigned char getPalette(unsigned int rgba) {
+unsigned int getPalette(int index) {
+  outp(0x3c8,index);
+  int r = inp(0x3c9);
+  int g = inp(0x3c9);
+  int b = inp(0x3c9);
+  return 0xff000000|(r<<2)|(g<<10)|(b<<18);
+}
+
+unsigned char getPalIndex(unsigned int rgba) {
   const int r = rgba & 255;rgba>>=8;
   const int g = rgba & 255;rgba>>=8;
   const int b = rgba & 255;rgba>>=8;
@@ -90,11 +78,107 @@ void randomPalette() {
   }
 }
 
+void palette16Colors() {
+  palette[EGA_COLOR_BLACK] = _EGA_COLOR_BLACK;
+  palette[EGA_COLOR_BLUE] = _EGA_COLOR_BLUE;
+  palette[EGA_COLOR_GREEN] = _EGA_COLOR_GREEN;
+  palette[EGA_COLOR_CYAN] = _EGA_COLOR_CYAN;
+  palette[EGA_COLOR_RED] = _EGA_COLOR_RED;
+  palette[EGA_COLOR_VIOLET] = _EGA_COLOR_VIOLET;
+  palette[EGA_COLOR_BROWN] = _EGA_COLOR_BROWN;
+  palette[EGA_COLOR_GREY_LIGHT] = _EGA_COLOR_GREY_LIGHT;
+  palette[EGA_COLOR_GREY_DARK] = _EGA_COLOR_GREY_DARK;
+  palette[EGA_COLOR_BLUE_LIGHT] = _EGA_COLOR_BLUE_LIGHT;
+  palette[EGA_COLOR_GREEN_LIGHT] = _EGA_COLOR_GREEN_LIGHT;
+  palette[EGA_COLOR_CYAN_LIGHT] = _EGA_COLOR_CYAN_LIGHT;
+  palette[EGA_COLOR_RED_LIGHT] = _EGA_COLOR_RED_LIGHT;
+  palette[EGA_COLOR_VIOLET_LIGHT] = _EGA_COLOR_VIOLET_LIGHT;
+  palette[EGA_COLOR_YELLOW] = _EGA_COLOR_YELLOW;
+  palette[EGA_COLOR_WHITE] = _EGA_COLOR_WHITE;
+
+  if (false) {
+    for (int i = 0; i < 16; i++) palette[i] = getPalette(i);
+  }
+
+  if (false) {
+    setPalette(0,COLOR_BLACK);
+    setPalette(1,COLOR_WHITE);
+    setPalette(2,COLOR_RED);
+    setPalette(3,COLOR_YELLOW);
+    setPalette(4,COLOR_MENUBACKGROUND);
+    setPalette(5,COLOR_MENUTEXT);
+    setPalette(6,COLOR_SELECTEDLINE);
+    setPalette(7,COLOR_CURRENTLINE);
+    setPalette(8,COLOR_CURRENTLINESELECTED);
+    setPalette(9,COLOR_MOUSEOVERLINE);
+    setPalette(10,COLOR_HEADERLINE);
+    setPalette(11,COLOR_HEADERTEXT);
+    setPalette(12,COLOR_PROMPTTEXT);
+    setPalette(13,COLOR_STATUSBARTEXT);
+    setPalette(14,COLOR_TEXT);
+    setPalette(15,COLOR_TEXTBACKGROUND);
+  }
+}
+
+extern unsigned int frameBufferWidth;
+extern unsigned int frameBufferHeight;
+
+int to16Colors(unsigned int color) {
+  int r = 0;
+  int r1 = color & 255;
+  int g1 = (color>>8) & 255;
+  int b1 = (color>>16) & 255;
+  int ld = 0;
+  for (int i = 0; i < 16; i++) {
+    unsigned int pal = palette[i];
+    int r2 = pal & 255;
+    int g2 = (pal>>8) & 255;
+    int b2 = (pal>>16) & 255;
+    r2-=r1;
+    g2-=g1;
+    b2-=b1;
+    int d = r2*r2+g2*g2+b2*b2;
+    if (i==0||d<ld) {
+      ld = d;
+      r = i;
+    }
+  }
+  return r;
+}
+
+void frameBufferToScreen16Colors(unsigned int *frameBuffer) {
+    int x,y,i,j,b;
+    unsigned int *read;
+    unsigned char *write;
+    int width = 640;
+    int height = 480;
+    for (y = 0; y < height; y++) {
+        for (j = 0; j < 4; j++) {
+            outp(0x3c4, 2);
+            outp(0x3c5, 1<<j);
+            read = &frameBuffer[y * frameBufferHeight/height * frameBufferWidth];
+            write = (unsigned char *)(0xa0000 + (width/8)*y);
+            for (x = 0; x < width/8; x++) {
+                b = 0;
+                for (i = 0; i < 8; i++) {
+                    int xi = x*8+i;
+                    b |= ((to16Colors(read[xi*frameBufferWidth/width])>>j) & 1)<<(7-i);
+                }
+                *write++ = b;
+            }
+        }
+    }
+}
+
 void frameBufferToScreen(unsigned int *frameBuffer) {
+  if (frameBufferWidth == 640 && frameBufferHeight == 480) {
+    frameBufferToScreen16Colors(frameBuffer);
+    return;
+  }
   unsigned char *videoRam = (unsigned char *)0xa0000;
   for (int y = 0; y < 200; y++) {
     for (int x = 0; x < 320; x++) {
-      *videoRam++ = getPalette(*frameBuffer++);
+      *videoRam++ = getPalIndex(frameBuffer[x*frameBufferWidth/320+y*frameBufferHeight/200*frameBufferWidth]);
     }
   }
 }

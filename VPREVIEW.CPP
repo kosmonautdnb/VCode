@@ -1,15 +1,18 @@
 #include "vpreview.hpp"
 #include "blit.hpp"
 #include "constant.hpp"
-#include "vga.hpp"
+#include "input.hpp"
 #include "dos.hpp"
 #include "pngload.hpp"
+#include "util.hpp"
 
 void VPreview::draw() {
   if (viewMode != VIEWMODE_NONE) {
     Point pos = position;
-    if (fullScreen)
-      pos = Point(0,0);
+    if (fullScreen) {
+      pos = Point((frameBufferWidth-viewSize.width)/2,(frameBufferHeight-viewSize.height)/2);
+      drawBox(0,0,frameBufferWidth,frameBufferHeight,COLOR_BLACK);
+    }
     pushRect(pos.x,pos.y,pos.x+viewSize.width,pos.y+viewSize.height);
     drawBox(pos.x,pos.y,pos.x+viewSize.width,pos.y+viewSize.height,COLOR_BLACK);
     if (data != NULL) {
@@ -20,11 +23,14 @@ void VPreview::draw() {
                 setPixel(pos.x+x,pos.y+y,data[x+y*viewSize.width]);
               }
             }
-            if (key!=0&&key!=13&&key!=80*256&&key!=72*256) {fullScreen=false;lastFileName="";}
+            if (fullScreen&&key!=VK_NONE&&key!=VK_UP&&key!=VK_DOWN) {fullScreen=false;lastFileName="";if (key == VK_ESCAPE||key == VK_F3) key = VK_NONE;}
         } break;
       }
-      popRect();
     }
+    if (fullScreen) {
+      drawStringOutlined(pos.x,pos.y,fileName,COLOR_WHITE,COLOR_BLACK);
+    }
+    popRect();
   } else {
     fullScreen=false;
   }
@@ -32,6 +38,7 @@ void VPreview::draw() {
 
 void VPreview::update() {
   if (lastFileName!=fileName) {
+    key = VK_NONE;
     viewMode = VIEWMODE_NONE;
     lastFileName = fileName;
     if (data != NULL) {
@@ -46,7 +53,7 @@ void VPreview::update() {
         viewMode = VIEWMODE_IMAGE;
         viewSize = size;
         if (fullScreen) {
-          viewSize = Size(320,200);
+          viewSize = Size(frameBufferWidth,frameBufferHeight);
           if (layer.width>layer.height)
             viewSize.height = viewSize.width * layer.height / layer.width;
           else
@@ -65,8 +72,13 @@ void VPreview::update() {
         }
         free(layer.data);
       }
+    } else {
+      if (fullScreen) {
+        text->init(stringFromFile(fileName));
+        text->setRect(0,0,frameBufferWidth,frameBufferHeight);
+        text->setMessage(fileName);
+        text->doModal();
+      }
     }
-  }
-  if (hasKeyboardFocus(this)) {
   }
 }

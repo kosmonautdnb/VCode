@@ -2,9 +2,13 @@
 #define __VPREVIEW_HPP__
 
 #include "vbase.hpp"
+#include "vtext.hpp"
+#include "vcode.hpp"
 #include "array.hpp"
 #include "string.hpp"
 #include "colors.hpp"
+#include "util.hpp"
+#include "dos.hpp"
 
 enum {
         VIEWMODE_NONE = 0,
@@ -21,12 +25,16 @@ public:
         unsigned int *data;
         bool fullScreen;
         Size viewSize;
+        VText *text;
+        VCode *code;
 
         VPreview() : VBase() {
                 backgroundColor = COLOR_MENUBACKGROUND;
                 textColor = COLOR_MENUTEXT;
                 viewMode = VIEWMODE_NONE;
                 data = NULL;
+                text = new VText();
+                code = new VCode();
                 fullScreen = false;
         }
 
@@ -37,8 +45,31 @@ public:
         virtual void update();
 
         void setFileName(const String &string, bool _fullScreen) {
+
+                if (key == VK_F4) {
+                        String extension = toLower(getExtension(string));
+                        if (extension == ".cpp" ||
+                                extension == ".hpp" ||
+                                extension == ".c" ||
+                                extension == ".h" ||
+                                extension == ".s" ||
+                                extension == ".asm" ||
+                                extension == ".inc" ||
+                                extension == ".lst" ||
+                                extension == ".txt" ||
+                                extension == ".mak" ||
+                                extension == ".bat") {
+                                        code->init(stringFromFile(string));
+                                        code->setRect(0,0,frameBufferWidth,frameBufferHeight);
+                                        code->setMessage(fileName);
+                                        code->doModal();
+                                        return;
+                                }
+                }
+
                 fileName = string;
-                if (_fullScreen) {lastFileName = "";fullScreen = true;}
+
+                if (_fullScreen) {if (!fullScreen) {lastFileName = "";fullScreen = true;}}
                 update();
         }
 };
