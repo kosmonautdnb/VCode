@@ -6,24 +6,24 @@
 #include "Rect.hpp"
 class String;
 
+extern unsigned int *lastCapturedFrameBuffer;
+void pushCapturedFrameBuffer();
+void popCapturedFrameBuffer();
+
 extern unsigned int *frameBuffer;
 extern unsigned int frameBufferWidth;
 extern unsigned int frameBufferHeight;
 
-extern Rect clipRect;
-
+bool mouseOver(const Rect &v);
 void drawMouse();
 
-void captureFrameBuffer();
-void drawCapturedFrameBuffer();
-
-bool mouseOver(const Rect &v);
-
+extern Rect clipRect;
 void pushRect(int x0, int y0, int x1, int y1);
 void pushRect(const Point &p0, const Point &p1);
 void pushRect(const Point &p0, const Size &size);
 void popRect();
 
+void drawFrameBuffer(unsigned int *_frameBuffer);
 void drawChar(int &x, int &y, char c, unsigned int color);
 void drawString(int x, int y, const String &str, unsigned int color);
 void drawStringOutlined(int x, int y, const String &str, unsigned int color,unsigned int outlineColor);

@@ -6,186 +6,47 @@
 #include "clipbrd.hpp"
 #include "util.hpp"
 
-#define HIGHLIGHT_EMPTY 180
-#define HIGHLIGHT_COMMENT (HIGHLIGHT_EMPTY+1)
-#define HIGHLIGHT_STRING (HIGHLIGHT_EMPTY+2)
-#define HIGHLIGHT_NUMBER (HIGHLIGHT_EMPTY+3)
-#define HIGHLIGHT_MATH (HIGHLIGHT_EMPTY+4)
-#define HIGHLIGHT_BOOLEAN (HIGHLIGHT_EMPTY+5)
-#define HIGHLIGHT_SCOPE (HIGHLIGHT_EMPTY+6)
-#define HIGHLIGHT_SPECIAL (HIGHLIGHT_EMPTY+7)
-
-void updateSyntaxHiLight(const String &text, String &colors) {
-  if (text.length() != colors.length())
-    exit(0);
-  const int l = colors.length();
-  char c = 0;
-  char lc = 0;
-  char llc = 0;
-  int i;
-  // mark comments
-  int comment = 0;
-  int lineComment = 0;
-  for (i = 0; i < l; lc = c,i++) {
-    c = text[i];
-    if (c == '/' && lc == '/' && comment == 0) {colors[i-1] = HIGHLIGHT_COMMENT;comment++;lineComment++;}
-    if (c == '*' && lc == '/' && comment == 0) {colors[i-1] = HIGHLIGHT_COMMENT;comment++;}
-    if (c == '\n' && lineComment!=0) {comment--;lineComment--;}
-    if (c == '/' && lc == '*' && comment != 0 && lineComment==0) {comment--;}
-    if (comment!=0) {
-      colors[i] = HIGHLIGHT_COMMENT;
-    } else colors[i] = HIGHLIGHT_EMPTY;
-  }
-  // mark strings
-  lc = 0;
-  llc = 0;
-  int strings = 0;
-  int strings2 = 0;
-  for (i = 0; i < l; llc = lc, lc = c,i++) {
-    c = text[i];
-    if (colors[i]!=HIGHLIGHT_EMPTY) continue;
-    const bool before = lc == '\\' && (!(llc == '\\'));
-    if (strings2 == 0 && c == '"' && (!before) ) {colors[i] = HIGHLIGHT_STRING;strings^=1;}
-    if (strings == 0 && c == '\'' && (!before)) {colors[i] = HIGHLIGHT_STRING;strings2^=1;}
-    if (strings!=0||strings2!=0) colors[i] = HIGHLIGHT_STRING;
-  }
-  // mark numbers
-  int numbers=0;
-  lc = 0;
-  for (i = 0; i < l; lc = c,i++) {
-    c = text[i];
-    if (colors[i]!=HIGHLIGHT_EMPTY) continue;
-    const bool isAlphabet = (c >= 'a' && c <= 'z')||(c >= 'A' && c <= 'Z')||c=='_'||c=='#';
-    const bool isNumber = (c >= '0' && c <= '9')||c=='.';
-    const bool lcWasFull = (lc >= 'a' && lc <= 'z')||(lc >= 'A' && lc <= 'Z')||c=='_'||c=='#';
-    const bool lcWasNumber = (lc >= '0' && lc <= '9')||c=='.';
-    if (numbers == 0 && isNumber && (!(lcWasFull||lcWasNumber))) numbers=1;
-    if (numbers != 0 && (!(isNumber||isAlphabet))) numbers=0;
-    if (numbers!=0) colors[i] = HIGHLIGHT_NUMBER;
-  }
-  // mark single or double special chars
-  for (i = 0; i < l; lc = c,i++) {
-    c = text[i];
-    if (colors[i]!=HIGHLIGHT_EMPTY) continue;
-    switch(c) {
-      case '@': colors[i] = HIGHLIGHT_SPECIAL; break;
-      case '+':
-      case '-':
-      case '*':
-      case '/':
-      case '>':
-      case '<': colors[i] = HIGHLIGHT_MATH; break;
-      case '&':
-      case '|':
-      case '!':
-      case '^':
-      case '~': colors[i] = HIGHLIGHT_BOOLEAN; break;
-      case '(':
-      case ')':
-      case '[':
-      case ']':
-      case '{':
-      case '}':
-      case '.':
-      case ',':
-      case ';':
-      case ':': colors[i] = HIGHLIGHT_SCOPE; break;
-    }
-  }
-  Array<const char *> wordTable;
-  wordTable.push_back("void");
-  wordTable.push_back("int");
-  wordTable.push_back("unsigned");
-  wordTable.push_back("signed");
-  wordTable.push_back("const");
-  wordTable.push_back("char");
-  wordTable.push_back("float");
-  wordTable.push_back("double");
-  wordTable.push_back("new");
-  wordTable.push_back("delete");
-  wordTable.push_back("malloc");
-  wordTable.push_back("free");
-  wordTable.push_back("set");
-  wordTable.push_back("echo");
-  wordTable.push_back("rem");
-  wordTable.push_back("cd");
-  wordTable.push_back("path");
-  wordTable.push_back("mode");
-  wordTable.push_back("public");
-  wordTable.push_back("class");
-  wordTable.push_back("virtual");
-  wordTable.push_back("bool");
-  wordTable.push_back("true");
-  wordTable.push_back("false");
-  wordTable.push_back("null");
-  wordTable.push_back("nullptr");
-  wordTable.push_back("for");
-  wordTable.push_back("do");
-  wordTable.push_back("while");
-  wordTable.push_back("break");
-  wordTable.push_back("continue");
-  wordTable.push_back("return");
-  wordTable.push_back("template");
-  wordTable.push_back("typename");
-  wordTable.push_back("static");
-  wordTable.push_back("volatile");
-  // mark keywords
-  int wordStart = 0;
-  bool somethingFound = true;
-  for (i = 0; i < l+1; i++) {
-    c = i < l ? text[i] : ' ';
-    if (colors[i]==HIGHLIGHT_COMMENT||colors[i]==HIGHLIGHT_STRING) continue;
-    const bool isAlphabet = (c >= 'a' && c <= 'z')||(c >= 'A' && c <= 'Z')||c=='_'||c=='#';
-    const bool isNumber = (c >= '0' && c <= '9');
-    if ((!isNumber)&&(!isAlphabet)) {
-      if (somethingFound) {
-        String word = text.substr(wordStart,i);
-        int firstChar = word[0];
-        word=toLower(word);
-        for (int j = 0; j < wordTable.size(); j++) {
-          if (word == wordTable[j] || (firstChar >= 'A' && firstChar <='Z')) {
-            for (int k = wordStart; k < i; k++) {
-              colors[k] = HIGHLIGHT_SPECIAL;
-            }
-            break;
-          }
-        }
-      }
-      wordStart = i+1;
-      somethingFound = false;
-    } else {
-      somethingFound = true;
-    }
-  }
-  // mark preprocessor directives
-  int preprocessor = 0;
-  for (i = 0; i < l; lc = c,i++) {
-    c = text[i];
-    if (colors[i]!=HIGHLIGHT_EMPTY) continue;
-    if (c == '#') {preprocessor=1;}
-    if (c == '\n') {preprocessor=0;}
-    if (preprocessor!=0) {
-      colors[i] = HIGHLIGHT_SPECIAL;
-    }
-  }
-}
-
-unsigned int getHiLightColor(int l) {
-  switch(l) {
-  case HIGHLIGHT_COMMENT: return COLOR_HILIGHT_COMMENT; break;
-  case HIGHLIGHT_STRING: return COLOR_HILIGHT_STRING; break;
-  case HIGHLIGHT_NUMBER: return COLOR_HILIGHT_NUMBER; break;
-  case HIGHLIGHT_MATH: return COLOR_HILIGHT_MATH; break;
-  case HIGHLIGHT_BOOLEAN: return COLOR_HILIGHT_BOOLEAN; break;
-  case HIGHLIGHT_SCOPE: return COLOR_HILIGHT_SCOPE; break;
-  case HIGHLIGHT_SPECIAL: return COLOR_HILIGHT_SPECIAL; break;
-  }
-  return COLOR_TEXT;
-}
-
 void VCode::draw() {
   pushRect(position,size);
   drawBox(position.x,position.y,position.x+size.width,position.y+size.height,COLOR_TEXTBACKGROUND);
+
+  int i;
+  int lineNr = 0;
+  int x = 0,maxX = 0;
+  for (i = 0; i < text.length(); i++) {
+    char c = text[i];
+    x++;
+    if (c=='\n') {if (x>maxX) maxX=x;x=0;lineNr++;}
+  }
+  textLastLine=lineNr;
+  if (maxX>0&&textLastLine>size.height/CHAR_HEIGHT&&(displayOutline>0)) {
+    lineNr = 0;
+    x = 0;
+    int w = 20*frameBufferWidth/320;
+    int h = size.height;
+    for (i = 0; i < text.length(); i++) {
+      char c = text[i];
+      if (c>='0') {
+        int x0 = position.x+size.width-w+x*w/maxX;
+        int y0 = position.y+lineNr*h/textLastLine;
+        int x1 = position.x+size.width-w+(x+1)*w/maxX;
+        int y1 = position.y+(lineNr+1)*h/textLastLine;
+        if (x1==x0)x1=x0+1;
+        if (y1==y0)y1=y0+1;
+        drawBox(x0,y0,x1,y1,getHiLightColor(colors[i]));
+      }
+      x++;
+      if (c=='\n') {x=0;lineNr++;}
+    }
+    drawRectangle(position.x+size.width-w-1, position.y+textPos.y*h/(textLastLine*CHAR_HEIGHT)-1,position.x+size.width+1, position.y+(textPos.y+size.height)*h/(textLastLine*CHAR_HEIGHT)+1, COLOR_RECTANGLE);
+    displayOutline--;
+  }
+
+
+  if (textLastLine>0) {
+    scrollBoxY = textPos.y*size.height/(textLastLine*CHAR_HEIGHT);
+    drawBox(position.x+size.width-4*frameBufferWidth/320,position.y+scrollBoxY,position.x+size.width,scrollBoxY+2*frameBufferHeight/200,COLOR_SCROLL);
+  }
 
   Point pos = position - textPos;
   int line = 0;
@@ -203,12 +64,11 @@ void VCode::draw() {
   bottomLine = -1;
   cursorIX=-1;
   Point eofPos;
-  for (int i = 0; i < text.length() || (pos.y < position.y + size.height); i++) {
+  for (i = 0; i < text.length() || (pos.y < position.y + size.height); i++) {
     char c = i < text.length() ? text[i] : '\n';
     if (i == text.length()-1) {String k=" "; k[0]=c;eofPos = pos; pos.x += k.pixelWidth();}
     char l = i < text.length() ? colors[i] : HIGHLIGHT_EMPTY;
     bool selected = (selectionStart>=0&&selectionEnd>=0)&&((i>=selectionStart&&i<selectionEnd)||(i>=selectionEnd&&i<selectionStart));
-    if (i < text.length()) textLastLine=lineY;
     if (i == cursorRequiresI) {
       cursorX = lineX;
       cursorY = lineY;
@@ -247,10 +107,6 @@ void VCode::draw() {
       }
     }
   }
-  if (textLastLine>0) {
-    scrollBoxY = textPos.y*frameBufferHeight/(textLastLine*CHAR_HEIGHT);
-    drawBox(frameBufferWidth-4*frameBufferWidth/320,scrollBoxY,frameBufferWidth,scrollBoxY+2*frameBufferHeight/200,COLOR_RED);
-  }
   cursorRequiresX=-1;
   cursorRequiresI = -1;
   if (cursorPos.x > position.x + size.width) textPos.x += CHAR_HEIGHT;
@@ -258,35 +114,38 @@ void VCode::draw() {
   if (selectionEnd==-2) {selectionEnd = cursorI;}
   drawStringOutlined(eofPos.x,eofPos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
   drawCursor();
-  String status = "<CTRL-L> <CTRL-S> " + message + sizeString(text.length()) + "  " + String(cursorX)+":"+String(cursorY);
+  String status = String(cursorX)+" "+String(cursorY) + " <CTRL-L> <CTRL-S> " + fileName + sizeString(text.length());
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
 }
 
 void VCode::expand() {
-    if (cursorI>text.length()) {
-      for (int i = cursorI-text.length()-1; i >= 0; i--) {
-        text += "\n";
-        colors += "\n";
-      }
+  if (cursorI>text.length()) {
+    for (int i = cursorI-text.length()-1; i >= 0; i--) {
+      text += "\n";
+      colors += "\n";
     }
-    if (cursorIX != -1) {
-      for (int i = cursorX-cursorIX-1; i >= 0; i--) {
-        text.insert(cursorI,' ');
-        colors.insert(cursorI,' ');
-        cursorI++;
-      }
+  }
+  if (cursorIX != -1) {
+    for (int i = cursorX-cursorIX-1; i >= 0; i--) {
+      text.insert(cursorI,' ');
+      colors.insert(cursorI,' ');
+      cursorI++;
     }
+  }
 }
 
 void VCode::update() {
+  int lastY = textPos.y;
   if (cursorY < topLine) textPos.y -= (topLine-cursorY)*CHAR_HEIGHT;
-  if (cursorY >= bottomLine) textPos.y+=(cursorY-bottomLine+1)*CHAR_HEIGHT;
-  if (mouseB==1&&mouseX>position.x+size.width-4*frameBufferWidth/320) {
-    textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
-    cursorY=textPos.y/CHAR_HEIGHT+1;
-    return;
+  if (cursorY > bottomLine) textPos.y+=(cursorY-bottomLine)*CHAR_HEIGHT;
+  if (mouseX>position.x+size.width-4*frameBufferWidth/320) {
+    displayOutline = true;
+    if (mouseB == 1) {
+      textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
+      cursorY=textPos.y/CHAR_HEIGHT+1;
+    }
   }
 
   if (strgKey) {
@@ -482,6 +341,15 @@ void VCode::update() {
       }
     }
   }
+  if (lastY!=textPos.y) displayOutline = DISPLAYOUTLINE_DURATION;
+}
+
+void VCode::init(const String &_text, const String &_fileName) {
+  fileName = _fileName;
+  text = _text;
+  colors = _text;
+  updateSyntaxHiLight(text,colors);
+  textPos = Point(0,0);
 }
 
 void VCode::drawCursor() {

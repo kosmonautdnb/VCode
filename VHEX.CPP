@@ -8,11 +8,18 @@
 void VHex::draw() {
   static int time = 0; time++;
   char *hextab = "0123456789ABCDEF";
-  String status = "";
   pushRect(position,size);
   drawBox(position.x,position.y,position.x+size.width,position.y+size.height,COLOR_TEXTBACKGROUND);
-  int xp2 = 0;
+
   int ONELINE = 16 * frameBufferWidth / 320;
+
+  int textLastLine = (text.length()+ONELINE-1)/ONELINE;
+  if (textLastLine>0) {
+    scrollBoxY = textPos.y*size.height/(textLastLine*CHAR_HEIGHT);
+    drawBox(position.x+size.width-4*frameBufferWidth/320,position.y+scrollBoxY,position.x+size.width,position.y+scrollBoxY+2*frameBufferHeight/200,COLOR_SCROLL);
+  }
+
+  int xp2 = 0;
   int topLine = textPos.y / CHAR_HEIGHT;
   int bottomLine = (textPos.y+size.height-CHAR_HEIGHT) / CHAR_HEIGHT;
   int bottom = bottomLine*ONELINE; if (bottom > text.length()) bottom=text.length();
@@ -45,7 +52,7 @@ void VHex::draw() {
         col = COLOR_HILIGHT_NUMBER;
       }
     } else {
-        col = COLOR_HILIGHT_NUMBER;
+      col = COLOR_HILIGHT_NUMBER;
     }
     int col1 = col;
     int col2 = col;
@@ -55,14 +62,11 @@ void VHex::draw() {
     drawChar(xp,yp,hextab[c &15], col2);
     drawChar(xp2,yp,c,col);
   }
-  int textLastLine = (text.length()+ONELINE-1)/ONELINE;
-  if (textLastLine>0) {
-    scrollBoxY = textPos.y*frameBufferHeight/(textLastLine*CHAR_HEIGHT);
-    drawBox(frameBufferWidth-4*frameBufferWidth/320,scrollBoxY,frameBufferWidth,scrollBoxY+2*frameBufferHeight/200,COLOR_RED);
-  }
-  status += " $" + String::hex(cursorX+cursorY*ONELINE,8) + ":" + String(cursorX+cursorY*ONELINE) + ":" + String(currentHex) + ":$" + String::hex(currentHex,2) + "'" + String::chr(currentHex) + "'" + ":$" + String::hex(lastHex,2);
+  String status = "<CTRL-L> <CTRL-S>";
+  status += " $" + String::hex(cursorX+cursorY*ONELINE,8) + " " + String(cursorX+cursorY*ONELINE);
+  status += " " + String(currentHex) + " $" + String::hex(currentHex,2) + " $" + String::hex(lastHex,2) + "'" + String::chr(currentHex) + "'";
   status += " " + sizeString(text.length());
-  status += " " + message;
+  status += " " + fileName;
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
@@ -153,4 +157,10 @@ void VHex::update() {
   }
   if (textPos.y < 0) textPos.y = 0;
   if (textPos.x < 0) textPos.x = 0;
+}
+
+void VHex::init(const String &_text, const String &_fileName) {
+  text = _text;
+  originalText = _text;
+  fileName = _fileName;
 }

@@ -7,6 +7,7 @@ void setBiosGraphicsMode(int mode);
 int  getBiosGraphicsMode();
 void setBiosCursor(int x, int y);
 void setPalette(int index, unsigned int color);
+unsigned char getPaletteIndex(unsigned int rgba);
 void randomPalette();
 void palette16Colors();
 void frameBufferToScreen(unsigned int *frameBuffer);

@@ -4,6 +4,7 @@
 #include <conio.h>
 #include <stdlib.h>
 
+int paletteCount = 0;
 unsigned int palette[256] = {0};
 
 void setBiosGraphicsMode(int mode) {
@@ -44,13 +45,13 @@ unsigned int getPalette(int index) {
   return 0xff000000|(r<<2)|(g<<10)|(b<<18);
 }
 
-unsigned char getPalIndex(unsigned int rgba) {
+unsigned char getPaletteIndex(unsigned int rgba) {
   const int r = rgba & 255;rgba>>=8;
   const int g = rgba & 255;rgba>>=8;
   const int b = rgba & 255;rgba>>=8;
   int ld = 256*256*4;
   int ri = 0;
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < paletteCount; i++) {
     unsigned int pal = palette[i];
     const int r2 = pal & 255;pal >>= 8;
     const int g2 = pal & 255;pal >>= 8;
@@ -65,6 +66,7 @@ unsigned char getPalIndex(unsigned int rgba) {
 }
 
 void randomPalette() {
+  paletteCount = 256;
   for (int i = 1; i < 256; i++) {
     int r = rand() & 255;
     int g = rand() & 255;
@@ -79,6 +81,7 @@ void randomPalette() {
 }
 
 void palette16Colors() {
+  paletteCount = 16;
   palette[EGA_COLOR_BLACK] = _EGA_COLOR_BLACK;
   palette[EGA_COLOR_BLUE] = _EGA_COLOR_BLUE;
   palette[EGA_COLOR_GREEN] = _EGA_COLOR_GREEN;
@@ -123,29 +126,6 @@ void palette16Colors() {
 extern unsigned int frameBufferWidth;
 extern unsigned int frameBufferHeight;
 
-int to16Colors(unsigned int color) {
-  int r = 0;
-  int r1 = color & 255;
-  int g1 = (color>>8) & 255;
-  int b1 = (color>>16) & 255;
-  int ld = 0;
-  for (int i = 0; i < 16; i++) {
-    unsigned int pal = palette[i];
-    int r2 = pal & 255;
-    int g2 = (pal>>8) & 255;
-    int b2 = (pal>>16) & 255;
-    r2-=r1;
-    g2-=g1;
-    b2-=b1;
-    int d = r2*r2+g2*g2+b2*b2;
-    if (i==0||d<ld) {
-      ld = d;
-      r = i;
-    }
-  }
-  return r;
-}
-
 void frameBufferToScreen16Colors(unsigned int *frameBuffer) {
     int x,y,i,j,b;
     unsigned int *read;
@@ -162,7 +142,7 @@ void frameBufferToScreen16Colors(unsigned int *frameBuffer) {
                 b = 0;
                 for (i = 0; i < 8; i++) {
                     int xi = x*8+i;
-                    b |= ((to16Colors(read[xi*frameBufferWidth/width])>>j) & 1)<<(7-i);
+                    b |= ((getPaletteIndex(read[xi*frameBufferWidth/width])>>j) & 1)<<(7-i);
                 }
                 *write++ = b;
             }
@@ -178,7 +158,7 @@ void frameBufferToScreen(unsigned int *frameBuffer) {
   unsigned char *videoRam = (unsigned char *)0xa0000;
   for (int y = 0; y < 200; y++) {
     for (int x = 0; x < 320; x++) {
-      *videoRam++ = getPalIndex(frameBuffer[x*frameBufferWidth/320+y*frameBufferHeight/200*frameBufferWidth]);
+      *videoRam++ = getPaletteIndex(frameBuffer[x*frameBufferWidth/320+y*frameBufferHeight/200*frameBufferWidth]);
     }
   }
 }

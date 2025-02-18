@@ -7,14 +7,12 @@
 #include "input.hpp"
 #include "blit.hpp"
 #include "vga.hpp"
-
-void updateSyntaxHiLight(const String &text, String &colors);
+#include "syntax.hpp"
 
 class VCode : public VBase {
 public:
   String text;
   String colors;
-  String message;
   String fileName;
   Point textPos;
   int cursorX;
@@ -32,56 +30,63 @@ public:
   int textLastLine;
   bool overwriteMode;
   int scrollBoxY;
+  int displayOutline;
+
+  VCode() : VBase() {
+    text = "";
+    colors = "";
+    fileName = "";
+    textPos = Point(0,0);
+    cursorX = 0;
+    cursorY = 0;
+    cursorI = -1;
+    cursorIX = -1;
+    cursorPos = Point(0,0);
+    cursorRequiresX = -1;
+    cursorRequiresI = -1;
+    bottomLine = 0;
+    topLine = 0;
+    shiftReleased = true;
+    selectionStart = -1;
+    selectionEnd = -1;
+    textLastLine = -1;
+    overwriteMode = false;
+    scrollBoxY = 0;
+    displayOutline = 0;
+    initSyntaxHiLighting();
+  }
 
   virtual setRect(int x0, int y0, int x1, int y1) {VBase::setRect(x0,y0,x1,y1);}
   virtual setRect(const Point &p0, const Size &size) {VBase::setRect(p0,size);}
   virtual setRect(const Point &p0, const Point &p1) {VBase::setRect(p0,p1);}
   virtual void draw();
   virtual void update();
-  void expand();
-
-  virtual void doModal() {
-    pushRect(0,0,frameBufferWidth,frameBufferHeight);
-    clipRect = Rect(0,0,frameBufferWidth,frameBufferHeight);
-    do {
-      updateKeyboard();
-    } while(key != VK_NONE);
+  virtual void reset() {
+    textPos = Point(0,0);
     cursorX = 0;
     cursorY = 0;
-    cursorRequiresX = 0;
-    cursorRequiresI = -1;
-    cursorIX = -1;
     cursorI = -1;
-    topLine = -1;
-    bottomLine = -1;
+    cursorIX = -1;
+    cursorPos = Point(0,0);
+    cursorRequiresX = -1;
+    cursorRequiresI = -1;
+    bottomLine = 0;
+    topLine = 0;
+    shiftReleased = true;
     selectionStart = -1;
     selectionEnd = -1;
+    textLastLine = -1;
     overwriteMode = false;
-    do {
-      drawCapturedFrameBuffer();
-      updateKeyboard();
-      updateMouse();
-      draw();
-      update();
-      drawMouse();
-      frameBufferToScreen(frameBuffer);
-    } while(key != VK_ESCAPE && key != VK_F4);
-    key = VK_NONE;
-    popRect();
+    scrollBoxY = 0;
+    displayOutline = 0;
+  }
+  virtual void doModal() {
+    VBase::doModal();
   }
 
-  void init(const String &_text, const String &_fileName) {
-    fileName = _fileName;
-    text = _text;
-    colors = _text;
-    updateSyntaxHiLight(text,colors);
-    textPos = Point(0,0);
-  }
+  void init(const String &_text, const String &_fileName);
 
-  void setMessage(const String &_message) {
-        message = _message;
-  }
-
+  void expand();
   void drawCursor();
 };
 

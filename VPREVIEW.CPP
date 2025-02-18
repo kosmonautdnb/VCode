@@ -7,78 +7,72 @@
 #include "util.hpp"
 
 void VPreview::draw() {
-  if (viewMode != VIEWMODE_NONE) {
+  if (data != NULL) {
     Point pos = position;
-    if (fullScreen) {
-      pos = Point((frameBufferWidth-viewSize.width)/2,(frameBufferHeight-viewSize.height)/2);
-      drawBox(0,0,frameBufferWidth,frameBufferHeight,COLOR_BLACK);
-    }
-    pushRect(pos.x,pos.y,pos.x+viewSize.width,pos.y+viewSize.height);
-    drawBox(pos.x,pos.y,pos.x+viewSize.width,pos.y+viewSize.height,COLOR_BLACK);
-    if (data != NULL) {
-      switch(viewMode) {
-        case VIEWMODE_IMAGE: {
-            for (int y = 0; y < viewSize.height; y++) {
-              for (int x = 0; x < viewSize.width; x++) {
-                setPixel(pos.x+x,pos.y+y,data[x+y*viewSize.width]);
-              }
-            }
-            if (fullScreen&&key!=VK_NONE&&key!=VK_UP&&key!=VK_DOWN) {fullScreen=false;lastFileName="";if (key == VK_ESCAPE||key == VK_F3) key = VK_NONE;}
-        } break;
+    Size siz = size;
+    pushRect(pos.x,pos.y,pos.x+siz.width,pos.y+siz.height);
+    for (int y = 0; y < siz.height; y++) {
+      for (int x = 0; x < siz.width; x++) {
+        setPixel(pos.x+x,pos.y+y,data[x+y*siz.width]);
       }
     }
-    if (fullScreen) {
-      drawStringOutlined(pos.x,pos.y,fileName,COLOR_WHITE,COLOR_BLACK);
-    }
     popRect();
-  } else {
-    fullScreen=false;
   }
 }
 
 void VPreview::update() {
   if (lastFileName!=fileName) {
-    key = VK_NONE;
-    viewMode = VIEWMODE_NONE;
     lastFileName = fileName;
     if (data != NULL) {
       delete[] data;
       data = NULL;
     }
-    String extension = getExtension(fileName);
-    if (toLower(extension) == ".png") {
+    String extension = toLower(getExtension(fileName));
+    if (extension == ".png") {
       ImageLayer layer;
       loadPNG(&layer, fileName.c_str());
       if (layer.width>0&&layer.height>0) {
-        viewMode = VIEWMODE_IMAGE;
-        viewSize = size;
-        if (fullScreen) {
-          viewSize = Size(frameBufferWidth,frameBufferHeight);
-          if (layer.width>layer.height)
-            viewSize.height = viewSize.width * layer.height / layer.width;
-          else
-            viewSize.width = viewSize.height * layer.width / layer.height;
-        } else {
-          viewSize.height = viewSize.width * layer.height / layer.width;
-        }
-        data = new unsigned int[viewSize.width*viewSize.height];
+        size.height = size.width*layer.height/layer.width;
+        if (size.height==0) size.height = 1;
+        data = new unsigned int[size.width*size.height];
         unsigned int *d = data;
-        for (int y = 0; y < viewSize.height; y++) {
-          int ry = y * layer.height/viewSize.height;
-          for (int x = 0; x < viewSize.width; x++) {
-            int rx = x * layer.width/viewSize.width;
-            *d++ = layer.data[rx+ry*layer.width];
+        int re=0,ge=0,be=0;
+        int ry,rx,r2,g2,b2,r,g,b;
+        unsigned int rgba,pal;
+        for (int y = 0; y < size.height; y++) {
+          ry = y * layer.height/size.height;
+          for (int x = 0; x < size.width; x++) {
+            rx = x * layer.width/size.width;
+            rgba = layer.data[rx+ry*layer.width];
+            r2 = (rgba & 255);
+            g2 = ((rgba>>8) & 255);
+            b2 = ((rgba>>16) & 255);
+            r = r2 + re;
+            g = g2 + ge;
+            b = b2 + be;
+            if (r<0) r = 0;
+            if (g<0) g = 0;
+            if (b<0) b = 0;
+            if (r>255) r = 255;
+            if (g>255) g = 255;
+            if (b>255) b = 255;
+            pal = palette[getPaletteIndex(r|(g<<8)|(b<<16)|0xff000000)];
+            re = r2-(pal & 255);
+            ge = g2-((pal>>8) & 255);
+            be = b2-((pal>>16) & 255);
+            if ((x+y) & 1) {
+              re = ge = be = 0;
+            }
+            *d++ = pal;
           }
         }
-        free(layer.data);
-      }
-    } else {
-      if (fullScreen) {
-        text->init(stringFromFile(fileName));
-        text->setRect(0,0,frameBufferWidth,frameBufferHeight);
-        text->setMessage(fileName);
-        text->doModal();
+        delete[] layer.data;
       }
     }
   }
+}
+
+void VPreview::init(const String &_fileName) {
+  fileName = _fileName;
+  update();
 }

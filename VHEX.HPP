@@ -13,51 +13,40 @@ public:
   String text;
   String originalText;
   String fileName;
-  String message;
   Point textPos;
   int scrollBoxY;
   int cursorX;
   int cursorY;
   bool first;
 
+  VHex() : VBase() {
+    text = "";
+    originalText = "";
+    fileName = "";
+    textPos = Point(0,0);
+    scrollBoxY = 0;
+    cursorX = 0;
+    cursorY = 0;
+    first = false;
+  }
+
   virtual setRect(int x0, int y0, int x1, int y1) {VBase::setRect(x0,y0,x1,y1);}
   virtual setRect(const Point &p0, const Size &size) {VBase::setRect(p0,size);}
   virtual setRect(const Point &p0, const Point &p1) {VBase::setRect(p0,p1);}
   virtual void draw();
   virtual void update();
-
-  virtual void doModal() {
-    pushRect(0,0,frameBufferWidth,frameBufferHeight);
-    clipRect = Rect(0,0,frameBufferWidth,frameBufferHeight);
-    do {
-      updateKeyboard();
-    } while(key != VK_NONE);
+  virtual void reset() {
+    textPos = Point(0,0);
+    scrollBoxY = 0;
     cursorX = 0;
     cursorY = 0;
-    first = true;
-    do {
-      drawCapturedFrameBuffer();
-      updateKeyboard();
-      updateMouse();
-      draw();
-      update();
-      drawMouse();
-      frameBufferToScreen(frameBuffer);
-    } while(key != VK_ESCAPE && key != VK_F3);
-    key = VK_NONE;
-    popRect();
+    first = false;
+  }
+  virtual void doModal() {
+    VBase::doModal();
   }
 
-  void init(const String &_text, const String &_fileName) {
-    text = _text;
-    originalText = _text;
-    fileName = _fileName;
-    textPos = Point(0,0);
-  }
-
-  void setMessage(const String &_message) {
-        message = _message;
-  }
+  void init(const String &_text, const String &_fileName);
 };
 
 #endif //__VHEX_HPP__

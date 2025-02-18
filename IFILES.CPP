@@ -12,13 +12,15 @@ String IFiles::getString(int x, int y) {
   if (y < 0 || y >= files.size()) return NIL;
   if (x == 0) return files[y].name.name;
   if (x == 1) return files[y].name.extension;
-  if (x == 2) return files[y].directory ? "<DIR>" : String(files[y].size);
+  if (x == 2) return sizeString(files[y].size);
   if (x == 3) return dateString(files[y].date);
   if (x == 4) return files[y].name.path + files[y].name.extension;
+  if (x == 5) return files[y].directory ? "<DIR>" : String(files[y].size);
   return "";
 }
 
 void IFiles::sort(int x, bool ascending) {
+  if (x == 2) x = 5;
   if (sortedBy==x&&sortedAscending) ascending=false;
   sortedBy = x;
   sortedAscending = ascending;

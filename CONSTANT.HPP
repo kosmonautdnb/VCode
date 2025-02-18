@@ -52,4 +52,6 @@
 #define EGA_COLOR_YELLOW        0x0e
 #define EGA_COLOR_WHITE         0x0f
 
+#define DISPLAYOUTLINE_DURATION 32
+
 #endif //__CONSTANT_HPP__

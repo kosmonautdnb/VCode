@@ -102,29 +102,28 @@ void loadPNG(ImageLayer *layer, const char *fileName) {
 
   if (channels == 3)
   {
-      unsigned char *array2 = new unsigned char[width * height * 4];
-      for (i = width * height - 1; i >= 0; --i)
+    unsigned char *array2 = new unsigned char[width * height * 4];
+    for (i = width * height - 1; i >= 0; i--)
 	  {
 		  array2[i*4+0] = array[i*3+0];
 		  array2[i*4+1] = array[i*3+1];
 		  array2[i*4+2] = array[i*3+2];
 		  array2[i*4+3] = 255;
 	  }
-      //for (i = 0; i < width * height * 4; i++)
-      //  array[i] = array2[i];
-      memcpy(array, array2, width * height * 4);
-      delete[] array2;
+    //for (i = 0; i < width * height * 4; i++)
+    //  array[i] = array2[i];
+    memcpy(array, array2, width * height * 4);
+    delete[] array2;
   }
 
   // Free memory and return...
-  free(rows);
+  delete[] rows;
 
   png_read_end(pp, info);
   png_destroy_read_struct(&pp, &info, NULL);
 
   fclose(fp);
 
-  free(layer->data); // !!!!ATTENTION!!!!
   layer->width = width;
   layer->height = height;
   layer->x0 = 0;

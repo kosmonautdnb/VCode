@@ -70,6 +70,10 @@ public:
                 return usedSize;
         }
 
+        bool empty() {
+                return size()==0;
+        }
+
         T &operator[](int index) {
                 return data[index];
         }

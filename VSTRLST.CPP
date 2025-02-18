@@ -55,8 +55,8 @@ void VStrLst::draw() {
     popRect();
   }
   popRect();
-  if (firstVisibleLine != -1 && selectedLine <= firstVisibleLine) {scrollY-=CHAR_HEIGHT; if (scrollY<0) scrollY = 0;}
-  if (lastVisibleLine != -1 && selectedLine >= lastVisibleLine-1) {scrollY+=CHAR_HEIGHT;}
+  if (firstVisibleLine != -1 && selectedLine <= firstVisibleLine) {scrollY-=(firstVisibleLine-selectedLine)*CHAR_HEIGHT; if (scrollY<0) scrollY = 0;}
+  if (lastVisibleLine != -1 && selectedLine >= lastVisibleLine-1) {scrollY+=(selectedLine-lastVisibleLine+1)*CHAR_HEIGHT;}
   if (sort!=-1) {
     items->sort(sort,true);
   }
@@ -84,5 +84,30 @@ void VStrLst::update() {
         }
       }
     }
+  }
+}
+
+void VStrLst::setList(IStrLst *list, int listWidth) {
+  items = list;
+  listItemCountX = listWidth;
+  separators.resize(listWidth+1);
+  int here = 0;
+  selectedLine = 0;
+  scrollY = 0;
+  scrollX = 0;
+  list->assigned();
+  for (int i = 0; i < separators.size(); i++) {
+    separators[i] = here;
+    if(i==separators.size()-1) break;
+    int width = 0;
+    int y = -1;
+    do {
+      String k = list->getString(i,y);
+      if (k == NIL) break;
+      int kWidth = k.pixelWidth();
+      if (kWidth > width) width = kWidth;
+      y++;
+    } while(1==1);
+    here += width+2;
   }
 }

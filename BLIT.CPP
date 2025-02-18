@@ -10,9 +10,11 @@
 #include <string.h>
 
 unsigned int *frameBuffer = NULL;
-unsigned int *capturedFrameBuffer = NULL;
+unsigned int *lastCapturedFrameBuffer = NULL;
 unsigned int frameBufferWidth;
 unsigned int frameBufferHeight;
+
+Array<unsigned int*> capturedFrameBuffers;
 
 const char *mouseShape=
   "00000."
@@ -36,12 +38,19 @@ void drawMouse() {
 }
 
 
-void captureFrameBuffer() {
-  memcpy(capturedFrameBuffer, frameBuffer, frameBufferHeight*frameBufferWidth*sizeof(unsigned int));
+void pushCapturedFrameBuffer() {
+  lastCapturedFrameBuffer = new unsigned int[frameBufferHeight*frameBufferWidth];
+  memcpy(lastCapturedFrameBuffer, frameBuffer, frameBufferHeight*frameBufferWidth*sizeof(unsigned int));
+  capturedFrameBuffers.push_back(lastCapturedFrameBuffer);
 }
 
-void drawCapturedFrameBuffer() {
-  memcpy(frameBuffer, capturedFrameBuffer, frameBufferHeight*frameBufferWidth*sizeof(unsigned int));
+void popCapturedFrameBuffer() {
+  delete[] capturedFrameBuffers.back();
+  capturedFrameBuffers.pop_back();
+  if (capturedFrameBuffers.empty())
+    lastCapturedFrameBuffer = NULL;
+  else
+    lastCapturedFrameBuffer = capturedFrameBuffers.back();
 }
 
 Array<Rect> clipStack;
@@ -88,6 +97,10 @@ void pushRect(const Point &p0, const Size &size) {
 void popRect() {
   setClipRect(clipStack.back());
   clipStack.pop_back();
+}
+
+void drawFrameBuffer(unsigned int *_frameBuffer) {
+  memcpy(frameBuffer,_frameBuffer,sizeof(unsigned int)*frameBufferWidth*frameBufferHeight);
 }
 
 void drawChar(int &x, int &y, char c, unsigned int color) {
@@ -145,14 +158,24 @@ void drawRectangle(int x0, int y0, int x1, int y1, unsigned int color) {
 }
 
 void drawBox(int x0, int y0, int x1, int y1, unsigned int color) {
-  for (int y = y0; y < y1; y++)
-    for (int x = x0; x < x1; x++)
-      setPixel(x,y,color);
+  if (x0 < 0) x0 = 0;
+  if (x0 < clipRect.x0) x0 = clipRect.x0;
+  if (y0 < 0) y0 = 0;
+  if (y0 < clipRect.y0) y0 = clipRect.y0;
+  if (x1 > frameBufferWidth) x1 = frameBufferWidth;
+  if (x1 > clipRect.x1) x1 = clipRect.x1;
+  if (y1 > frameBufferHeight) y1 = frameBufferHeight;
+  if (y1 > clipRect.y1) y1 = clipRect.y1;
+  for (int y = y0; y < y1; y++) {
+    unsigned int *d = &frameBuffer[y*frameBufferWidth+x0];
+    for (int x = x0; x < x1; x++) {
+      *d++=color;
+    }
+  }
 }
 
 void allocFrameBuffer(unsigned int width, unsigned int height) {
   frameBuffer = new unsigned int[width*height];
-  capturedFrameBuffer = new unsigned int[width*height];
   frameBufferWidth = width;
   frameBufferHeight = height;
   memset(frameBuffer,0,width*height*sizeof(unsigned int));
@@ -162,7 +185,6 @@ void allocFrameBuffer(unsigned int width, unsigned int height) {
 
 void freeFrameBuffer() {
   delete[] frameBuffer;
-  delete[] capturedFrameBuffer;
 }
 
 void clearFrameBuffer(unsigned int color) {
