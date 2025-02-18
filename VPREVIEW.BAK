@@ -49,8 +49,6 @@ public:
 
         void setFileName(const String &string, bool _fullScreen) {
 
-                fileName = string;
-
                 if (key == VK_F4) {
                         String extension = toLower(getExtension(string));
                         if (extension == ".cpp" ||
@@ -68,7 +66,7 @@ public:
                                 extension == ".bat") {
                                         code->init(stringFromFile(string),string);
                                         code->setRect(0,0,frameBufferWidth,frameBufferHeight);
-                                        code->setMessage(string);
+                                        code->setMessage(fileName);
                                         code->doModal();
                                         return;
                                 }
@@ -77,10 +75,12 @@ public:
                 if (key == VK_F1) {
                         hex->init(stringFromFile(string),string);
                         hex->setRect(0,0,frameBufferWidth,frameBufferHeight);
-                        hex->setMessage(string);
+                        hex->setMessage(fileName);
                         hex->doModal();
                         return;
                 }
+
+                fileName = string;
 
                 if (_fullScreen) {if (!fullScreen) {lastFileName = "";fullScreen = true;}}
                 update();

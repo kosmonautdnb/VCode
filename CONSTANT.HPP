@@ -28,6 +28,7 @@
 #define VK_TAB 9
 #define VK_TAB_SHIFT (15*256)
 #define VK_ENTF (83*256)
+#define VK_INSERT (82*256)
 #define VK_DELETE 8
 #define VK_C_CTRL 3
 #define VK_V_CTRL 22

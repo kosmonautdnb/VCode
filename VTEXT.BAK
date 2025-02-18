@@ -54,8 +54,8 @@ void VText::draw() {
     int ONELINE = 16 * frameBufferWidth / 320;
     int topLine = textPos.y / CHAR_HEIGHT;
     int bottomLine = (textPos.y+size.height) / CHAR_HEIGHT;
-    int bottom = bottomLine*ONELINE; if (bottom > text.length()) bottom=text.length();
-    int top = topLine*ONELINE; if (top > text.length()) top=text.length();
+    int bottom = bottomLine*ONELINE; if (bottom > text.length() bottom=text.length();
+    int top = topLine*ONELINE; if (top > text.length() top=text.length();
     for (int i = top; i < bottom; i++) {
       char c = text[i];
       unsigned int l = hiLightColors[colors[i]];

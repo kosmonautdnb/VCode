@@ -25,6 +25,7 @@ public:
   String message;
   Point textPos;
   int mode;
+  int scrollBoxY;
   enum {
         MODE_TEXT = 1,
         MODE_HEX = 2,

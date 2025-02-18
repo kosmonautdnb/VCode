@@ -57,8 +57,8 @@ void updateSyntaxHiLight(const String &text, String &colors) {
     if (colors[i]!=HIGHLIGHT_EMPTY) continue;
     const bool isAlphabet = (c >= 'a' && c <= 'z')||(c >= 'A' && c <= 'Z')||c=='_'||c=='#';
     const bool isNumber = (c >= '0' && c <= '9')||c=='.';
-    const bool lcWasFull = (lc >= 'a' && lc <= 'z')||(lc >= 'A' && lc <= 'Z')||c=='_';
-    const bool lcWasNumber = (lc >= '0' && lc <= '9');
+    const bool lcWasFull = (lc >= 'a' && lc <= 'z')||(lc >= 'A' && lc <= 'Z')||c=='_'||c=='#';
+    const bool lcWasNumber = (lc >= '0' && lc <= '9')||c=='.';
     if (numbers == 0 && isNumber && (!(lcWasFull||lcWasNumber))) numbers=1;
     if (numbers != 0 && (!(isNumber||isAlphabet))) numbers=0;
     if (numbers!=0) colors[i] = HIGHLIGHT_NUMBER;
@@ -205,6 +205,7 @@ void VCode::draw() {
   Point eofPos;
   for (int i = 0; i < text.length() || (pos.y < position.y + size.height); i++) {
     char c = i < text.length() ? text[i] : '\n';
+    if (i == text.length()-1) {String k=" "; k[0]=c;eofPos = pos; pos.x += k.pixelWidth();}
     char l = i < text.length() ? colors[i] : HIGHLIGHT_EMPTY;
     bool selected = (selectionStart>=0&&selectionEnd>=0)&&((i>=selectionStart&&i<selectionEnd)||(i>=selectionEnd&&i<selectionStart));
     if (i < text.length()) textLastLine=lineY;
@@ -230,7 +231,6 @@ void VCode::draw() {
       drawBox(pos.x,pos.y,pos.x + k.pixelWidth(),pos.y+CHAR_HEIGHT,COLOR_SELECTION);
     }
     drawChar(pos.x, pos.y, c, getHiLightColor(l));
-    if (i == text.length()-1) eofPos = pos;
     lineX++;
   }
   if (cursorIX != -1) cursorPos.x += (cursorX - cursorIX)*String(" ").pixelWidth();
@@ -246,6 +246,10 @@ void VCode::draw() {
         cursorX--;
       }
     }
+  }
+  if (textLastLine>0) {
+    scrollBoxY = textPos.y*frameBufferHeight/(textLastLine*CHAR_HEIGHT);
+    drawBox(frameBufferWidth-4*frameBufferWidth/320,scrollBoxY,frameBufferWidth,scrollBoxY+2*frameBufferHeight/200,COLOR_RED);
   }
   cursorRequiresX=-1;
   cursorRequiresI = -1;
@@ -279,6 +283,11 @@ void VCode::expand() {
 void VCode::update() {
   if (cursorY < topLine) textPos.y -= (topLine-cursorY)*CHAR_HEIGHT;
   if (cursorY >= bottomLine) textPos.y+=(cursorY-bottomLine+1)*CHAR_HEIGHT;
+  if (mouseB==1&&mouseX>position.x+size.width-4*frameBufferWidth/320) {
+    textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
+    cursorY=textPos.y/CHAR_HEIGHT+1;
+    return;
+  }
 
   if (strgKey) {
     if (key==VK_L_CTRL && (!fileName.empty())) {
@@ -446,6 +455,11 @@ void VCode::update() {
         }
       }
       else
+      if (key == VK_INSERT) {
+        overwriteMode = !overwriteMode;
+        key = VK_NONE;
+      }
+      else
       if (key < 256 && key != 0) {
         if (key == VK_ENTER) {
           expand();
@@ -456,8 +470,12 @@ void VCode::update() {
           cursorX=0;
         } else {
           expand();
-          text.insert(cursorI,key);
-          colors.insert(cursorI,key);
+          if (overwriteMode&&text[cursorI]!='\n') {
+            text[cursorI] = key;
+          } else {
+            text.insert(cursorI,key);
+            colors.insert(cursorI,key);
+          }
           updateSyntaxHiLight(text,colors);
           cursorX++;
         }
@@ -470,8 +488,12 @@ void VCode::drawCursor() {
   if (cursorI != -1) {
     static int i = 0;i++;
     if (i & 8) {
-      drawBox(cursorPos.x,cursorPos.y,cursorPos.x+1,cursorPos.y+CHAR_HEIGHT,COLOR_CURSOR);
-      drawBox(cursorPos.x+1,cursorPos.y,cursorPos.x+2,cursorPos.y+CHAR_HEIGHT,COLOR_RED);
+      if (!overwriteMode) {
+        drawBox(cursorPos.x,cursorPos.y,cursorPos.x+1,cursorPos.y+CHAR_HEIGHT,COLOR_CURSOR);
+        drawBox(cursorPos.x+1,cursorPos.y,cursorPos.x+2,cursorPos.y+CHAR_HEIGHT,COLOR_RED);
+      } else {
+        drawBox(cursorPos.x,cursorPos.y,cursorPos.x+CHAR_HEIGHT,cursorPos.y+CHAR_HEIGHT,COLOR_CURSOR);
+      }
     }
   }
 }

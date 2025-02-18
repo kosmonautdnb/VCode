@@ -45,5 +45,6 @@ call _BUILD\CC.BAT INPUT.CPP                    INPUT.OBJ
 call _BUILD\CC.BAT UTIL.CPP                     UTIL.OBJ
 call _BUILD\CC.BAT POINT.CPP                    POINT.OBJ
 call _BUILD\CC.BAT CLIPBRD.CPP                  CLIPBRD.OBJ
+call _BUILD\CC.BAT VHEX.CPP                     VHEX.OBJ
 call _BUILD\AL.BAT _BUILD\LINK.LNK              MAIN.EXE
 me LOGS.LOG

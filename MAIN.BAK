@@ -192,8 +192,8 @@ void main()
     currentWorkingDirectory = getCWD();
     disableControlBreak();
     int gfxMode = getBiosGraphicsMode();
-    //graphicsMode320x200x256();
-    graphicsMode640x480x16();
+    graphicsMode320x200x256();
+    //graphicsMode640x480x16();
 
     displayFileSelector();
 
