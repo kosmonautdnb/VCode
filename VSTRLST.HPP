@@ -19,6 +19,8 @@ public:
   int lastVisibleLine;
   int scrollY;
   int scrollX;
+  int scrollBoxY;
+  int textLastLine;
 
   VStrLst() : VBase() {
     backgroundColor = COLOR_MENUBACKGROUND;
@@ -30,6 +32,8 @@ public:
     lastVisibleLine = 0;
     scrollY = 0;
     scrollX = 0;
+    scrollBoxY = 0;
+    textLastLine = 0;
   }
   virtual ~VStrLst() {;}
 

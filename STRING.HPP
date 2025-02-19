@@ -17,6 +17,7 @@ public:
         }
 
         const String &operator=(const String &b) {
+                if (&b == this) return *this;
                 if (b.data != NULL) {
                         dataLength = b.dataLength;
                         data = (char*)malloc(dataLength);
@@ -147,7 +148,7 @@ public:
                 return data[index];
         }
 
-        bool empty() {
+        bool empty() const {
                 return length()==0;
         }
 
@@ -241,6 +242,12 @@ public:
                         if (found) return i;
                 }
                 return -1;
+        }
+
+        String last(int letters) const {
+          if (length()<letters)
+            return String(*this);
+          return substr(length()-letters);
         }
 
         static String add(const String &a, const String &b);

@@ -45,7 +45,6 @@ void displayFileSelector() {
       }
       drawMouse();
       frameBufferToScreen(frameBuffer);
-      while(mouseB==1) updateMouse();
     } while(key!=VK_ESCAPE);
     popCapturedFrameBuffer();
 }

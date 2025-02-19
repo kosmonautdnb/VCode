@@ -8,6 +8,16 @@ void VStrLst::draw() {
   pushRect(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y+size.height);
   drawBox(position.x,position.y,position.x+size.width,position.y+size.height,backgroundColor);
   drawBox(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y,COLOR_HEADERLINE);
+
+  textLastLine = -1;
+  do {
+    textLastLine++;
+  } while (items->getString(0,textLastLine)!=NIL);
+  if (textLastLine>0) {
+    scrollBoxY = scrollY*size.height/(textLastLine*CHAR_HEIGHT);
+    drawBox(position.x+size.width-4*frameBufferWidth/320,position.y+scrollBoxY,position.x+size.width,position.y+scrollBoxY+2*frameBufferHeight/200,COLOR_SCROLL);
+  }
+
   int sort = -1;
   for (int xi = 0; xi < listItemCountX; xi++) {
     Point d0(position.x+separators[xi]-scrollX,position.y-CHAR_HEIGHT);
@@ -61,10 +71,18 @@ void VStrLst::draw() {
   if (lastVisibleLine != -1 && selectedLine >= lastVisibleLine-1) {scrollY+=(selectedLine-lastVisibleLine+1)*CHAR_HEIGHT;}
   if (sort!=-1) {
     items->sort(sort,true);
+    do {
+      updateMouse();
+    } while(mouseB==1);
   }
 }
 
 int VStrLst::update() {
+  if (mouseY>=position.y&&mouseY<position.y+size.height&&mouseX>position.x+size.width-4*frameBufferWidth/320&&mouseX<position.x+size.width) {
+    if (mouseB == 1) {
+      scrollY = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
+    }
+  }
   if (hasKeyboardFocus(this)) {
     int selectedLineBefore = selectedLine;
     if (key == VK_UP) {selectedLine--; if (selectedLine < 0) selectedLine = 0;}
@@ -98,6 +116,8 @@ void VStrLst::setList(IStrLst *list, int listWidth) {
   selectedLine = 0;
   scrollY = 0;
   scrollX = 0;
+  scrollBoxY = 0;
+  textLastLine = 0;
   list->assigned();
   for (int i = 0; i < separators.size(); i++) {
     separators[i] = here;

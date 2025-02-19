@@ -91,6 +91,12 @@ int VTxtLine::update() {
   if (key == VK_RIGHT) {
     cursorX++;
   }
+  if (key == VK_POS1) {
+    cursorX = 0;
+  }
+  if (key == VK_END) {
+    cursorX = text.length();
+  }
   if (cursorX>text.length()) cursorX = text.length();
   if (cursorX<0) cursorX = 0;
   return 0;
@@ -98,6 +104,6 @@ int VTxtLine::update() {
 
 void VTxtLine::init(const String &_text) {
   text = _text;
-  cursorX = 0;
+  cursorX = _text.length();
   scrollX = 0;
 }

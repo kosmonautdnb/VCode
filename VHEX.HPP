@@ -18,6 +18,14 @@ public:
   int cursorX;
   int cursorY;
   bool first;
+  enum {
+    FINDMODE_NONE,
+    FINDMODE_STRING,
+    FINDMODE_HEX,
+  };
+  int lastFindMode;
+  int lastFindAddress;
+  String lastFindString;
 
   VHex() : VBase() {
     name = "Hex";
@@ -29,6 +37,9 @@ public:
     cursorX = 0;
     cursorY = 0;
     first = true;
+    lastFindMode = FINDMODE_NONE;
+    lastFindAddress = 0;
+    lastFindString = "";
   }
   virtual ~VHex() {;}
 
@@ -43,12 +54,17 @@ public:
     cursorX = 0;
     cursorY = 0;
     first = true;
+    lastFindMode = FINDMODE_NONE;
+    lastFindAddress = 0;
+    lastFindString = "";
   }
   virtual int doModal() {
     return VBase::doModal();
   }
 
   void init(const String &_text, const String &_fileName);
+  bool findString(const String &toFind, unsigned int startAddress);
+  bool findHex(const String &toFind, unsigned int startAddress);
 };
 
 #endif //__VHEX_HPP__

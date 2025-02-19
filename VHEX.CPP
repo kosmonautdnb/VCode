@@ -5,6 +5,7 @@
 #include "dos.hpp"
 #include "util.hpp"
 #include "valert.hpp"
+#include "vtxtalrt.hpp"
 
 void VHex::draw() {
   static int time = 0; time++;
@@ -74,17 +75,19 @@ void VHex::draw() {
     drawChar(xp2,yp,c,col);
   }
   bool updated = originalText != text;
-  String status = (updated?"..":"")+String("<CTRL-L> <CTRL-S>");
+  String status = (updated?"..":"")+String("<CTRL-L/S>");
   status += " $" + String::hex(cursorX+cursorY*ONELINE,8) + " " + String(cursorX+cursorY*ONELINE);
   status += " " + String(currentHex) + " $" + String::hex(currentHex,2) + " $" + String::hex(lastHex,2) + "'" + String::chr(currentHex) + "'";
   status += " " + sizeString(text.length());
-  status += " " + fileName;
+  status += " " + fileName.last(20);
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
 }
 
 int VHex::update() {
+
+  int ONELINE = 16 * frameBufferWidth / 320;
 
   if (strgKey) {
     if (key==VK_L_CTRL && (!fileName.empty())) {
@@ -98,16 +101,62 @@ int VHex::update() {
       stringToFile(text,fileName,false);
       return 0;
     }
+    if (key==VK_G_CTRL) {
+      String toFind;
+      int a = VTxtAlrt::box(toFind,"Go to address ["+String::hex(text.length(),8)+"]:","YES","NO");
+      if (a == 1) {
+        long l=0;
+        for (int i = 0; i < toFind.length(); i++) {
+          char c = toFind[i];
+          int nr = -1;
+          if (c>='0'&&c<='9') nr = c-'0';
+          else
+          if (c>='a'&&c<='f') nr = c-'a'+10;
+          else
+          if (c>='A'&&c<='F') nr = c-'A'+10;
+          if (nr >= 0) {
+            l=l*16;
+            l+=nr;
+          }
+        }
+        if (l<text.length()) {
+          cursorY = l/ONELINE;
+          cursorX = l%ONELINE;
+          textPos.y = cursorY*CHAR_HEIGHT;
+        } else {
+          VAlert::box("File is only "+String::hex(text.length(),8),"OK");
+        }
+      }
+    }
+    if (key==VK_F_CTRL) {
+      String toFind = lastFindMode != FINDMODE_NONE ? lastFindString : "";
+      int a = VTxtAlrt::box(toFind,"       Find in file       ","Hex","String","Don't");
+      if (a == 1) {
+        findHex(toFind,0);
+      }
+      if (a == 2) {
+        findString(toFind,0);
+      }
+    }
   }
 
-  int ONELINE = 16 * frameBufferWidth / 320;
+  if (key==VK_F3) {
+    if (lastFindMode==FINDMODE_STRING) {
+      findString(lastFindString,lastFindAddress+1);
+    }
+    if (lastFindMode==FINDMODE_HEX) {
+      findHex(lastFindString,lastFindAddress+1);
+    }
+  }
 
-  if (mouseB==1&&mouseX>position.x+size.width-4*frameBufferWidth/320) {
-    int ONELINE = 16 * frameBufferWidth / 320;
-    int textLastLine = (text.length()+ONELINE-1)/ONELINE;
-    textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
-    if (cursorY<textPos.y/CHAR_HEIGHT) cursorY = textPos.y/CHAR_HEIGHT+1;
-    if (cursorY>=(textPos.y+size.height-CHAR_HEIGHT)/CHAR_HEIGHT) cursorY = (textPos.y+size.height-CHAR_HEIGHT)/CHAR_HEIGHT-1;
+  if (mouseY>=position.y&&mouseY<position.y+size.height&&mouseX>position.x+size.width-4*frameBufferWidth/320&&mouseX<position.x+size.width) {
+    if (mouseB==1) {
+      int ONELINE = 16 * frameBufferWidth / 320;
+      int textLastLine = (text.length()+ONELINE-1)/ONELINE;
+      textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
+      if (cursorY<textPos.y/CHAR_HEIGHT) cursorY = textPos.y/CHAR_HEIGHT+1;
+      if (cursorY>=(textPos.y+size.height-CHAR_HEIGHT)/CHAR_HEIGHT) cursorY = (textPos.y+size.height-CHAR_HEIGHT)/CHAR_HEIGHT-1;
+    }
   }
 
   int entering = -1;
@@ -189,4 +238,94 @@ void VHex::init(const String &_text, const String &_fileName) {
   text = _text;
   originalText = _text;
   fileName = _fileName;
+}
+
+bool VHex::findString(const String &toFind, unsigned int start) {
+  if (toFind.empty()) {
+    lastFindMode = FINDMODE_NONE;
+    lastFindString = "";
+    lastFindAddress = 0;
+    return false;
+  }
+  int ONELINE = 16 * frameBufferWidth / 320;
+  String j; j.resize(toFind.length());
+  for (int i = start; i < text.length(); i++) {
+    int l = 0;
+    if (text[i]==toFind[0]) {
+      for (int k = i; k < text.length(); k++) {
+        if (String::chr(text[k]).pixelWidth()>0) {
+          j[l]=text[k];
+          l++;
+          if (l == j.length()) break;
+        }
+      }
+      if (l==j.length()) {
+        if (j == toFind) {
+            cursorY = i/ONELINE;
+            cursorX = i%ONELINE;
+            if (cursorY>=(textPos.y+size.height-CHAR_HEIGHT)/CHAR_HEIGHT)
+              textPos.y = cursorY*CHAR_HEIGHT;
+            lastFindMode = FINDMODE_STRING;
+            lastFindString = toFind;
+            lastFindAddress = i;
+            return true;
+        }
+      }
+    }
+  }
+  int a = VAlert::box("Reached end of file!","OK");
+  lastFindAddress = 0;
+  return false;
+}
+
+bool VHex::findHex(const String &toFind, unsigned int start) {
+  if (toFind.empty()) {
+    lastFindMode = FINDMODE_NONE;
+    lastFindString = "";
+    lastFindAddress = 0;
+    return false;
+  }
+  String toFindHex="";
+  bool first = true;
+  int half = 0;
+  for(int r = 0; r < toFind.length(); r++) {
+    char c = toFind[r];
+    int n = -1;
+    if (c>='0'&&c<='9') n = c - '0';
+    if (c>='a'&&c<='f') n = c - 'a'+10;
+    if (c>='A'&&c<='F') n = c - 'A'+10;
+    if (n >= 0) {
+      half *= 16;
+      half += n;
+      first = !first;
+      if (first) {
+        toFindHex += String::chr(half);
+        half = 0;
+        first = true;
+      }
+    }
+  }
+  int ONELINE = 16 * frameBufferWidth / 320;
+  String j; j.resize(toFindHex.length());
+  int l;
+  for (int i = start; i < text.length(); i++) {
+    for (int k = i,l=0; k < text.length() && l<j.length(); k++,l++) {
+      j[l]=text[k];
+    }
+    if (l==j.length()) {
+      if (j == toFindHex) {
+          cursorY = i/ONELINE;
+          cursorX = i%ONELINE;
+          if (cursorY>=(textPos.y+size.height-CHAR_HEIGHT)/CHAR_HEIGHT)
+            textPos.y = cursorY*CHAR_HEIGHT;
+          lastFindMode = FINDMODE_HEX;
+          lastFindString = toFind;
+          lastFindAddress = i;
+          return true;
+      }
+    }
+  }
+  int a = VAlert::box("Reached end of file!","OK");
+  lastFindAddress = 0;
+  return false;
 }

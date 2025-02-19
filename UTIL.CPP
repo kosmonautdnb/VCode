@@ -70,6 +70,16 @@ String stringFromFile(const String &fileName, bool textFile) {
 }
 
 void stringToFile(const String &string,const String &fileName, bool textFile) {
+  FILE *in = fopen(dosFileName(fileName).c_str(),"rb");
+  bool alreadyThere = in != NULL;
+  if (alreadyThere) fclose(in);
+
+  if (alreadyThere) {
+    int a = VAlert::box("Overwrite File:" + fileName.last(20), "YES","NO");
+    if (a != 1)
+      return;
+  }
+
   fileWasWritten = true;
   FILE *out = fopen(dosFileName(fileName).c_str(),"wb");
   if (out != NULL) {

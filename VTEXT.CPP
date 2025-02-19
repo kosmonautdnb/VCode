@@ -15,7 +15,7 @@ void VText::draw() {
   for (i = 0; i < text.length(); i++) if (text[i]=='\n') textLastLine++;
   if (textLastLine>0) {
     scrollBoxY = textPos.y*size.height/(textLastLine*CHAR_HEIGHT);
-    drawBox(position.x+size.width-4*frameBufferWidth/320,position.y+scrollBoxY,position.x+size.width,scrollBoxY+2*frameBufferHeight/200,COLOR_SCROLL);
+    drawBox(position.x+size.width-4*frameBufferWidth/320,position.y+scrollBoxY,position.x+size.width,position.y+scrollBoxY+2*frameBufferHeight/200,COLOR_SCROLL);
   }
 
   Point pos = position - textPos;
@@ -40,17 +40,19 @@ void VText::draw() {
     drawStringOutlined(pos.x,pos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
   String status = String(textPos.x/CHAR_HEIGHT)+" "+String(textPos.y/CHAR_HEIGHT);
   status += " "+sizeString(text.length());
-  status += " " + fileName;
+  status += " " + fileName.last(20);
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
 }
 
 int VText::update() {
-  if (mouseB==1&&mouseX>position.x+size.width-4*frameBufferWidth/320) {
-    int textLastLine = 0;
-    for (int i = 0; i < text.length(); i++) if (text[i]=='\n') textLastLine++;
-    textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
+  if (mouseY>=position.y&&mouseY<position.y+size.height&&mouseX>position.x+size.width-4*frameBufferWidth/320&&mouseX<position.x+size.width) {
+    if (mouseB==1) {
+      int textLastLine = 0;
+      for (int i = 0; i < text.length(); i++) if (text[i]=='\n') textLastLine++;
+      textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
+    }
   }
 
   if (key == VK_UP) {textPos.y -= CHAR_HEIGHT; if (textPos.y < 0) textPos.y = 0;}

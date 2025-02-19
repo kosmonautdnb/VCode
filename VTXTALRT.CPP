@@ -14,22 +14,6 @@ int VTxtAlrt::update() {
   return VAlert::update();
 }
 
-int VTxtAlrt::box(String &returned,const String &message,const String &button1,const String &button2) {
-  VTxtAlrt *txtalrt = new VTxtAlrt();
-  Array<VButton*> arr;
-  arr.push_back(new VButton());
-  arr.push_back(new VButton());
-  arr[0]->init(button1);
-  arr[1]->init(button2);
-  txtalrt->init(message,arr);
-  txtalrt->vTxtLine->text = returned;
-  int r = 0;
-  do {r = txtalrt->doModal();} while(1!=1);
-  returned = txtalrt->vTxtLine->text;
-  delete txtalrt;
-  return r;
-}
-
 void VTxtAlrt::init(const String &_text, const Array<VButton*> &_buttons) {
   text = _text;
   buttons = _buttons;
@@ -43,9 +27,15 @@ void VTxtAlrt::init(const String &_text, const Array<VButton*> &_buttons) {
   setRect(x0,y0,x1,y1);
   vTxtLine->setRect(x0+2,y0+CHAR_HEIGHT*3/2-1,x1-2,y0+CHAR_HEIGHT*5/2+1);
   margin = 2;
+  int k = 0;
+  for (int j = 0; j < buttons.size(); j++) {
+    k += buttons[j]->text.pixelWidth();
+  }
+  k += (buttons.size()-1)*(2+margin*2);
+  int x = x0+(x1-x0-k)/2;
+  int y = y0+CHAR_HEIGHT*7/2;
   for (int i = 0; i < buttons.size(); i++) {
-    int x = (x0+x1)/2-(x1-x0)/2/buttons.size()+(x1-x0)*i/buttons.size();
-    int y = y0+CHAR_HEIGHT*7/2;
-    buttons[i]->setRect(x-margin-buttons[i]->text.pixelWidth()/2,y-margin,x+buttons[i]->text.pixelWidth()/2+margin, y+CHAR_HEIGHT+margin);
+    buttons[i]->setRect(x-margin,y-margin,x+buttons[i]->text.pixelWidth()+margin, y+CHAR_HEIGHT+margin);
+    x += buttons[i]->text.pixelWidth()+margin*2+2;
   }
 }

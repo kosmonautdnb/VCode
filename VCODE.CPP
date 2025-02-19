@@ -46,7 +46,7 @@ void VCode::draw() {
 
   if (textLastLine>0) {
     scrollBoxY = textPos.y*size.height/(textLastLine*CHAR_HEIGHT);
-    drawBox(position.x+size.width-4*frameBufferWidth/320,position.y+scrollBoxY,position.x+size.width,scrollBoxY+2*frameBufferHeight/200,COLOR_SCROLL);
+    drawBox(position.x+size.width-4*frameBufferWidth/320,position.y+scrollBoxY,position.x+size.width,position.y+scrollBoxY+2*frameBufferHeight/200,COLOR_SCROLL);
   }
 
   Point pos = position - textPos;
@@ -88,7 +88,7 @@ void VCode::draw() {
       case '\n': {
         if(selected)
           drawBox(pos.x,pos.y,pos.x+size.width,pos.y+CHAR_HEIGHT,COLOR_SELECTION);
-        if (mouseB==1 && mouseX>=pos.x&&mouseY>=pos.y&&mouseY<pos.y+CHAR_HEIGHT) {
+        if (mouseB==1 && mouseX>=pos.x&&mouseY>=pos.y&&mouseY<pos.y+CHAR_HEIGHT&&mouseX<=position.x+size.width-4*frameBufferWidth/320) {
           cursorY = lineY; cursorX=lineX+(mouseX-pos.x)/String::chr(' ').pixelWidth();
         }
         if(lineY==cursorY&&cursorI==-1)
@@ -135,7 +135,7 @@ void VCode::draw() {
   drawStringOutlined(eofPos.x,eofPos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
   drawCursor();
   bool updated = originalText != text;
-  String status = (updated ? ".." : "") + String(cursorX)+" "+String(cursorY) + " <CTRL-L> <CTRL-S> " + fileName + " " + sizeString(text.length());
+  String status = (updated ? ".." : "") + String("<CTRL-L/S> ") + String(cursorX)+" "+String(cursorY) + fileName.last(20) + " " + sizeString(text.length());
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
@@ -161,7 +161,7 @@ int VCode::update() {
   int lastY = textPos.y;
   if (cursorY < topLine) textPos.y -= (topLine-cursorY)*CHAR_HEIGHT;
   if (cursorY > bottomLine) textPos.y+=(cursorY-bottomLine)*CHAR_HEIGHT;
-  if (mouseX>position.x+size.width-4*frameBufferWidth/320) {
+  if (mouseY>=position.y&&mouseY<position.y+size.height&&mouseX>position.x+size.width-4*frameBufferWidth/320&&mouseX<position.x+size.width) {
     displayOutline = true;
     if (mouseB == 1) {
       textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
@@ -342,7 +342,7 @@ int VCode::update() {
         key = VK_NONE;
       }
       else
-      if (key < 256 && key != 0) {
+      if (key < 256 && key >= ' ') {
         if (key == VK_ENTER) {
           expand();
           text.insert(cursorI,'\n');
