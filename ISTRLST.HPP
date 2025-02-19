@@ -1,9 +1,6 @@
 #ifndef __ISTRLST_HPP__
 #define __ISTRLST_HPP__
 
-#include "array.hpp"
-#include "string.hpp"
-
 class IStrLst {
 public:
   virtual void assigned() = 0;

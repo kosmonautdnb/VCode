@@ -20,7 +20,7 @@ void VPreview::draw() {
   }
 }
 
-void VPreview::update() {
+int VPreview::update() {
   if (lastFileName!=fileName) {
     lastFileName = fileName;
     if (data != NULL) {
@@ -56,7 +56,10 @@ void VPreview::update() {
             if (r>255) r = 255;
             if (g>255) g = 255;
             if (b>255) b = 255;
-            pal = palette[getPaletteIndex(r|(g<<8)|(b<<16)|0xff000000)];
+            if (paletteCount > 0)
+              pal = palette[getPaletteIndex(r|(g<<8)|(b<<16)|0xff000000)];
+            else
+              pal = rgba;
             re = r2-(pal & 255);
             ge = g2-((pal>>8) & 255);
             be = b2-((pal>>16) & 255);
@@ -70,6 +73,7 @@ void VPreview::update() {
       }
     }
   }
+  return 0;
 }
 
 void VPreview::init(const String &_fileName) {

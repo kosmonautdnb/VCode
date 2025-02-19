@@ -9,6 +9,7 @@ class String;
 extern unsigned int *lastCapturedFrameBuffer;
 void pushCapturedFrameBuffer();
 void popCapturedFrameBuffer();
+void submitFullScreenFrameBuffer(unsigned int *frameBuffer);
 
 extern unsigned int *frameBuffer;
 extern unsigned int frameBufferWidth;

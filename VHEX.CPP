@@ -4,6 +4,7 @@
 #include "colors.hpp"
 #include "dos.hpp"
 #include "util.hpp"
+#include "valert.hpp"
 
 void VHex::draw() {
   static int time = 0; time++;
@@ -58,11 +59,22 @@ void VHex::draw() {
     int col2 = col;
     if (y == cursorY) {col = COLOR_CURSOR;}
     if (x == cursorX && y == cursorY) {if (i<originalText.length()) lastHex=originalText[i];currentHex = c;col1=COLOR_HILIGHT_BOOLEAN;col2=col1;col = COLOR_HILIGHT_SPECIAL;if (time & 8){if (first) col1 = COLOR_HILIGHT_SPECIAL;else col2 = COLOR_HILIGHT_SPECIAL;}}
+    if (mouseX>=xp&&mouseY>=yp&&mouseY<yp+CHAR_HEIGHT&&mouseX<xp+CHAR_HEIGHT*2) {
+      if (mouseB == 1) {
+        cursorX = x; cursorY = y;
+      }
+    }
+    if (mouseX>=xp2&&mouseY>=yp&&mouseY<yp+CHAR_HEIGHT&&mouseX<xp2+CHAR_HEIGHT) {
+      if (mouseB == 1) {
+        cursorX = x; cursorY = y;
+      }
+    }
     drawChar(xp,yp,hextab[(c / 16)&15], col1);
     drawChar(xp,yp,hextab[c &15], col2);
     drawChar(xp2,yp,c,col);
   }
-  String status = "<CTRL-L> <CTRL-S>";
+  bool updated = originalText != text;
+  String status = (updated?"..":"")+String("<CTRL-L> <CTRL-S>");
   status += " $" + String::hex(cursorX+cursorY*ONELINE,8) + " " + String(cursorX+cursorY*ONELINE);
   status += " " + String(currentHex) + " $" + String::hex(currentHex,2) + " $" + String::hex(lastHex,2) + "'" + String::chr(currentHex) + "'";
   status += " " + sizeString(text.length());
@@ -72,18 +84,19 @@ void VHex::draw() {
   popRect();
 }
 
-void VHex::update() {
+int VHex::update() {
 
   if (strgKey) {
     if (key==VK_L_CTRL && (!fileName.empty())) {
       cursorX = 0; cursorY = 0; first = false;
-      text = stringFromFile(fileName);
+      text = stringFromFile(fileName,false);
       originalText = text;
-      return;
+      return 0;
     }
     if (key==VK_S_CTRL && (!fileName.empty())) {
-      stringToFile(text,fileName);
-      return;
+      originalText = text;
+      stringToFile(text,fileName,false);
+      return 0;
     }
   }
 
@@ -157,6 +170,19 @@ void VHex::update() {
   }
   if (textPos.y < 0) textPos.y = 0;
   if (textPos.x < 0) textPos.x = 0;
+
+  if (key == VK_ESCAPE) {
+    if (originalText != text) {
+      int a = VAlert::box("Do you want to save the file?","YES","NO");
+      if (a==1) {
+        stringToFile(text,fileName,true);
+      }
+      if (a != 0)
+        key = VK_ESCAPE;
+    }
+  }
+
+  return 0;
 }
 
 void VHex::init(const String &_text, const String &_fileName) {

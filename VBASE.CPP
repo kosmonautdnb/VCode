@@ -3,10 +3,12 @@
 #include "blit.hpp"
 #include "constant.hpp"
 #include "vga.hpp"
+#include "util.hpp"
 
 VBase *keyboardFocus = NULL;
 
-void VBase::doModal() {
+int VBase::doModal() {
+  currentToolString = name;
   reset();
   pushCapturedFrameBuffer();
   pushRect(0,0,frameBufferWidth,frameBufferHeight);
@@ -14,18 +16,22 @@ void VBase::doModal() {
   do {
     updateKeyboard();
   } while(key != VK_NONE);
+  int state=0;
   do {
     drawFrameBuffer(lastCapturedFrameBuffer);
     updateKeyboard();
     updateMouse();
-    update();
+    state = update();
     draw();
+    submitFullScreenFrameBuffer(frameBuffer);
     drawMouse();
     frameBufferToScreen(frameBuffer);
-  } while(key != VK_ESCAPE && key != VK_F4);
+  } while(key != VK_ESCAPE);
   key = VK_NONE;
   popRect();
   popCapturedFrameBuffer();
+  currentToolString = "";
+  return state;
 }
 
 void setKeyboardFocus(VBase *window) {
@@ -34,4 +40,9 @@ void setKeyboardFocus(VBase *window) {
 
 bool hasKeyboardFocus(VBase *window) {
   return keyboardFocus == window;
+}
+
+bool VBase::mouseIn()
+{
+  return mouseOver(Rect(position,size));
 }

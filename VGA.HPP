@@ -1,6 +1,7 @@
 #ifndef __VGA_HPP__
 #define __VGA_HPP__
 
+extern int paletteCount;
 extern unsigned int palette[256];
 
 void setBiosGraphicsMode(int mode);

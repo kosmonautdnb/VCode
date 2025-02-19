@@ -4,7 +4,7 @@
 #include <conio.h>
 #include <stdlib.h>
 
-int paletteCount = 0;
+int paletteCount = -1;
 unsigned int palette[256] = {0};
 
 void setBiosGraphicsMode(int mode) {

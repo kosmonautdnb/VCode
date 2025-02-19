@@ -4,6 +4,11 @@
 #include "blit.hpp"
 #include "ifiles.hpp"
 #include "vpreview.hpp"
+#include <direct.h>
+#include "util.hpp"
+
+VTree *treeLeft = NULL;
+VTree *treeRight = NULL;
 
 void VTree::draw() {
   VStrLst::draw();
@@ -18,7 +23,7 @@ void VTree::draw() {
     pushRect(0,position.y+size.height,frameBufferWidth,frameBufferHeight);
     String siz = directory->getString(2,selectedLine);
     String fileName = directory->getString(4,selectedLine);
-    preview->init(fileName);
+    vPreview->init(fileName);
     drawString(0,position.y+size.height+1,searchText+">"+fileName,COLOR_PROMPTTEXT);
     int selecteds = 0;
     int selectedBytes = 0;
@@ -32,15 +37,15 @@ void VTree::draw() {
     }
     String status = "";
     if (selecteds>0) status += "Selected:"+String(selecteds) + (selecteds == 1 ? " File " : " Files ") + sizeString(selectedBytes);
-    if (status == "") status = "<F1>Hexed <F3>View <F4>Edit <F10>Exit";
+    if (status == "") status = "F1Hex F3View F4Edit F5Copy F6Move F7Newdir F8Delete";
     drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
     drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
     popRect();
   }
-  preview->draw();
+  vPreview->draw();
 }
 
-void VTree::update() {
+int VTree::update() {
   VStrLst::update();
   int sortedBy = directory->sortedBy;
   bool sortedAscending = directory->sortedAscending;
@@ -70,19 +75,43 @@ void VTree::update() {
       }
     }
     String fileName = directory->getString(4,selectedLine);
+    String extension = toLower(getExtension(fileName));
     if (key == VK_F1) {
-      vHex->init(stringFromFile(fileName),fileName);
+      vHex->init(stringFromFile(fileName,false),fileName);
       vHex->doModal();
     }
     if (key == VK_F3) {
-      vText->init(stringFromFile(fileName),fileName);
+      vText->init(stringFromFile(fileName,true),fileName);
       vText->doModal();
     }
     if (key == VK_F4) {
-      vCode->init(stringFromFile(fileName),fileName);
-      vCode->doModal();
+      if (extension != ".exe" && extension != ".com"&& extension != ".sys") {
+        vCode->init(stringFromFile(fileName,true),fileName);
+        vCode->doModal();
+      }
+    }
+    if (key == VK_F5) {
+      Array<String> files;
+      int i;
+      for (i = 0; i < directory->selection.size(); i++) {
+        if (directory->selected(i))
+          files.push_back(directory->getString(4,i));
+      }
+      if (files.size()==0)
+        files.push_back(directory->getString(4,selectedLine));
+      if (copyFiles(this==treeLeft?treeRight->lastPathName:treeLeft->lastPathName,files))
+        for (i = 0; i < directory->selection.size(); i++) directory->select(i,false);
+    }
+    if (key == VK_F7) {
+      String folderName="";
+      int a = VTxtAlrt::box(folderName,"Create new Folder","Create","Don't");
+      if (a == 1) {
+        mkdir(dosFileName(lastPathName+folderName).c_str());
+        fileWasWritten = true;
+      }
     }
   }
+  return 0;
 }
 
 void VTree::setList(IStrLst *list, int listWidth) {
@@ -98,16 +127,12 @@ void VTree::init(const Rect &r,const String &path) {
   setList(directory,4);
   directory->sort(0,true);
   setKeyboardFocus(this);
-  preview = new VPreview();
   int previewSize = 50*frameBufferWidth/320;
   int xp = 100*frameBufferWidth/320;
   int yp = 140*frameBufferHeight/200;
-  preview->setRect(position.x+xp,position.y+yp,position.x+xp+previewSize,position.y+yp+previewSize);
-  vText = new VText();
+  vPreview->setRect(position.x+xp,position.y+yp,position.x+xp+previewSize,position.y+yp+previewSize);
   vText->setRect(0,0,frameBufferWidth,frameBufferHeight);
-  vCode = new VCode();
   vCode->setRect(0,0,frameBufferWidth,frameBufferHeight);
-  vHex = new VHex();
   vHex->setRect(0,0,frameBufferWidth,frameBufferHeight);
 }
 

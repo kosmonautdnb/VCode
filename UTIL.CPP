@@ -2,6 +2,8 @@
 #include "types.hpp"
 #include "dos.hpp"
 #include <conio.h>
+#include "vga.hpp"
+#include "valert.hpp"
 
 String dosFileName(const String &fileName);
 bool fileWasWritten = false;
@@ -17,6 +19,7 @@ String hex(int v) {
   return r;
 }
 
+String currentToolString="";
 String currentTimeString() {
   int rtc_seconds = rtcRead(0);
   int rtc_minutes = rtcRead(2);
@@ -28,9 +31,29 @@ String currentTimeString() {
   return hex(rtc_day)+"."+hex(rtc_month)+"."+hex(rtc_year)+" "+hex(rtc_hours)+":"+hex(rtc_minutes)+"."+hex(rtc_seconds);
 }
 
-String stringFromFile(const String &fileName) {
+void make0d0ato0a(String &r) {
+  for (int i = 0; i < r.length()-1; i++) {
+    char c = r[i];
+    if (c==0x0d&&r[i+1]==0x0a) {
+      r.erase(i,1);
+      i--;
+    }
+  }
+}
+
+void make0ato0d0a(String &r) {
+  for (int i = 0; i < r.length(); i++) {
+    if (r[i]==0x0a) {
+      r.insert(i,String::chr(0x0d));
+      i++;
+    }
+  }
+}
+
+String stringFromFile(const String &fileName, bool textFile) {
   FILE *in = fopen(dosFileName(fileName).c_str(),"rb");
   if (in != NULL) {
+    setPalette(0,0xffffffff);
     fseek(in,0,SEEK_END);
     long fileSize = ftell(in);
     fseek(in,0,SEEK_SET);
@@ -38,19 +61,29 @@ String stringFromFile(const String &fileName) {
     r.resize(fileSize);
     fread(&(r[0]),1,fileSize,in);
     fclose(in);
-    for(int i = 0; i < r.length(); i++) {
-      if (r[i]==0x0d) r.erase(i,1);
-    }
+    if (textFile)
+      make0d0ato0a(r);
+    setPalette(0,0xff000000);
     return r;
   }
   return NIL;
 }
 
-void stringToFile(const String &string,const String &fileName) {
+void stringToFile(const String &string,const String &fileName, bool textFile) {
   fileWasWritten = true;
   FILE *out = fopen(dosFileName(fileName).c_str(),"wb");
   if (out != NULL) {
-    fwrite(&(string[0]),1,string.length(),out);
+    setPalette(0,0xffffffff);
+    String s2 = string;
+    if (textFile)
+      make0ato0d0a(s2);
+    fwrite(&(s2[0]),1,s2.length(),out);
     fclose(out);
+    setPalette(0,0xff000000);
   }
+}
+
+bool copyFiles(const String &destPath, Array<String> &sourcePaths) {
+  int a = VAlert::box("Copy "+String(sourcePaths.size())+" Files", "YES","NO");
+  return a == 1;
 }

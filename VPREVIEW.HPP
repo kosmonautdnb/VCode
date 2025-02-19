@@ -27,7 +27,7 @@ public:
   virtual setRect(const Point &p0, const Size &size) {VBase::setRect(p0,size);}
   virtual setRect(const Point &p0, const Point &p1) {VBase::setRect(p0,p1);}
   virtual void draw();
-  virtual void update();
+  virtual int update();
 
   void init(const String &_fileName);
 };

@@ -10,6 +10,7 @@
 #include <string.h>
 
 unsigned int *frameBuffer = NULL;
+unsigned int *fullScreenFrameBuffer = NULL;
 unsigned int *lastCapturedFrameBuffer = NULL;
 unsigned int frameBufferWidth;
 unsigned int frameBufferHeight;
@@ -32,25 +33,32 @@ void drawMouse() {
       if (c == '1') setPixel(mouseX+x,mouseY+y,COLOR_WHITE);
     }
   }
-  drawString(mouseX+7,mouseY,String(key & 255)+":"+String(key>>8),COLOR_WHITE);
-  String s = currentTimeString();
-  drawStringOutlined(frameBufferWidth-s.pixelWidth(),frameBufferHeight-CHAR_HEIGHT,s,COLOR_WHITE,COLOR_BLACK);
+  //drawString(mouseX+7,mouseY,String(key & 255)+":"+String(key>>8),COLOR_WHITE);
+  String s = currentToolString+" "+currentTimeString();
+  drawStringOutlined(frameBufferWidth-s.pixelWidth(),frameBufferHeight-CHAR_HEIGHT*3/2,s,COLOR_WHITE,COLOR_BLACK);
 }
 
 
 void pushCapturedFrameBuffer() {
   lastCapturedFrameBuffer = new unsigned int[frameBufferHeight*frameBufferWidth];
-  memcpy(lastCapturedFrameBuffer, frameBuffer, frameBufferHeight*frameBufferWidth*sizeof(unsigned int));
+  memcpy(lastCapturedFrameBuffer, fullScreenFrameBuffer, frameBufferHeight*frameBufferWidth*sizeof(unsigned int));
   capturedFrameBuffers.push_back(lastCapturedFrameBuffer);
 }
 
 void popCapturedFrameBuffer() {
+  memcpy(frameBuffer,lastCapturedFrameBuffer, frameBufferHeight*frameBufferWidth*sizeof(unsigned int));
   delete[] capturedFrameBuffers.back();
   capturedFrameBuffers.pop_back();
   if (capturedFrameBuffers.empty())
     lastCapturedFrameBuffer = NULL;
   else
+  {
     lastCapturedFrameBuffer = capturedFrameBuffers.back();
+  }
+}
+
+void submitFullScreenFrameBuffer(unsigned int *frameBuffer) {
+  memcpy(fullScreenFrameBuffer,frameBuffer,frameBufferWidth*frameBufferHeight*sizeof(unsigned int));
 }
 
 Array<Rect> clipStack;
@@ -107,10 +115,27 @@ void drawChar(int &x, int &y, char c, unsigned int color) {
   Letter *l = getLetter(c);
   if (l == NULL) return;
   if (y < clipRect.y1 && y + CHAR_HEIGHT > clipRect.y0) {
-    for (int y2 = 0; y2 < l->height; y2++) {
-      for (int x2 = 0; x2 < l->width; x2++) {
-        if (l->bitmap[x2+y2*l->width]!='0')
-          setPixel(x+x2+l->preAddX,y+y2+l->preAddY,color);
+    int x0 = x + l->preAddX;
+    int y0 = y + l->preAddY;
+    int x1 = x + l->width+l->preAddX;
+    int y1 = y + l->height+l->preAddY;
+    bool clippedX = x0 < 0 || x0 < clipRect.x0 || x1 > frameBufferWidth || x1 > clipRect.x1;
+    bool clippedY = y0 < 0 || y0 < clipRect.y0 || y1 > frameBufferHeight || y1 > clipRect.y1;
+    if (clippedX||clippedY) {
+      for (int y2 = 0; y2 < l->height; y2++) {
+        for (int x2 = 0; x2 < l->width; x2++) {
+          if (l->bitmap[x2+y2*l->width]!='0')
+            setPixel(x+x2+l->preAddX,y+y2+l->preAddY,color);
+        }
+      }
+    } else {
+      for (int y2 = 0; y2 < l->height; y2++) {
+        unsigned int *d = frameBuffer + (y0+y2)*frameBufferWidth+x0;
+        for (int x2 = 0; x2 < l->width; x2++) {
+          if (l->bitmap[x2+y2*l->width]!='0')
+            *d = color;
+          d++;
+        }
       }
     }
   }
@@ -162,9 +187,9 @@ void drawBox(int x0, int y0, int x1, int y1, unsigned int color) {
   if (x0 < clipRect.x0) x0 = clipRect.x0;
   if (y0 < 0) y0 = 0;
   if (y0 < clipRect.y0) y0 = clipRect.y0;
-  if (x1 > frameBufferWidth) x1 = frameBufferWidth;
+  if (x1 > (int)frameBufferWidth) x1 = frameBufferWidth;
   if (x1 > clipRect.x1) x1 = clipRect.x1;
-  if (y1 > frameBufferHeight) y1 = frameBufferHeight;
+  if (y1 > (int)frameBufferHeight) y1 = frameBufferHeight;
   if (y1 > clipRect.y1) y1 = clipRect.y1;
   for (int y = y0; y < y1; y++) {
     unsigned int *d = &frameBuffer[y*frameBufferWidth+x0];
@@ -176,15 +201,18 @@ void drawBox(int x0, int y0, int x1, int y1, unsigned int color) {
 
 void allocFrameBuffer(unsigned int width, unsigned int height) {
   frameBuffer = new unsigned int[width*height];
+  fullScreenFrameBuffer = new unsigned int[width*height];
   frameBufferWidth = width;
   frameBufferHeight = height;
   memset(frameBuffer,0,width*height*sizeof(unsigned int));
+  memset(fullScreenFrameBuffer,0,width*height*sizeof(unsigned int));
   clipStack.clear();
   setClipRect(0,0,frameBufferWidth,frameBufferHeight);
 }
 
 void freeFrameBuffer() {
   delete[] frameBuffer;
+  delete[] fullScreenFrameBuffer;
 }
 
 void clearFrameBuffer(unsigned int color) {

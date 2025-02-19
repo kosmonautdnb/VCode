@@ -46,12 +46,11 @@ void VText::draw() {
   popRect();
 }
 
-void VText::update() {
+int VText::update() {
   if (mouseB==1&&mouseX>position.x+size.width-4*frameBufferWidth/320) {
     int textLastLine = 0;
     for (int i = 0; i < text.length(); i++) if (text[i]=='\n') textLastLine++;
     textPos.y = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
-    return;
   }
 
   if (key == VK_UP) {textPos.y -= CHAR_HEIGHT; if (textPos.y < 0) textPos.y = 0;}
@@ -60,6 +59,7 @@ void VText::update() {
   if (key == VK_PAGEDOWN) {textPos.y += CHAR_HEIGHT*16;}
   if (key == VK_LEFT) {textPos.x -= CHAR_HEIGHT; if (textPos.x < 0) textPos.x = 0;}
   if (key == VK_RIGHT) {textPos.x += CHAR_HEIGHT;}
+  return 0;
 }
 
 void VText::init(const String &_text, const String &_fileName) {

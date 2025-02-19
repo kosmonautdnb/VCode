@@ -12,6 +12,7 @@
 class VCode : public VBase {
 public:
   String text;
+  String originalText;
   String colors;
   String fileName;
   Point textPos;
@@ -33,7 +34,9 @@ public:
   int displayOutline;
 
   VCode() : VBase() {
+    name = "Edit";
     text = "";
+    originalText = "";
     colors = "";
     fileName = "";
     textPos = Point(0,0);
@@ -55,12 +58,13 @@ public:
     displayOutline = 0;
     initSyntaxHiLighting();
   }
+  virtual ~VCode() {;}
 
   virtual setRect(int x0, int y0, int x1, int y1) {VBase::setRect(x0,y0,x1,y1);}
   virtual setRect(const Point &p0, const Size &size) {VBase::setRect(p0,size);}
   virtual setRect(const Point &p0, const Point &p1) {VBase::setRect(p0,p1);}
   virtual void draw();
-  virtual void update();
+  virtual int update();
   virtual void reset() {
     textPos = Point(0,0);
     cursorX = 0;
@@ -80,8 +84,8 @@ public:
     scrollBoxY = 0;
     displayOutline = 0;
   }
-  virtual void doModal() {
-    VBase::doModal();
+  virtual int doModal() {
+    return VBase::doModal();
   }
 
   void init(const String &_text, const String &_fileName);

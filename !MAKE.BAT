@@ -1,7 +1,10 @@
 @echo off
+@echo Starting..
 @echo system dos4g > _BUILD\LINK.LNK
 @echo build errors > LOGS.LOG
+@echo Deleting exe..
 del MAIN.EXE
+@echo Generating exe..
 call _BUILD\CO.BAT ZLIB\ADLER32.C               ADLER32.OBJ
 call _BUILD\CO.BAT ZLIB\COMPRESS.C              COMPRESS.OBJ
 call _BUILD\CO.BAT ZLIB\CRC32.C                 CRC32.OBJ
@@ -48,5 +51,9 @@ call _BUILD\CC.BAT CLIPBRD.CPP                  CLIPBRD.OBJ
 call _BUILD\CC.BAT VHEX.CPP                     VHEX.OBJ
 call _BUILD\CC.BAT VTREE.CPP                    VTREE.OBJ
 call _BUILD\CC.BAT SYNTAX.CPP                   SYNTAX.OBJ
+call _BUILD\CC.BAT VALERT.CPP                   VALERT.OBJ
+call _BUILD\CC.BAT VBUTTON.CPP                  VBUTTON.OBJ
+call _BUILD\CC.BAT VTXTLINE.CPP                 VTXTLINE.OBJ
+call _BUILD\CC.BAT VTXTALRT.CPP                 VTXTALRT.OBJ
 call _BUILD\AL.BAT _BUILD\LINK.LNK              MAIN.EXE
 me LOGS.LOG

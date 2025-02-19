@@ -9,16 +9,16 @@
 #include "input.hpp"
 #include "vtree.hpp"
 #include "util.hpp"
+#include "valert.hpp"
 
 String currentWorkingDirectory;
 
 void displayFileSelector() {
     pushCapturedFrameBuffer();
-    VTree *treeLeft = new VTree();
-    VTree *treeRight = new VTree();
+    treeLeft = new VTree();
+    treeRight = new VTree();
     treeLeft->init(Rect(0,CHAR_HEIGHT,frameBufferWidth/2-1,frameBufferHeight-16),"c:/");
-    treeRight->init(Rect(frameBufferWidth/2,CHAR_HEIGHT,frameBufferWidth-1,frameBufferHeight-16),currentWorkingDirectory);
-
+    treeRight->init(Rect(frameBufferWidth/2,CHAR_HEIGHT,frameBufferWidth,frameBufferHeight-16),currentWorkingDirectory);
     do {
       updateMouse();
       updateKeyboard();
@@ -31,15 +31,22 @@ void displayFileSelector() {
       }
       treeLeft->draw();
       treeRight->draw();
+      drawRectangle(treeLeft->position.x+treeLeft->size.width,treeLeft->position.y-CHAR_HEIGHT,treeLeft->position.x+treeLeft->size.width,treeLeft->position.y+treeLeft->size.height,COLOR_BLACK);
       if (fileWasWritten) {
         treeLeft->reload = true;
         treeRight->reload = true;
         fileWasWritten = false;
       }
+      submitFullScreenFrameBuffer(frameBuffer);
+      if (key == VK_ESCAPE) {
+        int a = VAlert::box("Exit to Dos?","YES","NO");
+        if (a == 1)
+          key = VK_ESCAPE;
+      }
       drawMouse();
       frameBufferToScreen(frameBuffer);
       while(mouseB==1) updateMouse();
-    } while(key!=VK_F10);
+    } while(key!=VK_ESCAPE);
     popCapturedFrameBuffer();
 }
 
@@ -60,8 +67,8 @@ void main()
     currentWorkingDirectory = getCWD();
     disableControlBreak();
     int gfxMode = getBiosGraphicsMode();
-    //graphicsMode320x200x256();
-    graphicsMode640x480x16();
+    graphicsMode320x200x256();
+    //graphicsMode640x480x16();
 
     displayFileSelector();
 

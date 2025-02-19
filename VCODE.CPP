@@ -5,6 +5,7 @@
 #include "dos.hpp"
 #include "clipbrd.hpp"
 #include "util.hpp"
+#include "valert.hpp"
 
 void VCode::draw() {
   pushRect(position,size);
@@ -66,7 +67,7 @@ void VCode::draw() {
   Point eofPos;
   for (i = 0; i < text.length() || (pos.y < position.y + size.height); i++) {
     char c = i < text.length() ? text[i] : '\n';
-    if (i == text.length()-1) {String k=" "; k[0]=c;eofPos = pos; pos.x += k.pixelWidth();}
+    if (i == text.length()-1) {eofPos = pos; eofPos.x += String::chr(c).pixelWidth();}
     char l = i < text.length() ? colors[i] : HIGHLIGHT_EMPTY;
     bool selected = (selectionStart>=0&&selectionEnd>=0)&&((i>=selectionStart&&i<selectionEnd)||(i>=selectionEnd&&i<selectionStart));
     if (i == cursorRequiresI) {
@@ -84,11 +85,30 @@ void VCode::draw() {
     if (pos.y < position.y + size.height) bottomLine = lineY;
     if (topLine == -1 && pos.y >= position.y) topLine = lineY;
     switch(c) {
-      case '\n': {if(selected)drawBox(pos.x,pos.y,pos.x+size.width,pos.y+CHAR_HEIGHT,COLOR_SELECTION);if(lineY==cursorY&&cursorI==-1) {cursorI=i;cursorPos=pos;cursorIX=lineX;} lineX=0;lineY++;pos.y += CHAR_HEIGHT; pos.x = position.x - textPos.x;continue;} break;
+      case '\n': {
+        if(selected)
+          drawBox(pos.x,pos.y,pos.x+size.width,pos.y+CHAR_HEIGHT,COLOR_SELECTION);
+        if (mouseB==1 && mouseX>=pos.x&&mouseY>=pos.y&&mouseY<pos.y+CHAR_HEIGHT) {
+          cursorY = lineY; cursorX=lineX+(mouseX-pos.x)/String::chr(' ').pixelWidth();
+        }
+        if(lineY==cursorY&&cursorI==-1)
+        {
+          cursorI=i;cursorPos=pos;cursorIX=lineX;
+        }
+        lineX=0;
+        lineY++;
+        pos.y += CHAR_HEIGHT;
+        pos.x = position.x - textPos.x;continue;
+      } break;
     }
     if (selected) {
       String k; k.resize(1); k[0]=c;
       drawBox(pos.x,pos.y,pos.x + k.pixelWidth(),pos.y+CHAR_HEIGHT,COLOR_SELECTION);
+    }
+    if (mouseX>=pos.x&&mouseY>=pos.y&&mouseY<pos.y+CHAR_HEIGHT&&mouseX<pos.x+String::chr(c).pixelWidth()) {
+      if (mouseB==1) {
+        cursorX = lineX; cursorY = lineY;
+      }
     }
     drawChar(pos.x, pos.y, c, getHiLightColor(l));
     lineX++;
@@ -114,7 +134,8 @@ void VCode::draw() {
   if (selectionEnd==-2) {selectionEnd = cursorI;}
   drawStringOutlined(eofPos.x,eofPos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
   drawCursor();
-  String status = String(cursorX)+" "+String(cursorY) + " <CTRL-L> <CTRL-S> " + fileName + sizeString(text.length());
+  bool updated = originalText != text;
+  String status = (updated ? ".." : "") + String(cursorX)+" "+String(cursorY) + " <CTRL-L> <CTRL-S> " + fileName + " " + sizeString(text.length());
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
@@ -136,7 +157,7 @@ void VCode::expand() {
   }
 }
 
-void VCode::update() {
+int VCode::update() {
   int lastY = textPos.y;
   if (cursorY < topLine) textPos.y -= (topLine-cursorY)*CHAR_HEIGHT;
   if (cursorY > bottomLine) textPos.y+=(cursorY-bottomLine)*CHAR_HEIGHT;
@@ -151,14 +172,16 @@ void VCode::update() {
   if (strgKey) {
     if (key==VK_L_CTRL && (!fileName.empty())) {
       cursorRequiresI=cursorI;
-      text = stringFromFile(fileName);
+      text = stringFromFile(fileName,true);
+      originalText = text;
       colors = text;
       updateSyntaxHiLight(text,colors);
-      return;
+      return 0;
     }
     if (key==VK_S_CTRL && (!fileName.empty())) {
-      stringToFile(text,fileName);
-      return;
+      originalText = text;
+      stringToFile(text,fileName,true);
+      return 0;
     }
   }
 
@@ -342,11 +365,23 @@ void VCode::update() {
     }
   }
   if (lastY!=textPos.y) displayOutline = DISPLAYOUTLINE_DURATION;
+  if (key == VK_ESCAPE) {
+    if (originalText != text) {
+      int a = VAlert::box("Do you want to save the file?","YES","NO");
+      if (a==1) {
+        stringToFile(text,fileName,true);
+      }
+      if (a != 0)
+        key = VK_ESCAPE;
+    }
+  }
+  return 0;
 }
 
 void VCode::init(const String &_text, const String &_fileName) {
   fileName = _fileName;
   text = _text;
+  originalText = _text;
   colors = _text;
   updateSyntaxHiLight(text,colors);
   textPos = Point(0,0);
