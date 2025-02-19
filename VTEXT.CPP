@@ -4,6 +4,7 @@
 #include "colors.hpp"
 #include "dos.hpp"
 #include "syntax.hpp"
+#include "vtxtalrt.hpp"
 
 void VText::draw() {
   pushRect(position,size);
@@ -61,6 +62,18 @@ int VText::update() {
   if (key == VK_PAGEDOWN) {textPos.y += CHAR_HEIGHT*16;}
   if (key == VK_LEFT) {textPos.x -= CHAR_HEIGHT; if (textPos.x < 0) textPos.x = 0;}
   if (key == VK_RIGHT) {textPos.x += CHAR_HEIGHT;}
+  if (key == VK_F_CTRL) {
+      String toFind2 = toFind;
+      int a = VTxtAlrt::box(toFind2,"       Find in file       ","OK","Don't");
+      if (a==1) {
+        toFind = toFind2;
+        updateSyntaxHiLight(text,colors,toFind);
+        find(toFind,0);
+      }
+  }
+  if (key == VK_F3) {
+    find(toFind,findAddress+1);
+  }
   return 0;
 }
 
@@ -68,5 +81,33 @@ void VText::init(const String &_text, const String &_fileName) {
   text = _text;
   colors = _text;
   fileName = _fileName;
-  updateSyntaxHiLight(text,colors);
+  updateSyntaxHiLight(text,colors,"");
+}
+
+bool VText::find(const String &search, unsigned int address) {
+  const int l2 = search.length();
+  if (l2 > 0) {
+    int l = text.length();
+    for (int i = address; i < l; i++) {
+      int j;
+      for (j = 0; j < l2 && j+i<l; j++) {
+        if (text[i+j]!=search[j]) break;
+      }
+      if (j == l2) {
+        findAddress=i;
+        int line = 0;
+        for(int k = 0; k < l; k++) {
+          char c = text[k];
+          if (k == findAddress) break;
+          if (c=='\n')
+            line++;
+        }
+        textPos.y = line * CHAR_HEIGHT;
+        return true;
+      }
+    }
+    int a = VAlert::box("Reached end of file!","OK");
+    findAddress = 0;
+  }
+  return false;
 }

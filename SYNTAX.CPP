@@ -43,7 +43,7 @@ void initSyntaxHiLighting() {
   hiLightTable.push_back("volatile");
 }
 
-void updateSyntaxHiLight(const String &text, String &colors) {
+void updateSyntaxHiLight(const String &text, String &colors, const String &toFind) {
   if (text.length() != colors.length())
     exit(0);
   const int l = colors.length();
@@ -159,6 +159,20 @@ void updateSyntaxHiLight(const String &text, String &colors) {
       colors[i] = HIGHLIGHT_SPECIAL;
     }
   }
+  // mark find
+  const int l2 = toFind.length();
+  if (l2 > 0) {
+    for (i = 0; i < l; i++) {
+      int j;
+      for (j = 0; j < l2 && j+i<l; j++) {
+        if (text[i+j]!=toFind[j]) break;
+      }
+      if (j == l2) {
+        for (j = 0; j < l2; ++j)
+          colors[i+j]=HIGHLIGHT_FIND;
+      }
+    }
+  }
 }
 
 unsigned int getHiLightColor(int l) {
@@ -170,6 +184,7 @@ unsigned int getHiLightColor(int l) {
   case HIGHLIGHT_BOOLEAN: return COLOR_HILIGHT_BOOLEAN; break;
   case HIGHLIGHT_SCOPE: return COLOR_HILIGHT_SCOPE; break;
   case HIGHLIGHT_SPECIAL: return COLOR_HILIGHT_SPECIAL; break;
+  case HIGHLIGHT_FIND: return COLOR_HILIGHT_FIND; break;
   }
   return COLOR_TEXT;
 }

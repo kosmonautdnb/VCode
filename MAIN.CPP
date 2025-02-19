@@ -12,65 +12,110 @@
 #include "valert.hpp"
 
 String currentWorkingDirectory;
+String fileNameToLoad;
 
 void displayFileSelector() {
-    pushCapturedFrameBuffer();
-    treeLeft = new VTree();
-    treeRight = new VTree();
-    treeLeft->init(Rect(0,CHAR_HEIGHT,frameBufferWidth/2-1,frameBufferHeight-16),"c:/");
-    treeRight->init(Rect(frameBufferWidth/2,CHAR_HEIGHT,frameBufferWidth,frameBufferHeight-16),currentWorkingDirectory);
-    do {
-      updateMouse();
-      updateKeyboard();
-      drawFrameBuffer(lastCapturedFrameBuffer);
-      if (key == 0x09) {
-        if (hasKeyboardFocus(treeLeft))
-          setKeyboardFocus(treeRight);
-        else
-          setKeyboardFocus(treeLeft);
+  pushCapturedFrameBuffer();
+  treeLeft = new VTree();
+  treeRight = new VTree();
+  treeRight->init(Rect(frameBufferWidth/2,CHAR_HEIGHT,frameBufferWidth,frameBufferHeight-16),currentWorkingDirectory);
+  treeLeft->init(Rect(0,CHAR_HEIGHT,frameBufferWidth/2-1,frameBufferHeight-16),currentWorkingDirectory);
+  if (!fileNameToLoad.empty()) {
+    int x = String("FILENAME.NAME").pixelWidth();
+    treeLeft->size.width = x - treeLeft->position.x-1;
+    treeRight->position.x = x;
+    treeRight->size.width = frameBufferWidth-treeRight->position.x;
+    treeRight->overlayByFileName(fileNameToLoad);
+    setKeyboardFocus(treeRight);
+  }
+  bool altPressed = false;
+  bool altCanceled = false;
+  bool grabbed=false;
+  do {
+    updateMouse();
+    updateKeyboard();
+    drawFrameBuffer(lastCapturedFrameBuffer);
+
+    if (abs(mouseX-treeRight->position.x)<2&&mouseB==1) {
+      grabbed = true;
+    }
+
+    if (grabbed) {
+      treeLeft->size.width = mouseX - treeLeft->position.x-1;
+      treeRight->position.x = mouseX;
+      treeRight->size.width = frameBufferWidth-treeRight->position.x;
+      if (mouseB!=1)
+        grabbed = false;
+    }
+
+    if (key == VK_NONE && altKey) altPressed = true;
+    if (key != VK_NONE && altPressed && altKey) altCanceled = true;
+    bool doSwitch = false;
+    if (!altKey) {
+      if (altPressed && (!altCanceled)) {
+        doSwitch=true;
       }
-      treeLeft->draw();
-      treeRight->draw();
-      drawRectangle(treeLeft->position.x+treeLeft->size.width,treeLeft->position.y-CHAR_HEIGHT,treeLeft->position.x+treeLeft->size.width,treeLeft->position.y+treeLeft->size.height,COLOR_BLACK);
-      if (fileWasWritten) {
-        treeLeft->reload = true;
-        treeRight->reload = true;
-        fileWasWritten = false;
-      }
-      submitFullScreenFrameBuffer(frameBuffer);
-      if (key == VK_ESCAPE) {
-        int a = VAlert::box("Exit to Dos?","YES","NO");
-        if (a == 1)
-          key = VK_ESCAPE;
-      }
-      drawMouse();
-      frameBufferToScreen(frameBuffer);
-    } while(key!=VK_ESCAPE);
-    popCapturedFrameBuffer();
+      altCanceled = false;
+      altPressed = false;
+    }
+    if (treeLeft->treeMode==VTree::TREEMODE_FILETREE&&treeRight->treeMode==VTree::TREEMODE_FILETREE)
+      if (key == VK_TAB)
+        doSwitch = true;
+    if (doSwitch) {
+      if (hasKeyboardFocus(treeLeft))
+        setKeyboardFocus(treeRight);
+      else
+        setKeyboardFocus(treeLeft);
+    }
+    if (!grabbed) {
+      treeLeft->update();
+      treeRight->update();
+    }
+    treeLeft->draw();
+    treeRight->draw();
+    if (fileWasWritten) {
+      treeLeft->reload = true;
+      treeRight->reload = true;
+      fileWasWritten = false;
+    }
+    submitFullScreenFrameBuffer(frameBuffer);
+    if (key == VK_ESCAPE) {
+      int a = VAlert::box("Exit to Dos?","YES","NO");
+      if (a == 1)
+        key = VK_ESCAPE;
+    }
+    drawMouse();
+    frameBufferToScreen(frameBuffer);
+  } while(key!=VK_ESCAPE);
+  popCapturedFrameBuffer();
 }
 
 void graphicsMode320x200x256() {
-    setBiosGraphicsMode(0x13);
-    allocFrameBuffer(320,200);
-    randomPalette();
+  setBiosGraphicsMode(0x13);
+  allocFrameBuffer(320,200);
+  randomPalette();
 }
 
 void graphicsMode640x480x16() {
-    setBiosGraphicsMode(0x12);
-    allocFrameBuffer(640,480);
-    palette16Colors();
+  setBiosGraphicsMode(0x12);
+  allocFrameBuffer(640,480);
+  palette16Colors();
 }
 
-void main()
+int main(int argc, const char *argv[])
 {
-    currentWorkingDirectory = getCWD();
-    disableControlBreak();
-    int gfxMode = getBiosGraphicsMode();
-    graphicsMode320x200x256();
-    //graphicsMode640x480x16();
+  if (argc == 2) {
+    fileNameToLoad = argv[1];
+  }
+  currentWorkingDirectory = getCWD();
+  disableControlBreak();
+  int gfxMode = getBiosGraphicsMode();
+  //graphicsMode320x200x256();
+  graphicsMode640x480x16();
 
-    displayFileSelector();
+  displayFileSelector();
 
-    freeFrameBuffer();
-    setBiosGraphicsMode(gfxMode);
+  freeFrameBuffer();
+  setBiosGraphicsMode(gfxMode);
+  return 0;
 }

@@ -11,6 +11,20 @@ VTree *treeLeft = NULL;
 VTree *treeRight = NULL;
 
 void VTree::draw() {
+
+  if (treeMode == TREEMODE_EDIT) {
+    if (hasKeyboardFocus(this)) {
+      pushRect(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y+size.height);
+      drawBox(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y,COLOR_HEADERLINE);
+      popRect();
+    }
+    String status = "ESC for exit. ALT instead of TAB.";
+    drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
+    drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
+    vCode->setRect(this->position,this->size);
+    vCode->draw();
+    return;
+  }
   VStrLst::draw();
   if (hasKeyboardFocus(this)) {
     if ((key>='a'&&key<='z')||(key>='0'&&key<='9')||(key>='A'&&key<='Z')||key=='.'||key=='!'||key=='_'||key=='/'||key=='\\') {
@@ -37,15 +51,31 @@ void VTree::draw() {
     }
     String status = "";
     if (selecteds>0) status += "Selected:"+String(selecteds) + (selecteds == 1 ? " File " : " Files ") + sizeString(selectedBytes);
-    if (status == "") status = "F1Hex F3View F4Edit F5Copy F6Move F7Newdir F8Delete";
+    if (status == "") {
+      if (!strgKey)
+        status = "F2Hex F3View F4Edit F5Copy F6Move F7Newdir F8Delete";
+      else
+        status = "F4Edit(Windowed)";
+    }
     drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
     drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
     popRect();
   }
+  int xp = size.width-52*frameBufferWidth/320;
+  vPreview->position.x = position.x+xp;
   vPreview->draw();
 }
 
 int VTree::update() {
+  if (treeMode == TREEMODE_EDIT) {
+    if (!hasKeyboardFocus(this)) return 0;
+    int r = vCode->update();
+    if (key == VK_ESCAPE) {
+      treeMode = TREEMODE_FILETREE;
+      key = VK_NONE;
+    }
+    return r;
+  }
   VStrLst::update();
   int sortedBy = directory->sortedBy;
   bool sortedAscending = directory->sortedAscending;
@@ -76,18 +106,29 @@ int VTree::update() {
     }
     String fileName = directory->getString(4,selectedLine);
     String extension = toLower(getExtension(fileName));
-    if (key == VK_F1) {
+    if (key == VK_F2) {
       vHex->init(stringFromFile(fileName,false),fileName);
+      vHex->setRect(0,0,frameBufferWidth,frameBufferHeight);
       vHex->doModal();
     }
     if (key == VK_F3) {
       vText->init(stringFromFile(fileName,true),fileName);
+      vText->setRect(0,0,frameBufferWidth,frameBufferHeight);
       vText->doModal();
     }
     if (key == VK_F4) {
       if (extension != ".exe" && extension != ".com"&& extension != ".sys") {
         vCode->init(stringFromFile(fileName,true),fileName);
+        vCode->setRect(0,0,frameBufferWidth,frameBufferHeight);
         vCode->doModal();
+      }
+    }
+    if (key == VK_F4_CTRL) {
+      if (extension != ".exe" && extension != ".com"&& extension != ".sys") {
+        vCode->init(stringFromFile(fileName,true),fileName);
+        vCode->setRect(this->position,this->size);
+        treeMode = TREEMODE_EDIT;
+        return 0;
       }
     }
     if (key == VK_F5) {
@@ -128,12 +169,9 @@ void VTree::init(const Rect &r,const String &path) {
   directory->sort(0,true);
   setKeyboardFocus(this);
   int previewSize = 50*frameBufferWidth/320;
-  int xp = 100*frameBufferWidth/320;
+  int xp = size.width-52*frameBufferWidth/320;
   int yp = 140*frameBufferHeight/200;
   vPreview->setRect(position.x+xp,position.y+yp,position.x+xp+previewSize,position.y+yp+previewSize);
-  vText->setRect(0,0,frameBufferWidth,frameBufferHeight);
-  vCode->setRect(0,0,frameBufferWidth,frameBufferHeight);
-  vHex->setRect(0,0,frameBufferWidth,frameBufferHeight);
 }
 
 void VTree::searchTextUpdated() {
@@ -160,4 +198,10 @@ void VTree::searchTextUpdated() {
     y++;
   } while(1==1);
   if (found != -1) selectedLine=found;
+}
+
+void VTree::overlayByFileName(const String &fileName) {
+  vCode->init(stringFromFile(fileName,true),fileName);
+  vCode->setRect(this->position,this->size);
+  treeMode = TREEMODE_EDIT;
 }

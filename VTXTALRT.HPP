@@ -28,7 +28,7 @@ public:
   static int box(String &returned,const String &message,const Array<VButton*> &buttons) {
     VTxtAlrt *txtalrt = new VTxtAlrt();
     txtalrt->init(message,buttons);
-    txtalrt->vTxtLine->text = returned;
+    txtalrt->vTxtLine->init(returned);
     int r = 0;
     do {r = txtalrt->doModal();} while(1!=1);
     returned = txtalrt->vTxtLine->text;

@@ -22,6 +22,11 @@ public:
   String searchText;
   bool reload;
   String lastPathName;
+  enum {
+    TREEMODE_FILETREE = 0,
+    TREEMODE_EDIT = 1
+  };
+  int treeMode;
 
   VTree() : VStrLst() {
     name = "Tree";
@@ -34,6 +39,7 @@ public:
     searchText = "";
     reload = false;
     lastPathName = "";
+    treeMode = TREEMODE_FILETREE;
   };
   virtual ~VTree() {
     delete vPreview;
@@ -55,6 +61,7 @@ public:
   void init(const Rect &r,const String &path);
 
   void searchTextUpdated();
+  void overlayByFileName(const String &fileName);
 };
 
 extern VTree *treeLeft;

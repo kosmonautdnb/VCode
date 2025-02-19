@@ -12,11 +12,12 @@
 #define HIGHLIGHT_BOOLEAN (HIGHLIGHT_EMPTY+5)
 #define HIGHLIGHT_SCOPE (HIGHLIGHT_EMPTY+6)
 #define HIGHLIGHT_SPECIAL (HIGHLIGHT_EMPTY+7)
+#define HIGHLIGHT_FIND (HIGHLIGHT_EMPTY+8)
 
 extern Array<const char *> hiLightTable;
 
 void initSyntaxHiLighting();
-void updateSyntaxHiLight(const String &text, String &colors);
+void updateSyntaxHiLight(const String &text, String &colors, const String& toFind);
 unsigned int getHiLightColor(int l);
 
 #endif //__SYNTAX_HPP__

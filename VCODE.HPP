@@ -32,6 +32,8 @@ public:
   bool overwriteMode;
   int scrollBoxY;
   int displayOutline;
+  String toFind;
+  unsigned int findAddress;
 
   VCode() : VBase() {
     name = "Edit";
@@ -57,6 +59,8 @@ public:
     scrollBoxY = 0;
     displayOutline = 0;
     initSyntaxHiLighting();
+    toFind = "";
+    findAddress = 0;
   }
   virtual ~VCode() {;}
 
@@ -83,6 +87,8 @@ public:
     overwriteMode = false;
     scrollBoxY = 0;
     displayOutline = 0;
+    toFind = "";
+    findAddress = 0;
   }
   virtual int doModal() {
     return VBase::doModal();
@@ -92,6 +98,7 @@ public:
 
   void expand();
   void drawCursor();
+  bool find(const String &search, unsigned int address);
 };
 
 #endif //__VCODE_HPP__

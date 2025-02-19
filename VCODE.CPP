@@ -6,6 +6,7 @@
 #include "clipbrd.hpp"
 #include "util.hpp"
 #include "valert.hpp"
+#include "vtxtalrt.hpp"
 
 void VCode::draw() {
   pushRect(position,size);
@@ -175,7 +176,7 @@ int VCode::update() {
       text = stringFromFile(fileName,true);
       originalText = text;
       colors = text;
-      updateSyntaxHiLight(text,colors);
+      updateSyntaxHiLight(text,colors,toFind);
       return 0;
     }
     if (key==VK_S_CTRL && (!fileName.empty())) {
@@ -183,10 +184,22 @@ int VCode::update() {
       stringToFile(text,fileName,true);
       return 0;
     }
+    if (key==VK_F_CTRL) {
+      String toFind2 = toFind;
+      int a = VTxtAlrt::box(toFind2,"       Find in file       ","OK","Don't");
+      if (a==1) {
+        toFind = toFind2;
+        updateSyntaxHiLight(text,colors,toFind);
+        find(toFind,0);
+      }
+    }
+  }
+  if (key == VK_F3) {
+    find(toFind,findAddress+1);
   }
 
   if (shiftKey) {
-    if (key == VK_UP||key == VK_DOWN||key == VK_LEFT||key==VK_RIGHT||key==VK_PAGEUP||key==VK_PAGEDOWN) {
+    if (key == VK_LEFT_CTRL || key == VK_RIGHT_CTRL || key == VK_POS1||key == VK_END||key == VK_UP||key == VK_DOWN||key == VK_LEFT||key==VK_RIGHT||key==VK_PAGEUP||key==VK_PAGEDOWN) {
       if (shiftReleased) selectionStart = cursorI;
       selectionEnd = -2;
       shiftReleased = false;
@@ -209,7 +222,7 @@ int VCode::update() {
       if (selectionStart>text.length()) selectionStart = text.length();
       text.erase(selectionStart,selectionEnd-selectionStart);
       colors.erase(selectionStart,selectionEnd-selectionStart);
-      updateSyntaxHiLight(text,colors);
+      updateSyntaxHiLight(text,colors,toFind);
       cursorRequiresI=selectionStart;
       selectionStart = -1;
       selectionEnd = -1;
@@ -233,7 +246,7 @@ int VCode::update() {
     expand();
     text.insert(cursorI,clipBoard_string);
     colors.insert(cursorI,clipBoard_string);
-    updateSyntaxHiLight(text,colors);
+    updateSyntaxHiLight(text,colors,toFind);
     key = VK_NONE;
   }
 
@@ -271,16 +284,43 @@ int VCode::update() {
   else
   if (key == VK_PAGEDOWN) {cursorRequiresX=cursorPos.x;cursorY+=16; }
   else
-  if (key == VK_LEFT || key == VK_LEFT_STRG) {int d = strgKey?4:1; cursorX -=d; if (cursorX<0) {cursorX=0;cursorRequiresI = cursorI-1;}}
+  if (key == VK_LEFT) {int d = 1; cursorX -=d; if (cursorX<0) {cursorX=0;cursorRequiresI = cursorI-1;}}
   else
-  if (key == VK_RIGHT || key == VK_RIGHT_STRG) {cursorX+=strgKey?4:1;}
-  else {
+  if (key == VK_RIGHT) {cursorX+=1;}
+  else
+  if (key == VK_LEFT_CTRL) {
+    if (cursorI != -1) {
+      int a = cursorI>0?text[cursorI-1]:' ';
+      bool full = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
+      int i;
+      for (i = cursorI-1;i>=0;i--) {
+        a = text[i];
+        bool full2 = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
+        if (full2!=full) {cursorRequiresI=i+1;break;}
+      }
+      if (i == 0) cursorRequiresI=0;
+    }
+  }
+  else
+  if (key == VK_RIGHT_CTRL) {
+    if (cursorI != -1) {
+      int a = cursorI+1<text.length()?text[cursorI+1]:' ';
+      bool full = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
+      int i;
+      for (i = cursorI+1;i<text.length();i++) {
+        a = text[i];
+        bool full2 = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
+        if (full2!=full) {cursorRequiresI=i;break;}
+      }
+      if (i == text.length()) cursorRequiresI=text.length();
+    }
+  } else {
     if (cursorI != -1) {
       if (key == VK_ENTF) {
           expand();
           text.erase(cursorI,1);
           colors.erase(cursorI,1);
-          updateSyntaxHiLight(text,colors);
+          updateSyntaxHiLight(text,colors,toFind);
       }
       else
       if (key == VK_DELETE) {
@@ -289,7 +329,7 @@ int VCode::update() {
           text.erase(cursorI-1,1);
           colors.erase(cursorI-1,1);
           cursorRequiresI = cursorI-1;
-          updateSyntaxHiLight(text,colors);
+          updateSyntaxHiLight(text,colors,toFind);
         }
       }
       else
@@ -325,7 +365,7 @@ int VCode::update() {
             selectionStart=searchEnd;
           else
             selectionEnd=searchEnd;
-          updateSyntaxHiLight(text,colors);
+          updateSyntaxHiLight(text,colors,toFind);
 
         } else {
           for (int x = 4-(cursorX & 3); x >= 0; x--) {
@@ -333,7 +373,7 @@ int VCode::update() {
             colors.insert(cursorI,' ');
             cursorX++;
           }
-          updateSyntaxHiLight(text,colors);
+          updateSyntaxHiLight(text,colors,toFind);
         }
       }
       else
@@ -342,25 +382,25 @@ int VCode::update() {
         key = VK_NONE;
       }
       else
+      if (key == VK_ENTER) {
+        expand();
+        text.insert(cursorI,'\n');
+        colors.insert(cursorI,'\n');
+        updateSyntaxHiLight(text,colors,toFind);
+        cursorY++;
+        cursorX=0;
+      }
+      else
       if (key < 256 && key >= ' ') {
-        if (key == VK_ENTER) {
-          expand();
-          text.insert(cursorI,'\n');
-          colors.insert(cursorI,'\n');
-          updateSyntaxHiLight(text,colors);
-          cursorY++;
-          cursorX=0;
+        expand();
+        if (overwriteMode&&text[cursorI]!='\n') {
+          text[cursorI] = key;
         } else {
-          expand();
-          if (overwriteMode&&text[cursorI]!='\n') {
-            text[cursorI] = key;
-          } else {
-            text.insert(cursorI,key);
-            colors.insert(cursorI,key);
-          }
-          updateSyntaxHiLight(text,colors);
-          cursorX++;
+          text.insert(cursorI,key);
+          colors.insert(cursorI,key);
         }
+        updateSyntaxHiLight(text,colors,toFind);
+        cursorX++;
       }
     }
   }
@@ -383,7 +423,7 @@ void VCode::init(const String &_text, const String &_fileName) {
   text = _text;
   originalText = _text;
   colors = _text;
-  updateSyntaxHiLight(text,colors);
+  updateSyntaxHiLight(text,colors,toFind);
   textPos = Point(0,0);
 }
 
@@ -399,4 +439,25 @@ void VCode::drawCursor() {
       }
     }
   }
+}
+
+bool VCode::find(const String &search, unsigned int address) {
+  const int l2 = search.length();
+  if (l2 > 0) {
+    int l = text.length();
+    for (int i = address; i < l; i++) {
+      int j;
+      for (j = 0; j < l2 && j+i<l; j++) {
+        if (text[i+j]!=search[j]) break;
+      }
+      if (j == l2) {
+        findAddress=i;
+        cursorRequiresI=findAddress;
+        return true;
+      }
+    }
+    int a = VAlert::box("Reached end of file!","OK");
+    findAddress = 0;
+  }
+  return false;
 }

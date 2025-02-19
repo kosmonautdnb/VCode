@@ -15,6 +15,8 @@ public:
   String fileName;
   Point textPos;
   int scrollBoxY;
+  String toFind;
+  int findAddress;
 
   VText() : VBase() {
     name = "View";
@@ -23,6 +25,8 @@ public:
     fileName = "";
     textPos = Point(0,0);
     scrollBoxY = 0;
+    toFind = "";
+    findAddress=0;
   }
   virtual ~VText() {;}
 
@@ -34,11 +38,14 @@ public:
   virtual void reset() {
     textPos = Point(0,0);
     scrollBoxY = 0;
+    toFind = "";
+    findAddress=0;
   }
   virtual int doModal() {
         return VBase::doModal();
   }
   void init(const String &_text, const String &_fileName);
+  bool find(const String &search, unsigned int address);
 };
 
 #endif //__VTEXT_HPP__

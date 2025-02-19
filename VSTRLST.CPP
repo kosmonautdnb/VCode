@@ -4,10 +4,10 @@
 #include "input.hpp"
 
 void VStrLst::draw() {
-  update();
   pushRect(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y+size.height);
   drawBox(position.x,position.y,position.x+size.width,position.y+size.height,backgroundColor);
-  drawBox(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y,COLOR_HEADERLINE);
+  if (hasKeyboardFocus(this))
+    drawBox(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y,COLOR_HEADERLINE);
 
   textLastLine = -1;
   do {
