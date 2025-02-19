@@ -1,0 +1,1 @@
+copy main.exe c:\_DOS_\bin\m.exe

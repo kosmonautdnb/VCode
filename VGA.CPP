@@ -128,26 +128,37 @@ extern unsigned int frameBufferHeight;
 
 void frameBufferToScreen16Colors(unsigned int *frameBuffer) {
     int x,y,i,j,b;
-    unsigned int *read;
+    unsigned char *read;
     unsigned char *write;
     int width = 640;
     int height = 480;
+    unsigned char *buffer = new unsigned char[width*height];
+    unsigned char *b2 = buffer;
+    for (y = 0; y < height; y++) {
+      unsigned int *read = &frameBuffer[y * frameBufferHeight/height * frameBufferWidth];
+      for (x = 0; x < width; x++) {
+        *b2++=getPaletteIndex(read[x*frameBufferWidth/width]);
+      }
+    }
+
     for (y = 0; y < height; y++) {
         for (j = 0; j < 4; j++) {
             outp(0x3c4, 2);
             outp(0x3c5, 1<<j);
-            read = &frameBuffer[y * frameBufferHeight/height * frameBufferWidth];
+            read = &buffer[y * width];
             write = (unsigned char *)(0xa0000 + (width/8)*y);
+            int xi = 0;
             for (x = 0; x < width/8; x++) {
                 b = 0;
                 for (i = 0; i < 8; i++) {
-                    int xi = x*8+i;
-                    b |= ((getPaletteIndex(read[xi*frameBufferWidth/width])>>j) & 1)<<(7-i);
+                    b |= (((read[xi])>>j) & 1)<<(7-i);
+                    xi++;
                 }
                 *write++ = b;
             }
         }
     }
+    delete[] buffer;
 }
 
 void frameBufferToScreen(unsigned int *frameBuffer) {

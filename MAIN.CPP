@@ -62,10 +62,19 @@ void displayFileSelector() {
       if (key == VK_TAB)
         doSwitch = true;
     if (doSwitch) {
-      if (hasKeyboardFocus(treeLeft))
+      if (hasKeyboardFocus(treeLeft)) {
         setKeyboardFocus(treeRight);
-      else
+        int x = String("FILENAME.NAME").pixelWidth();
+        treeLeft->size.width = x - treeLeft->position.x-1;
+        treeRight->position.x = x;
+        treeRight->size.width = frameBufferWidth-treeRight->position.x;
+      } else {
         setKeyboardFocus(treeLeft);
+        int x = frameBufferWidth-String("FILENAME.NAME").pixelWidth();
+        treeLeft->size.width = x - treeLeft->position.x-1;
+        treeRight->position.x = x;
+        treeRight->size.width = frameBufferWidth-treeRight->position.x;
+      }
     }
     if (!grabbed) {
       treeLeft->update();
