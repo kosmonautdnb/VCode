@@ -36,6 +36,13 @@ public:
     return r;
   }
 
+  static int box(String &returned,const String &message,const String &button1) {
+    Array<VButton*> arr;
+    arr.push_back(new VButton());
+    arr[0]->init(button1);
+    return VTxtAlrt::box(returned, message, arr);
+  }
+
   static int box(String &returned,const String &message,const String &button1,const String &button2) {
     Array<VButton*> arr;
     arr.push_back(new VButton());

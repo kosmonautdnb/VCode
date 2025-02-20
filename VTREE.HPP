@@ -19,6 +19,7 @@ public:
   VCode *vCode;
   VHex *vHex;
   VTxtAlrt *vTxtAlrt;
+  String lastMask;
   String searchText;
   bool reload;
   String lastPathName;
@@ -40,6 +41,7 @@ public:
     reload = false;
     lastPathName = "";
     treeMode = TREEMODE_FILETREE;
+    lastMask = "*.*";
   };
   virtual ~VTree() {
     delete vPreview;
@@ -62,6 +64,7 @@ public:
 
   void searchTextUpdated();
   void overlayByFileName(const String &fileName);
+  void updateSelection(const String &mask, bool doSelect);
 };
 
 extern VTree *treeLeft;

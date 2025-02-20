@@ -6,6 +6,8 @@
 #include "vpreview.hpp"
 #include <direct.h>
 #include "util.hpp"
+#include "valert.hpp"
+#include "vtxtalrt.hpp"
 
 VTree *treeLeft = NULL;
 VTree *treeRight = NULL;
@@ -53,7 +55,7 @@ void VTree::draw() {
     if (selecteds>0) status += "Selected:"+String(selecteds) + (selecteds == 1 ? " File " : " Files ") + sizeString(selectedBytes);
     if (status == "") {
       if (!strgKey)
-        status = "F2Hex F3View F4Edit F5Copy F6Move F7Newdir F8Delete";
+        status = "F1Hx F2Renam F3Vw F4Edt F5Cpy F6Mve F7Nwdir F8Del";
       else
         status = "F4Edit(Windowed)";
     }
@@ -106,7 +108,7 @@ int VTree::update() {
     }
     String fileName = directory->getString(4,selectedLine);
     String extension = toLower(getExtension(fileName));
-    if (key == VK_F2) {
+    if (key == VK_F1) {
       vHex->init(stringFromFile(fileName,false),fileName);
       vHex->setRect(0,0,frameBufferWidth,frameBufferHeight);
       vHex->doModal();
@@ -131,24 +133,75 @@ int VTree::update() {
         return 0;
       }
     }
-    if (key == VK_F5) {
+    if (key == VK_F2) {
+      String fullFileName = directory->getString(4,selectedLine);
+      String filePath = getPath(fullFileName);
+      String fileName = getName(fullFileName)+getExtension(fullFileName);
+      int a = VTxtAlrt::box(fileName,"Rename from:" + fileName.last(30),"Rename","Don't");
+      if (a == 1) {
+        renameFile(fullFileName, filePath+fileName);
+      }
+    }
+    if (key == VK_F5||key == VK_F6) {
       Array<String> files;
       int i;
       for (i = 0; i < directory->selection.size(); i++) {
-        if (directory->selected(i))
+        if (directory->selected(i)&&directory->getString(2,i)!="<DIR>")
           files.push_back(directory->getString(4,i));
       }
-      if (files.size()==0)
+      if (files.size()==0&&directory->getString(2,selectedLine)!="<DIR>")
         files.push_back(directory->getString(4,selectedLine));
-      if (copyFiles(this==treeLeft?treeRight->lastPathName:treeLeft->lastPathName,files))
-        for (i = 0; i < directory->selection.size(); i++) directory->select(i,false);
+      if (!files.empty()) {
+        bool b = false;
+        if (key == VK_F5)
+          if (copyFiles(this==treeLeft?treeRight->lastPathName:treeLeft->lastPathName,files)) b = true;
+        if (key == VK_F6)
+          if (moveFiles(this==treeLeft?treeRight->lastPathName:treeLeft->lastPathName,files)) b = true;
+        if (b)
+          for (i = 0; i < directory->selection.size(); i++) directory->select(i,false);
+      }
     }
     if (key == VK_F7) {
       String folderName="";
       int a = VTxtAlrt::box(folderName,"Create new Folder","Create","Don't");
       if (a == 1) {
-        mkdir(dosFileName(lastPathName+folderName).c_str());
+        createFolder(lastPathName+folderName);
         fileWasWritten = true;
+      }
+    }
+    if (key == VK_F8) {
+      Array<String> files;
+      int i;
+      for (i = 0; i < directory->selection.size(); i++) {
+        if (directory->selected(i)&&directory->getString(2,i)!="<DIR>")
+          files.push_back(directory->getString(4,i));
+      }
+      if (files.size()==0&&directory->getString(2,selectedLine)!="<DIR>")
+        files.push_back(directory->getString(4,selectedLine));
+      bool b = false;
+      if (files.size()==0&&directory->getString(2,selectedLine)=="<DIR>") {
+        int a = VAlert::box("Delete this directory?","YES","NO");
+        if (a == 1) {
+          deleteFolder(directory->getString(4,selectedLine));
+          b = true;    
+        }
+      }
+      if (!files.empty()) {
+        if (removeFiles(files)) b = true;
+      }
+      if (b)
+        for (i = 0; i < directory->selection.size(); i++) directory->select(i,false);
+    }
+    if (key == '+') {
+      int a = VTxtAlrt::box(lastMask,"        Select        ","OK");
+      if (a == 1) {
+        updateSelection(lastMask,true);
+      }
+    }
+    if (key == '-') {
+      int a = VTxtAlrt::box(lastMask,"        Unselect        ","OK");
+      if (a == 1) {
+        updateSelection(lastMask,false);
       }
     }
   }
@@ -204,4 +257,44 @@ void VTree::overlayByFileName(const String &fileName) {
   vCode->init(stringFromFile(fileName,true),fileName);
   vCode->setRect(this->position,this->size);
   treeMode = TREEMODE_EDIT;
+}
+
+bool hasMask(const String &line, const String &mask) {
+  if (mask.empty()||line.empty())
+    return false;
+  int j = 0;
+  int i = 0;
+  for (; i < line.length(); i++) {
+    char c = line[i];
+    if (j >= mask.length()) return false;
+    if (mask[j]=='*') {
+      if (j+1 < mask.length()) if (c == mask[j+1]) j+=2;
+      continue;
+    }
+    if (mask[j]=='?') {j++;continue;}
+    if (c != mask[j]) return false;
+    j++;
+  }
+  if (j == mask.length()) return true;
+  if (j == mask.length()-1 && mask[j]=='*') return true;
+  return false;
+}
+
+void VTree::updateSelection(const String &mask, bool doSelect) {
+  int y = 0;
+  String search = toLower(mask);
+  do {
+    String a = directory->getString(0,y);
+    String b = directory->getString(1,y);
+    String c = directory->getString(2,y);
+    if (a==NIL||b==NIL||c==NIL)
+      break;
+    if (c != "<DIR>") {
+      a = toLower(a+b);
+      if (hasMask(a,search)) {
+        directory->select(y,doSelect);
+      }
+    }
+    y++;
+  } while(1==1);
 }

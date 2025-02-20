@@ -44,29 +44,31 @@ int VPreview::update() {
           for (int x = 0; x < size.width; x++) {
             rx = x * layer.width/size.width;
             rgba = layer.data[rx+ry*layer.width];
-            r2 = (rgba & 255);
-            g2 = ((rgba>>8) & 255);
-            b2 = ((rgba>>16) & 255);
-            r = r2 + re;
-            g = g2 + ge;
-            b = b2 + be;
-            if (r<0) r = 0;
-            if (g<0) g = 0;
-            if (b<0) b = 0;
-            if (r>255) r = 255;
-            if (g>255) g = 255;
-            if (b>255) b = 255;
-            if (paletteCount > 0)
-              pal = palette[getPaletteIndex(r|(g<<8)|(b<<16)|0xff000000)];
-            else
-              pal = rgba;
-            re = r2-(pal & 255);
-            ge = g2-((pal>>8) & 255);
-            be = b2-((pal>>16) & 255);
-            if ((x+y) & 1) {
-              re = ge = be = 0;
-            }
-            *d++ = pal;
+            if (paletteCount<=256) {
+              r2 = (rgba & 255);
+              g2 = ((rgba>>8) & 255);
+              b2 = ((rgba>>16) & 255);
+              r = r2 + re;
+              g = g2 + ge;
+              b = b2 + be;
+              if (r<0) r = 0;
+              if (g<0) g = 0;
+              if (b<0) b = 0;
+              if (r>255) r = 255;
+              if (g>255) g = 255;
+              if (b>255) b = 255;
+              if (paletteCount > 0)
+                pal = palette[getPaletteIndex(r|(g<<8)|(b<<16)|0xff000000)];
+              else
+                pal = rgba;
+              re = r2-(pal & 255);
+              ge = g2-((pal>>8) & 255);
+              be = b2-((pal>>16) & 255);
+              if ((x+y) & 1) {
+                re = ge = be = 0;
+              }
+              *d++ = pal;
+            } else *d++ = rgba;
           }
         }
         delete[] layer.data;

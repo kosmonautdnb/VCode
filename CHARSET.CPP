@@ -10,8 +10,9 @@ Letter* getLetter(char s) {
             return l;
         l++;
     }
-    return NULL;
+    return l;
 }
+
 
 Letter charset[] = {
     {' ',2,5,0,0,0,0,

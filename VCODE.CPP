@@ -53,8 +53,10 @@ void VCode::draw() {
   Point pos = position - textPos;
   int line = 0;
   while(pos.y < position.y+size.height) {
-    String lineNr = String(line);
-    drawString(position.x+size.width-lineNr.pixelWidth(),pos.y,lineNr, COLOR_LINENUMBERS);
+    String lineNr = String(line+1);
+    int col = COLOR_LINENUMBERS;
+    if (line == cursorY) col = COLOR_RED;
+    drawString(position.x+size.width-lineNr.pixelWidth(),pos.y,lineNr, col);
     pos.y += CHAR_HEIGHT;
     line++;
   }
@@ -68,7 +70,7 @@ void VCode::draw() {
   Point eofPos;
   for (i = 0; i < text.length() || (pos.y < position.y + size.height); i++) {
     char c = i < text.length() ? text[i] : '\n';
-    if (i == text.length()-1) {eofPos = pos; eofPos.x += String::chr(c).pixelWidth();}
+    if (i == text.length()-1)  {eofPos = pos; eofPos.x += String::chr(c).pixelWidth();}
     char l = i < text.length() ? colors[i] : HIGHLIGHT_EMPTY;
     bool selected = (selectionStart>=0&&selectionEnd>=0)&&((i>=selectionStart&&i<selectionEnd)||(i>=selectionEnd&&i<selectionStart));
     if (i == cursorRequiresI) {
@@ -99,7 +101,8 @@ void VCode::draw() {
         lineX=0;
         lineY++;
         pos.y += CHAR_HEIGHT;
-        pos.x = position.x - textPos.x;continue;
+        pos.x = position.x - textPos.x;
+        continue;
       } break;
     }
     if (selected) {
@@ -136,7 +139,7 @@ void VCode::draw() {
   drawStringOutlined(eofPos.x,eofPos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
   drawCursor();
   bool updated = originalText != text;
-  String status = (updated ? ".." : "") + String("<CTRL-L/S> ") + String(cursorX)+" "+String(cursorY) + fileName.last(20) + " " + sizeString(text.length());
+  String status = (updated ? ".." : "") + String("<CTRL-L/S> ") + String(cursorX+1)+" "+String(cursorY+1) + fileName.last(20) + " " + sizeString(text.length());
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
@@ -193,6 +196,21 @@ int VCode::update() {
         find(toFind,0);
       }
     }
+    if (key==VK_G_CTRL) {
+      String gotoLine = "";
+      int a = VTxtAlrt::box(gotoLine,"Goto line number:","OK","Don't");
+      if (a==1) {
+        int lineNr = gotoLine.toInt();
+        int line = 1;
+        for (int i = 0; i < text.length(); i++) {
+          char c = text[i];
+          if (line == lineNr) cursorRequiresI=i;
+          if (c == '\n') line++;
+        }
+        textPos.y = lineNr*CHAR_HEIGHT-size.height/2;
+        if (textPos.y<0) textPos.y = 0;
+      }
+    }
   }
   if (key == VK_F3) {
     find(toFind,findAddress+1);
@@ -212,7 +230,7 @@ int VCode::update() {
     }
   }
   if (selectionStart>=0&&selectionEnd>=0) {
-    if (key == VK_ENTF || key == VK_DELETE) {
+    if (key == VK_ENTF || key == VK_DELETE || key == VK_X_CTRL) {
       if (selectionStart>selectionEnd) {
         int t = selectionStart;
         selectionStart = selectionEnd;
@@ -237,8 +255,8 @@ int VCode::update() {
       if (selectionEnd>text.length()) selectionEnd = text.length();
       if (selectionStart>text.length()) selectionStart = text.length();
       clipBoard_string=text.substr(selectionStart,selectionEnd);
-      selectionStart = -1;
-      selectionEnd = -1;
+      //selectionStart = -1;
+      //selectionEnd = -1;
       key = VK_NONE;
     }
   }
@@ -368,10 +386,12 @@ int VCode::update() {
           updateSyntaxHiLight(text,colors,toFind);
 
         } else {
-          for (int x = 4-(cursorX & 3); x >= 0; x--) {
-            text.insert(cursorI,' ');
-            colors.insert(cursorI,' ');
-            cursorX++;
+          if (!shiftKey) {
+            for (int x = 0; x < 2; x++) {
+              text.insert(cursorI,' ');
+              colors.insert(cursorI,' ');
+              cursorX++;
+            }
           }
           updateSyntaxHiLight(text,colors,toFind);
         }
@@ -391,7 +411,7 @@ int VCode::update() {
         cursorX=0;
       }
       else
-      if (key < 256 && key >= ' ') {
+      if (key < 128 && key >= ' ') {
         expand();
         if (overwriteMode&&text[cursorI]!='\n') {
           text[cursorI] = key;
@@ -445,13 +465,23 @@ bool VCode::find(const String &search, unsigned int address) {
   const int l2 = search.length();
   if (l2 > 0) {
     int l = text.length();
-    for (int i = address; i < l; i++) {
+    int i;
+    int lineNr = 0;
+    for (i = 0; i < address; i++) {
+      char c = text[i];
+      if (c == '\n') lineNr++;
+    }
+    for (; i < l; i++) {
+      char c = text[i];
+      if (c == '\n') lineNr++;
       int j;
       for (j = 0; j < l2 && j+i<l; j++) {
         if (text[i+j]!=search[j]) break;
       }
       if (j == l2) {
         findAddress=i;
+        textPos.y = lineNr*CHAR_HEIGHT-size.height/2;
+        if (textPos.y<0) textPos.y = 0;
         cursorRequiresI=findAddress;
         return true;
       }

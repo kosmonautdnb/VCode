@@ -1,3 +1,4 @@
+
 #include "types.hpp"
 #include "vga.hpp"
 #include "blit.hpp"
@@ -27,6 +28,8 @@ void displayFileSelector() {
     treeRight->size.width = frameBufferWidth-treeRight->position.x;
     treeRight->overlayByFileName(fileNameToLoad);
     setKeyboardFocus(treeRight);
+    treeRight->searchText = getName(fileNameToLoad)+getExtension(fileNameToLoad);
+    treeRight->searchTextUpdated();
   }
   bool altPressed = false;
   bool altCanceled = false;
@@ -119,6 +122,7 @@ int main(int argc, const char *argv[])
   currentWorkingDirectory = getCWD();
   disableControlBreak();
   int gfxMode = getBiosGraphicsMode();
+  
   //graphicsMode320x200x256();
   graphicsMode640x480x16();
 

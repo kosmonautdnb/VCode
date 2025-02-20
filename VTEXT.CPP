@@ -22,7 +22,7 @@ void VText::draw() {
   Point pos = position - textPos;
   int line = 0;
   while(pos.y < position.y+size.height) {
-    String lineNr = String(line);
+    String lineNr = String(line+1);
     drawString(position.x+size.width-lineNr.pixelWidth(),pos.y,lineNr, COLOR_LINENUMBERS);
     pos.y += CHAR_HEIGHT;
     line++;
@@ -39,7 +39,7 @@ void VText::draw() {
   }
   if (i == text.length())
     drawStringOutlined(pos.x,pos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
-  String status = String(textPos.x/CHAR_HEIGHT)+" "+String(textPos.y/CHAR_HEIGHT);
+  String status = String(textPos.x/CHAR_HEIGHT+1)+" "+String(textPos.y/CHAR_HEIGHT+1);
   status += " "+sizeString(text.length());
   status += " " + fileName.last(20);
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
@@ -71,6 +71,16 @@ int VText::update() {
         find(toFind,0);
       }
   }
+  if (key==VK_G_CTRL) {
+    String gotoLine = "";
+    int a = VTxtAlrt::box(gotoLine,"Goto line number:","OK","Don't");
+    if (a==1) {
+      int lineNr = gotoLine.toInt();
+      textPos.y = (lineNr-1)*CHAR_HEIGHT;
+      if (textPos.y<0) textPos.y = 0;
+    }
+  }
+
   if (key == VK_F3) {
     find(toFind,findAddress+1);
   }

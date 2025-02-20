@@ -29,6 +29,9 @@ typedef struct File {
   bool directory;
 } File;
 
+String getName(const String &fileName);
+String getExtension(const String &fileName);
+String getPath(const String &fileName);
 String getCWD();
 String getExtension(const String &path);
 String dosFileName(const String &dir);
@@ -38,5 +41,10 @@ Array<File> getFiles(const String &dir);
 
 int rtcRead(int reg);
 void disableControlBreak();
+
+void createFolder(const String &directoryName);
+void deleteFolder(const String &folderName);
+void removeFile(const String &fileName);
+void renameFile(const String &oldFileName, const String &newFileName);
 
 #endif //__DOS_HPP__

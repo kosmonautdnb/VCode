@@ -5,6 +5,8 @@
 #include <conio.h>
 #include <i86.h>
 
+extern bool fileWasWritten;
+
 String unixFileName(const String &dir) {
   String r = String(dir);
   for (int i = 0; i < r.length(); i++) if (r[i]=='\\') r[i]='/';
@@ -24,7 +26,21 @@ String getExtension(const String &fileName) {
 }
 
 String getName(const String &fileName) {
-  return fileName.substr(0,fileName.findLast("."));
+  int k0 = fileName.findLast("/");
+  int k1 = fileName.findLast("\\");
+  int k = 0;
+  if (k0 < k1) k0 = k1;
+  if (k0>0) k = k0+1;
+  return fileName.substr(k,fileName.findLast("."));
+}
+
+String getPath(const String &fileName) {
+  int k0 = fileName.findLast("/");
+  int k1 = fileName.findLast("\\");
+  int k = fileName.length();
+  if (k0 < k1) k0 = k1;
+  if (k0>0) k = k0+1;
+  return fileName.substr(0,k);
 }
 
 String resolvePath(const String &b) {
@@ -121,4 +137,24 @@ void disableControlBreak() {
   regs.h.al = 1;
   regs.h.dl = 0;
   int386(0x21, &regs, &regs);
+}
+
+void createFolder(const String &directoryName) {
+  mkdir(dosFileName(directoryName).c_str());
+  fileWasWritten = true;
+}
+
+void deleteFolder(const String &directoryName) {
+  rmdir(dosFileName(directoryName).c_str());
+  fileWasWritten = true;
+}
+
+void removeFile(const String &fileName) {
+  remove(dosFileName(fileName).c_str());
+  fileWasWritten = true;
+}
+
+void renameFile(const String &oldFileName, const String &newFileName) {
+  rename(dosFileName(oldFileName).c_str(), dosFileName(newFileName).c_str());
+  fileWasWritten = true;
 }

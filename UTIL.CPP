@@ -93,7 +93,66 @@ void stringToFile(const String &string,const String &fileName, bool textFile) {
   }
 }
 
+void copyFile(const String &destFileName, const String &sourceFileName) {
+  String data = stringFromFile(sourceFileName,false);
+  stringToFile(data,destFileName,false);
+  fileWasWritten = true;
+}
+
+void moveFile(const String &destFileName, const String &sourceFileName) {
+  String data = stringFromFile(sourceFileName,false);
+  stringToFile(data,destFileName,false);
+  removeFile(sourceFileName);
+  fileWasWritten = true;
+}
+
 bool copyFiles(const String &destPath, Array<String> &sourcePaths) {
   int a = VAlert::box("Copy "+String(sourcePaths.size())+" Files", "YES","NO");
+  if (a==1) {
+    for (int i = 0; i < sourcePaths.size(); i++) {
+      String sourceFileName = sourcePaths[i];
+      String sourcePath = getPath(sourceFileName);
+      if (sourcePath==destPath) {
+        a = VAlert::box("Can't copy files to same folder.", "OK");
+        return false;
+      }
+      String fileName = getName(sourceFileName);
+      String extension = getExtension(sourceFileName);
+      String destFileName = destPath + fileName + extension;
+      copyFile(destFileName, sourceFileName);
+    }
+    fileWasWritten = true;
+  }
+  return a == 1;
+}
+bool moveFiles(const String &destPath, Array<String> &sourcePaths) {
+  int a = VAlert::box("Move "+String(sourcePaths.size())+" Files", "YES","NO");
+  if (a==1) {
+    for (int i = 0; i < sourcePaths.size(); i++) {
+      String sourceFileName = sourcePaths[i];
+      String sourcePath = getPath(sourceFileName);
+      if (sourcePath==destPath) {
+        a = VAlert::box("Can't move files to same folder.", "OK");
+        return false;
+      }
+      String fileName = getName(sourceFileName);
+      String extension = getExtension(sourceFileName);
+      String destFileName = destPath + fileName + extension;
+      moveFile(destFileName, sourceFileName);
+    }
+    fileWasWritten = true;
+  }
+  return a == 1;
+}
+
+bool removeFiles(Array<String> &sourcePaths) {
+  int a = VAlert::box("Delete "+String(sourcePaths.size())+" Files", "YES","NO");
+  if (a==1) {
+    for (int i = 0; i < sourcePaths.size(); i++) {
+      String sourceFileName = sourcePaths[i];
+      removeFile(sourceFileName);
+    }
+    fileWasWritten = true;
+  }
   return a == 1;
 }

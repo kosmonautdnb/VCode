@@ -152,6 +152,22 @@ public:
                 return length()==0;
         }
 
+        int toInt() {
+          if (empty()) return 0;
+          int number = 0;
+          bool sign = false;
+          for(int i = 0; i < length(); i++) {
+            char c = (*this)[i];
+            if (c>='0'&&c<='9') {
+              number *= 10;
+              number += c - '0';
+            }
+            if (number==0&&c=='-') sign=true;
+          }
+          if (sign) number=-number;
+          return number;
+        }
+
         static String chr(const char c) {
                 String k = " ";
                 k[0] = c;

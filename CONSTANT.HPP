@@ -46,6 +46,7 @@
 #define VK_L_CTRL 12
 #define VK_F_CTRL 6
 #define VK_G_CTRL 7
+#define VK_X_CTRL 24
 
 #define EGA_COLOR_BLACK         0x00
 #define EGA_COLOR_BLUE          0x01

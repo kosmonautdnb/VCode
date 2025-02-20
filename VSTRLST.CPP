@@ -85,13 +85,13 @@ int VStrLst::update() {
   }
   if (hasKeyboardFocus(this)) {
     int selectedLineBefore = selectedLine;
-    if (key == VK_UP) {selectedLine--; if (selectedLine < 0) selectedLine = 0;}
-    if (key == VK_DOWN) {if (items->getString(0,selectedLine+1)!=NIL) selectedLine++;}
+    if (key == VK_UP) {selectedLine--;} 
+    if (key == VK_DOWN) {selectedLine++;}
     if (key == VK_PAGEUP) {selectedLine-=16; if (selectedLine < 0) selectedLine = 0;}
     if (key == VK_PAGEDOWN) {for (int i = 0; i < 16; i++) {if (items->getString(0,selectedLine+1)!=NIL) selectedLine++;}}
     if (key == VK_RIGHT) {scrollX+=CHAR_HEIGHT;if (scrollX+size.width>separators[listItemCountX])scrollX=separators[listItemCountX]-size.width;if (scrollX<0) scrollX = 0;}
     if (key == VK_LEFT) {scrollX-=CHAR_HEIGHT;if(scrollX<0)scrollX=0;}
-    if (shiftKey) {
+    if (shiftKey && selectedLine>=0) {
       if (selectedLineBefore != selectedLine) {
         if (selectedLineBefore<selectedLine) {
           for (int i = selectedLineBefore; i < selectedLine; i++) {
@@ -104,6 +104,8 @@ int VStrLst::update() {
         }
       }
     }
+    if (items->getString(0,selectedLine)==NIL) selectedLine--;
+    if (selectedLine < 0) selectedLine = 0;
   }
   return 0;
 }
