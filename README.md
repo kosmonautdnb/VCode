@@ -2,4 +2,4 @@
 
 Actually already a pretty usable text editor for FreeDos.
 
-![ScreenShot](https://raw.github.com/kowmonautdnb/WatcomC-Dos/main/desc.png)
+![ScreenShot](https://raw.github.com/kosmonautdnb/WatcomC-Dos/main/DESC.PNG)
