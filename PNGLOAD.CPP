@@ -4,14 +4,14 @@
 #include <stdarg.h>
 
 void savePaletteHeaderFile(const char *headerFileName, unsigned int *palette) {
-    int i;
-    FILE *out = fopen(headerFileName,"w");
-    if (out != NULL) {
-        for (i = 0; i < 256; ++i) {
-            fprintf(out,"0x%08x,\n",palette[i]);
-        }
-        fclose(out);
+  int i;
+  FILE *out = fopen(headerFileName,"w");
+  if (out != NULL) {
+    for (i = 0; i < 256; ++i) {
+      fprintf(out,"0x%08x,\n",palette[i]);
     }
+    fclose(out);
+  }
 }
 
 void loadPNG(ImageLayer *layer, const char *fileName) {
@@ -150,85 +150,81 @@ void pngabort(const char * s, ...)
     abort();
 }
 
-void SavePNG(ImageLayer *layer, const char* fileName)
+void savePNG(ImageLayer *layer, const char* fileName)
 {
-    png_structp png_ptr;
-    png_infop info_ptr;
-    int width, height;
-    unsigned int *data;
-    png_bytep * row_pointers;
-    unsigned char *array;
-    int db,i,flipped = 0;
+  png_structp png_ptr;
+  png_infop info_ptr;
+  int width, height;
+  unsigned int *data;
+  png_bytep * row_pointers;
+  unsigned char *array;
+  int i,flipped = 0;
+  
+  FILE *fp = fopen(fileName, "wb");
+  	if (!fp)
+    pngabort("[write_png_file] File %s could not be opened for writing", fileName);
+      
+  png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-    FILE *fp = fopen(fileName, "wb");
-	if (!fp)
-        pngabort("[write_png_file] File %s could not be opened for writing", fileName);
+  	if (!png_ptr) {
+    	fclose(fp);
+    pngabort("[write_png_file] png_create_write_struct failed");
+  	}
 
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+  	info_ptr = png_create_info_struct(png_ptr);
+  	if (!info_ptr) {
+    	fclose(fp);
+    pngabort("[write_png_file] png_create_info_struct failed");
+  	}
+  
+  	if (setjmp(png_jmpbuf(png_ptr))) {
+    	fclose(fp);
+    pngabort("[write_png_file] Error during init_io");
+  	}
 
-	if (!png_ptr) {
-		fclose(fp);
-        pngabort("[write_png_file] png_create_write_struct failed");
-	}
+  	png_init_io(png_ptr, fp);
 
-	info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr) {
-		fclose(fp);
-        pngabort("[write_png_file] png_create_info_struct failed");
-	}
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    	fclose(fp);
+    pngabort("[write_png_file] Error during writing header");
+  }
 
-	if (setjmp(png_jmpbuf(png_ptr))) {
-		fclose(fp);
-        pngabort("[write_png_file] Error during init_io");
-	}
+  width   = layer->width;
+  height  = layer->height;
+  data    = layer->data;
 
-	png_init_io(png_ptr, fp);
+  png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-    if (setjmp(png_jmpbuf(png_ptr))) {
-		fclose(fp);
-        pngabort("[write_png_file] Error during writing header");
-	}
+  png_write_info(png_ptr, info_ptr);
 
-    width   = layer->width;
-    height  = layer->height;
-    data    = layer->data;
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    	fclose(fp);
+    pngabort("[write_png_file] Error during writing bytes");
+  	}
 
-    png_set_IHDR(png_ptr, info_ptr, width, height,
-		8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE,
-		PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+  array = new unsigned char[(width * height + 1) * 4];
+  for (i = width * height; i >= 0; --i)
+  	{
+    array[i * 4 + 0] = ((unsigned char*)data)[i * 4 + (flipped ? 2 : 0)];
+    array[i * 4 + 1] = ((unsigned char*)data)[i * 4 + 1];
+    array[i * 4 + 2] = ((unsigned char*)data)[i * 4 + (flipped ? 0 : 2)];
+    array[i * 4 + 3] = ((unsigned char*)data)[i * 4 + 3];
+	  }
 
-	png_write_info(png_ptr, info_ptr);
+  	// Allocate pointers...
+  row_pointers = new png_bytep[height];
+  
+  for (i = 0; i < height; i++)
+    row_pointers[i] = (png_bytep)(array + (i)* width * 4); // we flip it
+  
+  	png_write_image(png_ptr, row_pointers);
 
-    if (setjmp(png_jmpbuf(png_ptr))) {
-		fclose(fp);
-        pngabort("[write_png_file] Error during writing bytes");
-	}
+  if (setjmp(png_jmpbuf(png_ptr)))
+    pngabort("[write_png_file] Error during end of write");
 
-    array = new unsigned char[(width * height + 1) * db * 4];
-    for (i = width * height; i >= 0; --i)
-	{
-        array[i * 4 + 0] = ((unsigned char*)data)[i * db * 4 + (flipped ? 2 : 0)];
-        array[i * 4 + 1] = ((unsigned char*)data)[i * db * 4 + 1];
-        array[i * 4 + 2] = ((unsigned char*)data)[i * db * 4 + (flipped ? 0 : 2)];
-        array[i * 4 + 3] = ((unsigned char*)data)[i * db * 4 + 3];
-	}
+  	png_write_end(png_ptr, NULL);
 
-
-
-	// Allocate pointers...
-    row_pointers = new png_bytep[height];
-
-    for (i = 0; i < height; i++)
-        row_pointers[i] = (png_bytep)(array + (i)* width * 4); // we flip it
-
-	png_write_image(png_ptr, row_pointers);
-
-    if (setjmp(png_jmpbuf(png_ptr)))
-        pngabort("[write_png_file] Error during end of write");
-
-	png_write_end(png_ptr, NULL);
-
-    delete[] row_pointers;
-    delete[] array;
-    fclose(fp);
+  delete[] row_pointers;
+  delete[] array;
+  fclose(fp);
 }

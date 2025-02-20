@@ -1,5 +1,6 @@
 #include "colors.hpp"
 #include "constants.hpp"
+#include "input.hpp"
 #include <i86.h>
 #include <conio.h>
 #include <stdlib.h>
@@ -161,7 +162,12 @@ void frameBufferToScreen16Colors(unsigned int *frameBuffer) {
     delete[] buffer;
 }
 
+void saveScreenShot(const char *fileName, unsigned int *data, int width,int height);
+
 void frameBufferToScreen(unsigned int *frameBuffer) {
+  if (key == VK_P_CTRL) {
+    saveScreenShot("scrnsht.png",frameBuffer,frameBufferWidth,frameBufferHeight);
+  }
   if (frameBufferWidth == 640 && frameBufferHeight == 480) {
     frameBufferToScreen16Colors(frameBuffer);
     return;

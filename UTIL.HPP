@@ -18,5 +18,6 @@ void moveFile(const String &destFileName, const String &sourceFileName);
 bool copyFiles(const String &destPath, Array<String> &sourcePaths);
 bool moveFiles(const String &destPath, Array<String> &sourcePaths);
 bool removeFiles(Array<String> &sourcePaths);
+void saveScreenShot(const char *fileName, unsigned int *data, int width,int height);
 
 #endif //__UTIL_HPP__

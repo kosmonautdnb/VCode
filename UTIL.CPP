@@ -4,6 +4,7 @@
 #include <conio.h>
 #include "vga.hpp"
 #include "valert.hpp"
+#include "pngload.hpp"
 
 String dosFileName(const String &fileName);
 bool fileWasWritten = false;
@@ -155,4 +156,13 @@ bool removeFiles(Array<String> &sourcePaths) {
     fileWasWritten = true;
   }
   return a == 1;
+}
+
+void saveScreenShot(const char *fileName, unsigned int *data, int width,int height) {
+  ImageLayer l;
+  l.data = data;
+  l.width = width;
+  l.height = height;
+  savePNG(&l,fileName);
+  fileWasWritten = true;
 }

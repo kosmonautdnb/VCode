@@ -370,7 +370,7 @@ int VCode::update() {
                   colors.insert(i+1," ");
                   searchEnd++;
                 } else {
-                  if (text[i+1]==' ') {
+                  if (text[i+1]==' '||text[i+1]=='\t') {
                     text.erase(i+1,1);
                     colors.erase(i+1,1);
                     searchEnd--;

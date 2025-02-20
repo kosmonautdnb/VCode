@@ -41,6 +41,7 @@
 #define VK_INSERT (82*256)
 #define VK_DELETE 8
 #define VK_C_CTRL 3
+#define VK_P_CTRL 16
 #define VK_V_CTRL 22
 #define VK_S_CTRL 19
 #define VK_L_CTRL 12

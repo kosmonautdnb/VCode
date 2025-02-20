@@ -122,7 +122,7 @@ int main(int argc, const char *argv[])
   currentWorkingDirectory = getCWD();
   disableControlBreak();
   int gfxMode = getBiosGraphicsMode();
-  
+
   //graphicsMode320x200x256();
   graphicsMode640x480x16();
 
