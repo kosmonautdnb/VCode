@@ -94,17 +94,34 @@ void stringToFile(const String &string,const String &fileName, bool textFile) {
   }
 }
 
-void copyFile(const String &destFileName, const String &sourceFileName) {
-  String data = stringFromFile(sourceFileName,false);
-  stringToFile(data,destFileName,false);
+bool copyFile(const String &destFileName, const String &sourceFileName) {
+  FILE *in = fopen(dosFileName(sourceFileName).c_str(),"rb");
+  if (in == NULL) return false;
+  FILE *out = fopen(dosFileName(destFileName).c_str(),"wb");
+  if (out == NULL) {fclose(in);return false;}
+  fseek(in,0,SEEK_END);
+  long fileSize = ftell(in);
+  fseek(in,0,SEEK_SET);
+  Array<unsigned char> data;
+  data.resize(65536);
+  while(fileSize>0) {
+    long count = fread(&(data[0]),1,data.size(),in);
+    setPalette(0,0xffffffff);
+    fwrite(&(data[0]),1,count,out);
+    setPalette(0,0xff000000);
+    fileSize -= count;
+  }
+  fclose(out);
+  fclose(in);
   fileWasWritten = true;
+  return true;
 }
 
-void moveFile(const String &destFileName, const String &sourceFileName) {
-  String data = stringFromFile(sourceFileName,false);
-  stringToFile(data,destFileName,false);
-  removeFile(sourceFileName);
-  fileWasWritten = true;
+bool moveFile(const String &destFileName, const String &sourceFileName) {
+  if (copyFile(destFileName, sourceFileName)) {
+    removeFile(sourceFileName);
+  }
+  return true;
 }
 
 bool copyFiles(const String &destPath, Array<String> &sourcePaths) {

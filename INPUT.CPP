@@ -36,6 +36,19 @@ void updateMouse() {
     mouseX = regs.x.ecx & 0xffff;
     mouseY = regs.x.edx & 0xffff;
     mouseB = regs.x.ebx & 0xffff;
-    if (frameBufferWidth == 320)
-      mouseX /= 2; // hotfix
+}
+
+extern unsigned int frameBufferWidth;
+extern unsigned int frameBufferHeight;
+
+void setupMouse() {
+    union REGS regs;
+    regs.x.eax = 0x07;
+    regs.x.ecx = 0;
+    regs.x.edx = frameBufferWidth;
+    int386(0x33, &regs, &regs);
+    regs.x.eax = 0x08;
+    regs.x.ecx = 0;
+    regs.x.edx = frameBufferHeight;
+    int386(0x33, &regs, &regs);
 }

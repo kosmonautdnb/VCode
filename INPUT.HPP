@@ -11,5 +11,6 @@ extern bool altKey;
 
 void updateKeyboard();
 void updateMouse();
+void setupMouse();
 
 #endif //__INPUT_HPP__

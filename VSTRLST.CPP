@@ -22,10 +22,11 @@ void VStrLst::draw() {
   for (int xi = 0; xi < listItemCountX; xi++) {
     Point d0(position.x+separators[xi]-scrollX,position.y-CHAR_HEIGHT);
     Point d1(position.x+separators[xi+1]-scrollX,position.y);
-    if (d1.x>position.x+size.width) d1.x=position.x+size.width;
+    Point d2(position.x+separators[xi+1]-scrollX,position.y);
+    if (d2.x>position.x+size.width) d2.x=position.x+size.width;
     pushRect(d0,d1);
     drawString(d0.x,d0.y,items->getString(xi,-1),COLOR_HEADERTEXT);
-    if (mouseOver(Rect(d0,d1))) {
+    if (mouseOver(Rect(d0,d2))) {
       if (mouseB==1) {
         sort = xi;
         setKeyboardFocus(this);
@@ -34,7 +35,6 @@ void VStrLst::draw() {
     popRect();
     Point c0(position.x+separators[xi]-scrollX,position.y);
     Point c1(position.x+separators[xi+1]-scrollX,position.y+size.height);
-    if (c1.x>position.x+size.width) c1.x=position.x+size.width;
     pushRect(c0,c1);
     int yi = 0;
     firstVisibleLine = -1;
@@ -85,7 +85,7 @@ int VStrLst::update() {
   }
   if (hasKeyboardFocus(this)) {
     int selectedLineBefore = selectedLine;
-    if (key == VK_UP) {selectedLine--;} 
+    if (key == VK_UP) {selectedLine--;}
     if (key == VK_DOWN) {selectedLine++;}
     if (key == VK_PAGEUP) {selectedLine-=16; if (selectedLine < 0) selectedLine = 0;}
     if (key == VK_PAGEDOWN) {for (int i = 0; i < 16; i++) {if (items->getString(0,selectedLine+1)!=NIL) selectedLine++;}}

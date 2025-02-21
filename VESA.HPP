@@ -56,16 +56,12 @@ typedef struct VbeModeInfo {
   uint8_t reserved1[256-50];
 } VbeModeInfo;
 
-extern bool vesa_found;
-extern VbeInfoBlock vesa_info;
-extern VbeModeInfo vesa_modeInfo;
-extern String vesa_infoString;
-extern String vesa_modeInfoString;
-extern Array<int> vesa_videoModes;
-extern unsigned int *vesa_linearFrameBuffer;
-
-bool vesa_init();
-bool vesa_initVideoMode(int modeNr);
-void vesa_force(int modeNr);
+Array<int> vesa_getVideoModes(const VbeInfoBlock &data);
+String vesa_getInfoString(const VbeInfoBlock &data);
+void vesa_getInfo(VbeInfoBlock &data);
+void vesa_getModeInfo(int mode, VbeModeInfo &data);
+String vesa_getModeInfoString(const VbeModeInfo &data);
+void vesa_setAsRenderer(const VbeModeInfo &data);
+void vesa_setMode(int mode);
 
 #endif // __VESA_HPP__

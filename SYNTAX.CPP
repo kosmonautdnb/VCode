@@ -5,11 +5,12 @@ Array<const char *> hiLightTable;
 
 void initSyntaxHiLighting() {
   hiLightTable.clear();
-  hiLightTable.push_back("void");
-  hiLightTable.push_back("int");
-  hiLightTable.push_back("unsigned");
-  hiLightTable.push_back("signed");
   hiLightTable.push_back("const");
+  hiLightTable.push_back("void");
+  hiLightTable.push_back("signed");
+  hiLightTable.push_back("unsigned");
+  hiLightTable.push_back("int");
+  hiLightTable.push_back("short");
   hiLightTable.push_back("char");
   hiLightTable.push_back("float");
   hiLightTable.push_back("double");

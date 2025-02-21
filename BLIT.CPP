@@ -204,8 +204,10 @@ void allocFrameBuffer(unsigned int width, unsigned int height) {
   fullScreenFrameBuffer = new unsigned int[width*height];
   frameBufferWidth = width;
   frameBufferHeight = height;
-  memset(frameBuffer,0,width*height*sizeof(unsigned int));
-  memset(fullScreenFrameBuffer,0,width*height*sizeof(unsigned int));
+  for (int i = 0; i < width*height; i++) {
+    frameBuffer[i] = 0xff000000;
+    fullScreenFrameBuffer[i] = 0xff000000;
+  }
   clipStack.clear();
   setClipRect(0,0,frameBufferWidth,frameBufferHeight);
 }

@@ -115,26 +115,17 @@ void graphicsMode640x480x16() {
 }
 
 bool setupVesa() {
-  // Vesa has problems with mouse here, I couldn't fix it, yet. So leave this for later.
-  return false;
-  vesa_force(VESA_1024x768x24);
-  allocFrameBuffer(1024,768);
-  setLinearFrameBuffer32Bit(vesa_linearFrameBuffer);
-  return true;
-  printf("vesa:%s\n",vesa_init() ? "found" : "not found");
-  if (vesa_found) {
-    //printf("%s\n", vesa_infoString.c_str());
-    if (vesa_initVideoMode(VESA_1024x768x24)) {
-      //printf("%s\n", vesa_modeInfoString.c_str());
-      if (vesa_linearFrameBuffer != NULL) {
-        paletteCount = -1;
-        allocFrameBuffer(1024,768);
-        setLinearFrameBuffer32Bit(vesa_linearFrameBuffer);
-        return true;
-      }
-      else
-        return false;
-    }
+  VbeInfoBlock vesa_info;
+  VbeModeInfo vesa_modeInfo;
+  int mode = VESA_1024x768x24;
+  vesa_getInfo(vesa_info);
+  if (false) {printf("VESAINFO:\n%s\n",vesa_getInfoString(vesa_info).c_str());exit(0);}
+  vesa_getModeInfo(mode,vesa_modeInfo);
+  if (false) {printf("VESAMODEINFO:\n%s\n",vesa_getModeInfoString(vesa_modeInfo).c_str());exit(0);}
+  if (vesa_modeInfo.bpp == 32 &&  vesa_modeInfo.linearFrameBuffer != NULL) {
+    vesa_setMode(mode);
+    vesa_setAsRenderer(vesa_modeInfo);
+    return true;
   }
   return false;
 }
@@ -149,9 +140,10 @@ int main(int argc, const char *argv[])
   disableControlBreak();
 
   if (!setupVesa()) {
-    //graphicsMode320x200x256();
-    graphicsMode640x480x16();
+    graphicsMode320x200x256();
+    //graphicsMode640x480x16();
   }
+  setupMouse();
   displayFileSelector();
 
   freeFrameBuffer();
