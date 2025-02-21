@@ -55,5 +55,7 @@ call _BUILD\CC.BAT VALERT.CPP                   VALERT.OBJ
 call _BUILD\CC.BAT VBUTTON.CPP                  VBUTTON.OBJ
 call _BUILD\CC.BAT VTXTLINE.CPP                 VTXTLINE.OBJ
 call _BUILD\CC.BAT VTXTALRT.CPP                 VTXTALRT.OBJ
+call _BUILD\CC.BAT VESA.CPP                      VESA.OBJ
+call _BUILD\CC.BAT MEMORY.CPP                      MEMORY.OBJ
 call _BUILD\AL.BAT _BUILD\LINK.LNK              MAIN.EXE
 me LOGS.LOG

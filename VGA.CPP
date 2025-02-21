@@ -7,6 +7,8 @@
 
 int paletteCount = -1;
 unsigned int palette[256] = {0};
+unsigned int *linearFrameBuffer = NULL;
+bool banking32Bit = false;
 
 void setBiosGraphicsMode(int mode) {
     union REGS regs;
@@ -162,11 +164,42 @@ void frameBufferToScreen16Colors(unsigned int *frameBuffer) {
     delete[] buffer;
 }
 
+void setLinearFrameBuffer32Bit(unsigned int *frameBuffer) {
+  linearFrameBuffer = frameBuffer;
+}
+
+void setBanking32Bit() {
+  banking32Bit = true;
+}
+__inline unsigned int switchRB(unsigned int rgba) {
+  return ((rgba&255)<<16)|(rgba&0xff00ff00)|((rgba>>16)&255);
+}
+
 void saveScreenShot(const char *fileName, unsigned int *data, int width,int height);
 
 void frameBufferToScreen(unsigned int *frameBuffer) {
   if (key == VK_P_CTRL) {
     saveScreenShot("scrnsht.png",frameBuffer,frameBufferWidth,frameBufferHeight);
+  }
+  if (banking32Bit) {
+    // not implemented, yet..
+    unsigned int *videoRam = (unsigned int*)0xa0000;
+    for (int y = 0; y < 768; y++) {
+      for (int x = 0; x < 1024; x++) {
+        if ((unsigned int)videoRam>0xb0000) videoRam-=0x10000/4;
+        *videoRam++ = switchRB(frameBuffer[x*frameBufferWidth/1024+y*frameBufferHeight/768*frameBufferWidth]);
+      }
+    }
+    return;
+  }
+  if (linearFrameBuffer != NULL) {
+    unsigned int *videoRam = linearFrameBuffer;
+    for (int y = 0; y < frameBufferHeight; y++) {
+      for (int x = 0; x < frameBufferWidth; x++) {
+        *videoRam++ = switchRB(frameBuffer[x*frameBufferWidth/frameBufferWidth+y*frameBufferHeight/frameBufferHeight*frameBufferWidth]);
+      }
+    }
+    return;
   }
   if (frameBufferWidth == 640 && frameBufferHeight == 480) {
     frameBufferToScreen16Colors(frameBuffer);

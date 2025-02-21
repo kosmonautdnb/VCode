@@ -1,4 +1,3 @@
-
 #include "types.hpp"
 #include "vga.hpp"
 #include "blit.hpp"
@@ -11,6 +10,7 @@
 #include "vtree.hpp"
 #include "util.hpp"
 #include "valert.hpp"
+#include "vesa.hpp"
 
 String currentWorkingDirectory;
 String fileNameToLoad;
@@ -114,18 +114,44 @@ void graphicsMode640x480x16() {
   palette16Colors();
 }
 
+bool setupVesa() {
+  // Vesa has problems with mouse here, I couldn't fix it, yet. So leave this for later.
+  return false;
+  vesa_force(VESA_1024x768x24);
+  allocFrameBuffer(1024,768);
+  setLinearFrameBuffer32Bit(vesa_linearFrameBuffer);
+  return true;
+  printf("vesa:%s\n",vesa_init() ? "found" : "not found");
+  if (vesa_found) {
+    //printf("%s\n", vesa_infoString.c_str());
+    if (vesa_initVideoMode(VESA_1024x768x24)) {
+      //printf("%s\n", vesa_modeInfoString.c_str());
+      if (vesa_linearFrameBuffer != NULL) {
+        paletteCount = -1;
+        allocFrameBuffer(1024,768);
+        setLinearFrameBuffer32Bit(vesa_linearFrameBuffer);
+        return true;
+      }
+      else
+        return false;
+    }
+  }
+  return false;
+}
+
 int main(int argc, const char *argv[])
 {
+  int gfxMode = getBiosGraphicsMode();
   if (argc == 2) {
     fileNameToLoad = argv[1];
   }
   currentWorkingDirectory = getCWD();
   disableControlBreak();
-  int gfxMode = getBiosGraphicsMode();
 
-  //graphicsMode320x200x256();
-  graphicsMode640x480x16();
-
+  if (!setupVesa()) {
+    //graphicsMode320x200x256();
+    graphicsMode640x480x16();
+  }
   displayFileSelector();
 
   freeFrameBuffer();

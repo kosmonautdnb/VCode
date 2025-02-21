@@ -11,6 +11,8 @@ void setPalette(int index, unsigned int color);
 unsigned char getPaletteIndex(unsigned int rgba);
 void randomPalette();
 void palette16Colors();
+void setLinearFrameBuffer32Bit(unsigned int *frameBuffer);
+void setBanking32Bit();
 void frameBufferToScreen(unsigned int *frameBuffer);
 
 #endif //__VGA_HPP__

@@ -139,7 +139,7 @@ void VCode::draw() {
   drawStringOutlined(eofPos.x,eofPos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
   drawCursor();
   bool updated = originalText != text;
-  String status = (updated ? ".." : "") + String("<CTRL-L/S> ") + String(cursorX+1)+" "+String(cursorY+1) + fileName.last(20) + " " + sizeString(text.length());
+  String status = (updated ? ".." : "") + String("<CTRL-L/S> ") + String(cursorX+1)+" "+String(cursorY+1) + " " + fileName.last(20) + " " + sizeString(text.length());
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
@@ -334,7 +334,7 @@ int VCode::update() {
     }
   } else {
     if (cursorI != -1) {
-      if (key == VK_ENTF) {
+      if (key == VK_ENTF && cursorI<text.length()) {
           expand();
           text.erase(cursorI,1);
           colors.erase(cursorI,1);
@@ -342,7 +342,7 @@ int VCode::update() {
       }
       else
       if (key == VK_DELETE) {
-        if (cursorI>0) {
+        if (cursorI>0 && cursorI<=text.length()) {
           expand();
           text.erase(cursorI-1,1);
           colors.erase(cursorI-1,1);

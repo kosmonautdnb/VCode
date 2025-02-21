@@ -66,6 +66,12 @@
 #define EGA_COLOR_YELLOW        0x0e
 #define EGA_COLOR_WHITE         0x0f
 
+#define VESA_320x256x24 0x10F
+#define VESA_640x480x24 0x112
+#define VESA_800x600x24 0x115
+#define VESA_1024x768x24 0x118
+
+
 #define DISPLAYOUTLINE_DURATION 32
 
 #endif //__CONSTANT_HPP__
