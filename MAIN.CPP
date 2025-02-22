@@ -14,6 +14,8 @@
 
 String currentWorkingDirectory;
 String fileNameToLoad;
+bool requestSideSwitch = false;
+
 
 void displayFileSelector() {
   pushCapturedFrameBuffer();
@@ -64,6 +66,10 @@ void displayFileSelector() {
     if (treeLeft->treeMode==VTree::TREEMODE_FILETREE&&treeRight->treeMode==VTree::TREEMODE_FILETREE)
       if (key == VK_TAB)
         doSwitch = true;
+    if (requestSideSwitch) {
+        doSwitch = true;
+        requestSideSwitch = false;
+    }
     if (doSwitch) {
       if (hasKeyboardFocus(treeLeft)) {
         setKeyboardFocus(treeRight);
@@ -121,7 +127,7 @@ bool setupVesa() {
   vesa_getInfo(vesa_info);
   if (false) {printf("VESAINFO:\n%s\n",vesa_getInfoString(vesa_info).c_str());exit(0);}
   vesa_getModeInfo(mode,vesa_modeInfo);
-  if (false) {printf("VESAMODEINFO:\n%s\n",vesa_getModeInfoString(vesa_modeInfo).c_str());exit(0);}
+  if (false) {printf("VESAMODEINFO:\n%s\n",vesa_getModeInfoString(vesa_modeInfo, false).c_str());exit(0);}
   if (vesa_modeInfo.bpp == 32 &&  vesa_modeInfo.linearFrameBuffer != NULL) {
     vesa_setMode(mode);
     vesa_setAsRenderer(vesa_modeInfo);
@@ -139,9 +145,14 @@ int main(int argc, const char *argv[])
   currentWorkingDirectory = getCWD();
   disableControlBreak();
 
-  if (!setupVesa()) {
-    graphicsMode320x200x256();
-    //graphicsMode640x480x16();
+  const bool force320x200 = false;
+  if (force320x200) {
+      graphicsMode320x200x256();
+  } else {
+    if (!setupVesa()) {
+      //graphicsMode320x200x256();
+      graphicsMode640x480x16();
+    }
   }
   setupMouse();
   displayFileSelector();

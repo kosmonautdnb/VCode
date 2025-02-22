@@ -1,8 +1,11 @@
 #include "util.hpp"
 #include "types.hpp"
 #include "dos.hpp"
+#include <i86.h>
+#include <direct.h>
 #include <conio.h>
 #include "vga.hpp"
+#include "vesa.hpp"
 #include "valert.hpp"
 #include "pngload.hpp"
 
@@ -68,6 +71,98 @@ String stringFromFile(const String &fileName, bool textFile) {
     return r;
   }
   return NIL;
+}
+
+struct meminfo {
+    unsigned LargestBlockAvail;
+    unsigned MaxUnlockedPage;
+    unsigned LargestLockablePage;
+    unsigned LinAddrSpace;
+    unsigned NumFreePagesAvail;
+    unsigned NumPhysicalPagesFree;
+    unsigned TotalPhysicalPages;
+    unsigned FreeLinAddrSpace;
+    unsigned SizeOfPageFile;
+    unsigned Reserved[3];
+} MemInfo;
+
+_diskfree_t discFree;
+static VbeInfoBlock vesa_info;
+static VbeModeInfo vesa_modeInfo;
+
+String getInfoString() {
+  String info;
+  union REGS regs;
+  struct SREGS sregs;
+
+  int drive = _getdrive();
+  _getdiskfree(drive, &discFree);
+
+  info += " CONFIGURATION INFO\n";
+  info += "----------------------\n";
+  info += "\n";
+  info += " DISC INFO\n";
+  info += "-----------\n";
+  info += String("Working directory:")+String(getCWD())+"\n";
+  info += String("Drive number:")+drive+"\n";
+  info += String("Disc space:")+ sizeString((long)discFree.total_clusters*discFree.sectors_per_cluster*discFree.bytes_per_sector) + "\n";
+  info += String("Disc free:")+ sizeString((long)discFree.avail_clusters*discFree.sectors_per_cluster*discFree.bytes_per_sector) + "\n";
+  info += String("Disc clusters:")+ discFree.total_clusters + "\n";
+  info += String("Available clusters:")+ discFree.avail_clusters + "\n";
+  info += String("Sectors per cluster:")+ discFree.sectors_per_cluster + "\n";
+  info += String("Bytes per sector:")+ discFree.bytes_per_sector + "\n";
+  info += "\n";
+
+  regs.x.eax = 0x00000500;
+  memset( &sregs, 0, sizeof(sregs) );
+  sregs.es = FP_SEG( &MemInfo );
+  regs.x.edi = FP_OFF( &MemInfo );
+
+  int386x( 0x31, &regs, &regs, &sregs );
+
+  info += " MEMORY INFO\n";
+  info += "---------------\n";
+  info += "Largest block available:";
+  info += String(MemInfo.LargestBlockAvail)+"\n";
+  info += "Max unlocked page:";
+  info += String(MemInfo.MaxUnlockedPage)+"\n";
+  info += "Largest lockable page:";
+  info += String(MemInfo.LargestLockablePage)+"\n";
+  info += "Linear address space:";
+  info += String(MemInfo.LinAddrSpace)+"\n";
+  info += "Number of free pages available:";
+  info += String(MemInfo.NumFreePagesAvail)+"\n";
+  info += "Number of physical pages free:";
+  info += String(MemInfo.NumPhysicalPagesFree)+"\n";
+  info += "Total physical pages:";
+  info += String(MemInfo.TotalPhysicalPages)+"\n";
+  info += "Free linear address space:";
+  info += String(MemInfo.FreeLinAddrSpace)+"\n";
+  info += "Size of page file:";
+  info += String(MemInfo.SizeOfPageFile)+"\n";
+  info += "\n";
+
+  info += " VIDEO INFO\n";
+  info += "------------\n";
+  info += "Vesa current mode:$" + String::hex(vesa_currentMode,4) + "\n";
+  vesa_getInfo(vesa_info);
+  info += vesa_getInfoString(vesa_info);
+  Array<int> modes;
+  modes = vesa_getVideoModes(vesa_info);
+  for (int i = 0; i < modes.size(); i++) {
+    int mode = modes[i];
+    info += "--Mode:$" + String::hex(mode,4) + " ";
+    vesa_getModeInfo(mode,vesa_modeInfo);
+    info += vesa_getModeInfoString(vesa_modeInfo,true);
+    info += "\n";
+    if (mode == vesa_currentMode) {
+      info += vesa_getModeInfoString(vesa_modeInfo,false);
+      info += "\n";
+    }
+  }
+  info += "\n";
+
+  return info;
 }
 
 void stringToFile(const String &string,const String &fileName, bool textFile) {

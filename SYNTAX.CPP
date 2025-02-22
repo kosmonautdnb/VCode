@@ -42,6 +42,7 @@ void initSyntaxHiLighting() {
   hiLightTable.push_back("typename");
   hiLightTable.push_back("static");
   hiLightTable.push_back("volatile");
+  hiLightTable.push_back("extern");
 }
 
 void updateSyntaxHiLight(const String &text, String &colors, const String &toFind) {

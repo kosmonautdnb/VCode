@@ -12,6 +12,7 @@ void make0ato0d0a(String &r);
 extern String currentToolString;
 String currentTimeString();
 String stringFromFile(const String &fileName, bool textFile);
+String getInfoString();
 void stringToFile(const String &string,const String &fileName, bool textFile);
 bool copyFile(const String &destFileName, const String &sourceFileName);
 bool moveFile(const String &destFileName, const String &sourceFileName);

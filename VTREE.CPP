@@ -11,6 +11,7 @@
 
 VTree *treeLeft = NULL;
 VTree *treeRight = NULL;
+extern bool requestSideSwitch;
 
 void VTree::draw() {
 
@@ -55,9 +56,11 @@ void VTree::draw() {
     if (selecteds>0) status += "Selected:"+String(selecteds) + (selecteds == 1 ? " File " : " Files ") + sizeString(selectedBytes);
     if (status == "") {
       if (!strgKey)
-        status = "F1Hx F2Renam F3Vw F4Edt F5Cpy F6Mve F7Nwdir F8Del";
+        status = "F1Hx F2Renam F3Vw F4Edt F5Cpy F6Mve F7Nwdir F8Del F9Nfo";
       else
-        status = "F4Edit(Windowed)";
+        status = "F4Edit(Other)";
+      if (shiftKey)
+        status = "F4Edit(This)";
     }
     drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
     drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
@@ -125,11 +128,19 @@ int VTree::update() {
         vCode->doModal();
       }
     }
-    if (key == VK_F4_CTRL) {
+    if (key == VK_F4_CTRL || key == VK_F4_SHIFT) {
       if (extension != ".exe" && extension != ".com"&& extension != ".sys") {
-        vCode->init(stringFromFile(fileName,true),fileName);
-        vCode->setRect(this->position,this->size);
-        treeMode = TREEMODE_EDIT;
+        VTree *toLoadOn = this;
+        if (key == VK_F4_CTRL) {
+          toLoadOn = this == treeLeft ? treeRight : treeLeft;
+          requestSideSwitch = true;
+        }
+        if (toLoadOn != NULL) {
+          toLoadOn->vCode->init(stringFromFile(fileName,true),fileName);
+          toLoadOn->vCode->setRect(this->position,this->size);
+          toLoadOn->vCode->reset();
+          toLoadOn->treeMode = TREEMODE_EDIT;
+        }
         return 0;
       }
     }
@@ -191,6 +202,11 @@ int VTree::update() {
       }
       if (b)
         for (i = 0; i < directory->selection.size(); i++) directory->select(i,false);
+    }
+    if (key == VK_F9) {
+      vCode->init(getInfoString(),"");
+      vCode->setRect(0,0,frameBufferWidth,frameBufferHeight);
+      vCode->doModal();
     }
     if (key == '+') {
       int a = VTxtAlrt::box(lastMask,"        Select        ","OK");

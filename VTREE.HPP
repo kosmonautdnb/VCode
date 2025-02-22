@@ -19,6 +19,7 @@ public:
   VCode *vCode;
   VHex *vHex;
   VTxtAlrt *vTxtAlrt;
+  VText *vInfo;
   String lastMask;
   String searchText;
   bool reload;
@@ -37,6 +38,7 @@ public:
     vCode = new VCode();
     vHex = new VHex();
     vTxtAlrt = new VTxtAlrt();
+    vInfo = new VText();
     searchText = "";
     reload = false;
     lastPathName = "";

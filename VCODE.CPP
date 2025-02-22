@@ -133,8 +133,8 @@ void VCode::draw() {
   }
   cursorRequiresX=-1;
   cursorRequiresI = -1;
-  if (cursorPos.x > position.x + size.width) textPos.x += CHAR_HEIGHT;
-  if (cursorPos.x < position.x) {textPos.x -= CHAR_HEIGHT; if (textPos.x < 0) textPos.x = 0;}
+  if (cursorPos.x > position.x + size.width) textPos.x += CHAR_HEIGHT*4;
+  if (cursorPos.x < position.x) {textPos.x -= CHAR_HEIGHT*4; if (textPos.x < 0) textPos.x = 0;}
   if (selectionEnd==-2) {selectionEnd = cursorI;}
   drawStringOutlined(eofPos.x,eofPos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
   drawCursor();

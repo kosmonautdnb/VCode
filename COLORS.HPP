@@ -2,20 +2,20 @@
 #define __COLORS_HPP__
 
 #define _EGA_COLOR_BLACK         0xff000000
-#define _EGA_COLOR_BLUE          0xffc00000
-#define _EGA_COLOR_GREEN         0xff00c000
-#define _EGA_COLOR_CYAN          0xffc0c000
-#define _EGA_COLOR_RED           0xff0000c0
-#define _EGA_COLOR_VIOLET        0xffc000c0
-#define _EGA_COLOR_BROWN         0xff00c0c0
-#define _EGA_COLOR_GREY_LIGHT    0xffc0c0c0
-#define _EGA_COLOR_GREY_DARK     0xff404040
-#define _EGA_COLOR_BLUE_LIGHT    0xffff0000
-#define _EGA_COLOR_GREEN_LIGHT   0xff00ff00
-#define _EGA_COLOR_CYAN_LIGHT    0xffffff00
-#define _EGA_COLOR_RED_LIGHT     0xff0000ff
-#define _EGA_COLOR_VIOLET_LIGHT  0xffff00ff
-#define _EGA_COLOR_YELLOW        0xff00ffff
+#define _EGA_COLOR_BLUE          0xffaa0000
+#define _EGA_COLOR_GREEN         0xff00aa00
+#define _EGA_COLOR_CYAN          0xffaaaa00
+#define _EGA_COLOR_RED           0xff0000aa
+#define _EGA_COLOR_VIOLET        0xffaa00aa
+#define _EGA_COLOR_BROWN         0xff0055aa
+#define _EGA_COLOR_GREY_LIGHT    0xffaaaaaa
+#define _EGA_COLOR_GREY_DARK     0xff555555
+#define _EGA_COLOR_BLUE_LIGHT    0xffff5555
+#define _EGA_COLOR_GREEN_LIGHT   0xff55ff55
+#define _EGA_COLOR_CYAN_LIGHT    0xffffff55
+#define _EGA_COLOR_RED_LIGHT     0xff5555ff
+#define _EGA_COLOR_VIOLET_LIGHT  0xffff55ff
+#define _EGA_COLOR_YELLOW        0xff55ffff
 #define _EGA_COLOR_WHITE         0xffffffff
 
 #define COLOR_BLACK 0xff000000

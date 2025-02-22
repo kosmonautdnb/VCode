@@ -35,6 +35,17 @@
 #define VK_F8_CTRL (101*256)
 #define VK_F9_CTRL (102*256)
 #define VK_F10_CTRL (103*256)
+#define VK_F1_SHIFT (84*256)
+#define VK_F2_SHIFT (85*256)
+#define VK_F3_SHIFT (86*256)
+#define VK_F4_SHIFT (87*256)
+#define VK_F5_SHIFT (88*256)
+#define VK_F6_SHIFT (89*256)
+#define VK_F7_SHIFT (90*256)
+#define VK_F8_SHIFT (91*256)
+#define VK_F9_SHIFT (92*256)
+#define VK_F10_SHIFT (93*256)
+
 #define VK_TAB 9
 #define VK_TAB_SHIFT (15*256)
 #define VK_ENTF (83*256)

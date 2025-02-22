@@ -90,13 +90,14 @@ String dateString(const FileTime &time) {
 
 String sizeString(long size) {
   if (size == 0) return "0";
-  if (size < 1024)
+  long sizea = abs(size);
+  if (sizea < 1024)
     return String(size) + "b";
-  if (size < 1024 * 1024)
+  if (sizea < 1024 * 1024)
     return String(size/1024) + "." + String(size & 1023) + "kb";
-  if (size < 1024 * 1024 * 1024)
+  if (sizea < 1024 * 1024 * 1024)
     return String(size/1024/1024) + "." + String((size/1024) & 1023) + "mb";
-  if (size < 1024 * 1024 * 1024 * 1024)
+  if (sizea < 1024 * 1024 * 1024 * 1024)
     return String(size/1024/1024/1024) + "." + String((size/1024/1024) & 1023) + "gb";
   return size;
 }

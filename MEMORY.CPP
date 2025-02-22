@@ -136,6 +136,7 @@ void VBE_callESDI(RMREGS *regs, void *buffer, int size) {
   _fmemcpy(MK_FP(VESABUF_sel,0),buffer,size);
   DPMI_int386x(0x10,regs,regs,&sregs);
   _fmemcpy(buffer,MK_FP(VESABUF_sel,0),size);
+  //ExitVBEBuf();
 }
 
 uint64_t mapPhysicalToLinear(unsigned int physicalAddress, unsigned int size) {

@@ -56,11 +56,13 @@ typedef struct VbeModeInfo {
   uint8_t reserved1[256-50];
 } VbeModeInfo;
 
+extern int vesa_currentMode;
+
 Array<int> vesa_getVideoModes(const VbeInfoBlock &data);
 String vesa_getInfoString(const VbeInfoBlock &data);
 void vesa_getInfo(VbeInfoBlock &data);
 void vesa_getModeInfo(int mode, VbeModeInfo &data);
-String vesa_getModeInfoString(const VbeModeInfo &data);
+String vesa_getModeInfoString(const VbeModeInfo &data, bool compact);
 void vesa_setAsRenderer(const VbeModeInfo &data);
 void vesa_setMode(int mode);
 

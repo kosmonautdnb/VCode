@@ -4,6 +4,8 @@
 #include "blit.hpp"
 #include "vga.hpp"
 
+int vesa_currentMode = 0x00;
+
 void *vesaPointer(const void *d) {
   int segment = ((unsigned int)d) >> 16;
   int offset = ((unsigned int)d) & 0xffff;
@@ -64,8 +66,12 @@ void vesa_getModeInfo(int mode, VbeModeInfo &data) {
   VBE_callESDI(&regs,&data,sizeof(VbeInfoBlock));
 }
 
-String vesa_getModeInfoString(const VbeModeInfo &data) {
+String vesa_getModeInfoString(const VbeModeInfo &data, bool compact) {
   String vesa_modeInfoString;
+  if (compact) {
+    vesa_modeInfoString += String(data.width) + "x" + String(data.height) + "x" + String(data.bpp);
+    return vesa_modeInfoString;
+  }
   vesa_modeInfoString = "Attributes:" + String(data.attributes) +"\n";
   vesa_modeInfoString += "WindowA:"+String(data.windowA) +"\n";
   vesa_modeInfoString += "WindowB:"+String(data.windowB) +"\n";
@@ -111,6 +117,7 @@ void vesa_setAsRenderer(const VbeModeInfo &data) {
 }
 
 void vesa_setMode(int mode) {
+  vesa_currentMode = mode;
   const int linearFrameBufferIsRequested = 0x4000;
   RMREGS regs;
   regs.ax = 0x4f02;
