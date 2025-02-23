@@ -60,7 +60,7 @@ void VTree::draw() {
       else
         status = "F4Edt(Other)";
       if (shiftKey)
-        status = "F1Dis F4Edt(This)";
+        status = "F1Dis F2Pnt F4Edt(This)";
     }
     drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
     drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
@@ -120,6 +120,11 @@ int VTree::update() {
       vDisAsm->init(stringFromFile(fileName,true),fileName);
       vDisAsm->setRect(0,0,frameBufferWidth,frameBufferHeight);
       vDisAsm->doModal();
+    }
+    if (key == VK_F2_SHIFT) {
+      vClippy->init(1280,720);
+      vClippy->setRect(0,0,frameBufferWidth,frameBufferHeight);
+      vClippy->doModal();
     }
     if (key == VK_F3) {
       vText->init(stringFromFile(fileName,true),fileName);

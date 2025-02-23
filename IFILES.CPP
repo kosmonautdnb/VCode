@@ -16,6 +16,7 @@ String IFiles::getString(int x, int y) {
   if (x == 3) return dateString(files[y].date);
   if (x == 4) return files[y].name.path + files[y].name.extension;
   if (x == 5) return files[y].directory ? "<DIR>" : String(files[y].size);
+  if (x == 6) return files[y].name.name + files[y].name.extension;
   return "";
 }
 
@@ -28,6 +29,7 @@ void IFiles::sort(int x, bool ascending) {
   for (int i = 0; i < sorting.size(); i++) sorting[i]=i;
 
   if (x == 2) x = 5;
+  if (x == 0) x = 6;
   for (int j = 0; j < sorting.size(); j++) {
     for (int k = j + 1; k < sorting.size(); k++) {
       String a1 = getString(x,j);

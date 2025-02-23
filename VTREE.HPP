@@ -11,6 +11,7 @@
 #include "vhex.hpp"
 #include "vtxtalrt.hpp"
 #include "vdisasm.hpp"
+#include "vclippy.hpp"
 
 class VTree : public VStrLst {
 public:
@@ -22,6 +23,7 @@ public:
   VTxtAlrt *vTxtAlrt;
   VText *vInfo;
   VDisAsm *vDisAsm;
+  VClippy *vClippy;
   String lastMask;
   String searchText;
   bool reload;
@@ -42,6 +44,7 @@ public:
     vTxtAlrt = new VTxtAlrt();
     vInfo = new VText();
     vDisAsm = new VDisAsm();
+    vClippy = new VClippy();
     searchText = "";
     reload = false;
     lastPathName = "";
@@ -56,6 +59,7 @@ public:
     delete vTxtAlrt;
     delete vInfo;
     delete vDisAsm;
+    delete vClippy;
   }
 
   virtual setRect(int x0, int y0, int x1, int y1) {VStrLst::setRect(x0,y0,x1,y1);}

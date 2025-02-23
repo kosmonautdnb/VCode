@@ -58,5 +58,8 @@ call _BUILD\CC.BAT VTXTALRT.CPP                 VTXTALRT.OBJ
 call _BUILD\CC.BAT VESA.CPP                      VESA.OBJ
 call _BUILD\CC.BAT MEMORY.CPP                      MEMORY.OBJ
 call _BUILD\CC.BAT VDISASM.CPP                      VDISASM.OBJ
+call _BUILD\CC.BAT C_LAYERS.CPP                     C_LAYERS.OBJ
+call _BUILD\CC.BAT VCLIPPY.CPP                     VCLIPPY.OBJ
 call _BUILD\AL.BAT _BUILD\LINK.LNK              MAIN.EXE
+set FULLCOMPILE=0
 me LOGS.LOG

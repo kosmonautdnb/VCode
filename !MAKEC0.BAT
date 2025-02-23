@@ -1,2 +1,2 @@
-wcl386.exe fltmechk.c
+wcl386.exe /ms fltmechk.c
 del fltmechk.obj
