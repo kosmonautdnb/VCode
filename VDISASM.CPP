@@ -77,12 +77,12 @@ void VDisAsm::draw() {
 
 virtual int VDisAsm::update() {
   if (key == VK_G_CTRL) {
-    String gotoLine = "";
-    int a = VTxtAlrt::box(gotoLine,"Goto Address(Hex):","OK","Don't");
+    String gotoAddress = "";
+    int a = VTxtAlrt::box(gotoAddress,"Goto Address(Hex):","OK","Don't");
     if (a==1) {
       textPos = Point(0,0);
-      int64_t address = gotoLine.fromHex();
-      getDisassembly_6502(opcodes, lineNumbers, datas, data,address,data.length());
+      int64_t address = gotoAddress.fromHex()-baseAddress;
+      getDisassembly_6502(opcodes, baseAddress, lineNumbers, datas, data,address,data.length());
       text = opcodes;
       colors = text;
       updateSyntaxHiLight(text,colors,"");
@@ -96,7 +96,10 @@ virtual int VDisAsm::update() {
 
 void VDisAsm::init(const String &_text, const String &_fileName) {
   data = _text;
-  getDisassembly_6502(opcodes, lineNumbers, datas, data,0,data.length());
+  if (data.length()>2) {
+       baseAddress = data[0]+data[1]*256-2;
+  }
+  getDisassembly_6502(opcodes, baseAddress, lineNumbers, datas, data,0,data.length());
   text = opcodes;
   colors = text;
   updateSyntaxHiLight(text,colors,"");
@@ -402,7 +405,12 @@ Opcode opcodes[] = {
   {"isc",7,OPC_TYPE_ABX}
 };
 
-String getInstructionLine_6502(int64_t &address, const String &text) {
+int char8(int a) {
+  if (a < 128) return a;
+  return a-256;
+}
+
+String getInstructionLine_6502(int64_t baseAddress, int64_t &address, const String &text) {
   const Opcode &opc = opcodes[text[address]];
   if (text.length()<address + opcodeBytes[opc.type]) {
     address++;
@@ -412,7 +420,7 @@ String getInstructionLine_6502(int64_t &address, const String &text) {
   switch(opc.type) {
     case OPC_TYPE_NONE: break;
     case OPC_TYPE_ABS: instruction += "$" + String::hex(text[address+1]+text[address+2]*256,4); break;
-    case OPC_TYPE_REL: instruction += "$" + String::hex(address+text[address+1]-128,4); break;
+    case OPC_TYPE_REL: instruction += "$" + String::hex(baseAddress+address+char8(text[address+1])+2,4); break;
     case OPC_TYPE_IND: instruction += "($" + String::hex(text[address+1]+text[address+2]*256,4)+")"; break;
     case OPC_TYPE_ZP: instruction += "$" + String::hex(text[address+1],2); break;
     case OPC_TYPE_ZPX: instruction += "$" + String::hex(text[address+1]+text[address+2]*256,2)+",x"; break;
@@ -427,14 +435,14 @@ String getInstructionLine_6502(int64_t &address, const String &text) {
   return instruction;
 }
 
-void getDisassembly_6502(String &opcs, String &adrs, String &dats, const String &text, int64_t startAddress, int64_t endAddress) {
+void getDisassembly_6502(String &opcs, int64_t baseAddress, String &adrs, String &dats, const String &text, int64_t startAddress, int64_t endAddress) {
   opcs.clear();
   adrs.clear();
   dats.clear();
   for (int64_t i = startAddress; i < endAddress;) {
     int iBefore = i;
-    opcs += getInstructionLine_6502(i,text) + "\n";
-    adrs += "$"+String::hex(iBefore,8)+"\n";
+    opcs += getInstructionLine_6502(baseAddress,i,text) + "\n";
+    adrs += "$"+String::hex(iBefore+baseAddress,8)+"\n";
     for (int l = iBefore; l < i; l++) {if (l!=iBefore) dats += " "; dats += "$" + String::hex(text[l],2);}
     dats += "\n";
   }

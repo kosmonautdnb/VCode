@@ -244,16 +244,14 @@ public:
     char *newData = (char*)malloc(dataLength);
     if (pos>0)  memcpy(newData,data,pos);
     memcpy(newData+pos,str.data,str.length());
-    if (pos>0) memcpy(newData+pos+str.length(),data+pos,l-pos);
+    memcpy(newData+pos+str.length(),data+pos,l-pos);
     newData[dataLength-1] = 0;
     if (data != NULL) free(data);
     data = newData;
   }
   
   void insert(int64_t pos, const char c) {
-    String k=" ";
-    k[0]=c;
-    insert(pos,k);
+    insert(pos,String::chr(c));
   }
   
   String substr(int64_t firstIndex) const {

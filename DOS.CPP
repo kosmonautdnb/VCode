@@ -1,11 +1,35 @@
 #include <direct.h>
 #include "dos.hpp"
 #include <stdio.h>
+#include <io.h>
 #include <string.h>
 #include <conio.h>
 #include <i86.h>
+#include <fcntl.h>
 
 extern bool fileWasWritten;
+
+short getFileDate(const String &filePath) {
+  int handle = open(filePath.c_str(),O_RDONLY | O_TEXT);
+  union REGS r;
+  r.h.ah = 0x57;
+  r.h.al = 0x00;
+  r.w.bx = (short)handle;
+  int386(0x21,&r,&r);
+  close(handle);
+  return r.w.dx;
+}
+
+short getFileTime(const String &filePath) {
+  int handle = open(filePath.c_str(),O_RDONLY | O_TEXT);
+  union REGS r;
+  r.h.ah = 0x57;
+  r.h.al = 0x00;
+  r.w.bx = (short)handle;
+  int386(0x21,&r,&r);
+  close(handle);
+  return r.w.cx;
+}
 
 String unixFileName(const String &dir) {
   String r = String(dir);
@@ -116,7 +140,7 @@ Array<File> getFiles(const String &dir) {
       r.name = toFileName(dir,direntp->d_name);
       r.size = toFileSize(direntp->d_size);
       r.date = toFileTime(direntp->d_date,direntp->d_time);
-      r.directory = direntp->d_attr == _A_SUBDIR;
+      r.directory = (direntp->d_attr & _A_SUBDIR) != 0;
       ret.push_back(r);
     } while(1==1);
     closedir( dirp );

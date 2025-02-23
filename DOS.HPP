@@ -29,6 +29,10 @@ typedef struct File {
   bool directory;
 } File;
 
+
+short getFileDate(const String &filePath);
+short getFileTime(const String &filePath);
+
 String getName(const String &fileName);
 String getExtension(const String &fileName);
 String getPath(const String &fileName);

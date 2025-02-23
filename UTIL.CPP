@@ -70,7 +70,7 @@ String stringFromFile(const String &fileName, bool textFile) {
     setPalette(0,0xff000000);
     return r;
   }
-  return NIL;
+  return String();
 }
 
 struct meminfo {
