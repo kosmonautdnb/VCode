@@ -58,9 +58,9 @@ void VTree::draw() {
       if (!strgKey)
         status = "F1Hx F2Renam F3Vw F4Edt F5Cpy F6Mve F7Nwdir F8Del F9Nfo";
       else
-        status = "F4Edit(Other)";
+        status = "F4Edt(Other)";
       if (shiftKey)
-        status = "F4Edit(This)";
+        status = "F1Dis F4Edt(This)";
     }
     drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
     drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
@@ -115,6 +115,11 @@ int VTree::update() {
       vHex->init(stringFromFile(fileName,false),fileName);
       vHex->setRect(0,0,frameBufferWidth,frameBufferHeight);
       vHex->doModal();
+    }
+    if (key == VK_F1_SHIFT) {
+      vDisAsm->init(stringFromFile(fileName,true),fileName);
+      vDisAsm->setRect(0,0,frameBufferWidth,frameBufferHeight);
+      vDisAsm->doModal();
     }
     if (key == VK_F3) {
       vText->init(stringFromFile(fileName,true),fileName);

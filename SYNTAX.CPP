@@ -98,6 +98,7 @@ void updateSyntaxHiLight(const String &text, String &colors, const String &toFin
     c = text[i];
     if (colors[i]!=HIGHLIGHT_EMPTY) continue;
     switch(c) {
+      case '$':
       case '@': colors[i] = HIGHLIGHT_SPECIAL; break;
       case '+':
       case '-':

@@ -123,6 +123,12 @@ public:
   ~String() {
     if (data != NULL) free(data);
   }
+
+  void clear() {
+    if (data != NULL) free(data);
+    data = NULL;
+    dataLength = 0;
+  }
   
   void resize(int64_t newLength) {
     if (data == NULL) {
@@ -176,6 +182,30 @@ public:
       if (c>='0'&&c<='9') {
         number *= 10;
         number += c - '0';
+      }
+      if (number==0&&c=='-') sign=true;
+    }
+    if (sign) number=-number;
+    return number;
+  }
+
+  int64_t fromHex() {
+    if (empty()) return 0;
+    int64_t number = 0;
+    bool sign = false;
+    for(int64_t i = 0; i < length(); i++) {
+      char c = (*this)[i];
+      if (c>='0'&&c<='9') {
+        number *= 16;
+        number += c - '0';
+      }
+      if (c>='a'&&c<='f') {
+        number *= 16;
+        number += c - 'a' + 10;
+      }
+      if (c>='A'&&c<='F') {
+        number *= 16;
+        number += c - 'A' + 10;
       }
       if (number==0&&c=='-') sign=true;
     }

@@ -70,7 +70,6 @@ void VCode::draw() {
   Point eofPos;
   for (i = 0; i < text.length() || (pos.y < position.y + size.height); i++) {
     char c = i < text.length() ? text[i] : '\n';
-    if (i == text.length()-1)  {eofPos = pos; eofPos.x += String::chr(c).pixelWidth();}
     char l = i < text.length() ? colors[i] : HIGHLIGHT_EMPTY;
     bool selected = (selectionStart>=0&&selectionEnd>=0)&&((i>=selectionStart&&i<selectionEnd)||(i>=selectionEnd&&i<selectionStart));
     if (i == cursorRequiresI) {
@@ -90,7 +89,7 @@ void VCode::draw() {
     switch(c) {
       case '\n': {
         if(selected)
-          drawBox(pos.x,pos.y,pos.x+size.width,pos.y+CHAR_HEIGHT,COLOR_SELECTION);
+          drawBox(pos.x,pos.y,pos.x+size.width+1,pos.y+CHAR_HEIGHT,COLOR_SELECTION);
         if (mouseB==1 && mouseX>=pos.x&&mouseY>=pos.y&&mouseY<pos.y+CHAR_HEIGHT&&mouseX<=position.x+size.width-4*frameBufferWidth/320) {
           cursorY = lineY; cursorX=lineX+(mouseX-pos.x)/String::chr(' ').pixelWidth();
         }
@@ -102,12 +101,13 @@ void VCode::draw() {
         lineY++;
         pos.y += CHAR_HEIGHT;
         pos.x = position.x - textPos.x;
+        if (i == text.length()-1)  {eofPos = pos;}
         continue;
       } break;
     }
     if (selected) {
       String k; k.resize(1); k[0]=c;
-      drawBox(pos.x,pos.y,pos.x + k.pixelWidth(),pos.y+CHAR_HEIGHT,COLOR_SELECTION);
+      drawBox(pos.x,pos.y,pos.x + k.pixelWidth()+1,pos.y+CHAR_HEIGHT,COLOR_SELECTION);
     }
     if (mouseX>=pos.x&&mouseY>=pos.y&&mouseY<pos.y+CHAR_HEIGHT&&mouseX<pos.x+String::chr(c).pixelWidth()) {
       if (mouseB==1) {
@@ -115,6 +115,7 @@ void VCode::draw() {
       }
     }
     drawChar(pos.x, pos.y, c, getHiLightColor(l));
+    if (i == text.length()-1)  {eofPos = pos;}
     lineX++;
   }
   if (cursorIX != -1) cursorPos.x += (cursorX - cursorIX)*String(" ").pixelWidth();
