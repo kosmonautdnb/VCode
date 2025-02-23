@@ -145,7 +145,7 @@ int main(int argc, const char *argv[])
   currentWorkingDirectory = getCWD();
   disableControlBreak();
 
-  const bool force320x200 = false;
+  const bool force320x200 = true;
   if (force320x200) {
       graphicsMode320x200x256();
   } else {

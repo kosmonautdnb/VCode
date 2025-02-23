@@ -3,18 +3,22 @@
 
 #include "vbase.hpp"
 #include "c_layers.hpp"
+#include "c_mnubar.hpp"
 
 class VClippy : public VBase {
 public:
 
   CLayerStack *cLayerStack;
+  CMnuBar *cMnuBar;
 
   VClippy() : VBase() {
     cLayerStack = new CLayerStack();
     cLayerStack->layers.push_back(new CLayer());
+    cMnuBar = new CMnuBar();
   }
   virtual ~VClippy() {
     delete cLayerStack;
+    delete cMnuBar;
   }
 
   virtual setRect(int x0, int y0, int x1, int y1) {VBase::setRect(x0,y0,x1,y1);}
@@ -27,9 +31,7 @@ public:
   virtual int doModal() {
         return VBase::doModal();
   }
-  void init(int width, int height) {
-    cLayerStack->reCanvas(0,0,width,height);
-  }
+  void init(int width, int height);
 };
 
 #endif //__VCLIPPY_HPP__

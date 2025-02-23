@@ -92,15 +92,20 @@ int VTxtLine::update() {
     cursorX++;
   }
   if (key == VK_LEFT_CTRL) {
-    int a = cursorX>0&&(cursorX-1)<text.length()?text[cursorX-1]:' ';
-    bool full = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
-    int i;
-    for (i = cursorX-1;i>=0;i--) {
-      a = text[i];
-      bool full2 = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
-      if (full2!=full) {cursorX=i+1;break;}
+    if (!text.empty()) {
+      int x = cursorX-1;
+      if (x < 0) x = 0;
+      if (x >text.length()-1) x = text.length()-1;
+      int a = text[x];
+      bool full = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
+      int i;
+      for (i = x;i>=0;i--) {
+        a = text[i];
+        bool full2 = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
+        if (full2!=full) {cursorX=i+1;break;}
+      }
+      if (i == -1) cursorX=0;
     }
-    if (i == 0) cursorX=0;
   }
   if (key == VK_RIGHT_CTRL) {
     int a = cursorX+1<text.length()?text[cursorX+1]:' ';

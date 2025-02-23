@@ -30,7 +30,7 @@ void getIncludes(const char *fileName, int *firstFile, int *lastFile, unsigned c
         start = str2;
         while(*str2!=0&&*str2!='\"') str2++;
         end = str2;
-        for (c = start; c!=end; c++) if (*c=='/') *c='\\';
+        for (c = start; c!=end; c++) {if (*c=='/') *c='\\'; if (*c>='A'&&*c<='Z') *c=*c-'A'+'a';}
         for (j=strlen(fileName)-1;j>0;j--) if (fileName[j]=='/'||fileName[j]=='\\') {j++;break;}
         files[currentFile] = malloc(j+end-start+1);
         if(j>0)memcpy(files[currentFile],fileName,j);
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
       fprintf(makeFile," %s",files[j]);
     }
     fprintf(makeFile,"\n    @call _build\\cc.bat %s %s\n",files[i*2+0],files[i*2+1]);
-
+    fprintf(makeFile,"\n\n");
     //printf("\n\n");
     fprintf(makeFile,"\n\n");
     fflush(makeFile);

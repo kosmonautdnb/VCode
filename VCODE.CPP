@@ -317,7 +317,7 @@ int VCode::update() {
         bool full2 = (a>='0'&&a<='9')||(a>='a'&&a<='z')||(a>='A'&&a<='Z')||a=='_'||a=='.';
         if (full2!=full) {cursorRequiresI=i+1;break;}
       }
-      if (i == 0) cursorRequiresI=0;
+      if (i == -1) cursorRequiresI=0;
     }
   }
   else
