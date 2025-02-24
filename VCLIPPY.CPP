@@ -2,6 +2,8 @@
 #include "blit.hpp"
 #include "colors.hpp"
 #include "constant.hpp"
+#include "valert.hpp"
+#include "input.hpp"
 
 void VClippy::draw() {
   pushRect(position,size);
@@ -15,18 +17,42 @@ void VClippy::draw() {
   popRect();
 }
 
+extern String currentWorkingDirectory;
+
 int VClippy::update() {
+  cMnuBar->update();
+
+  if (cMnuBar->clickedFunctionName == "LOAD") {
+    vFleSlct->init(currentWorkingDirectory);
+    vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
+    vFleSlct->modeLoading = true;
+    vFleSlct->doModal();
+  }
+
+  if (cMnuBar->clickedFunctionName == "SAVE") {
+    vFleSlct->init(currentWorkingDirectory);
+    vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
+    vFleSlct->modeLoading = false;
+    vFleSlct->doModal();
+  }
+
+  if (key == VK_ESCAPE) {
+    int a = VAlert::box("Exit Clippy?","YES","NO");
+    if (a == 1)
+      key = VK_ESCAPE;
+  }
+
   return 0;
 }
 
 void VClippy::init(int width, int height) {
   cLayerStack->reCanvas(0,0,width,height);
   cMnuBar->init(
-      "File+Load+Save\n"
-      "Edit+Undo+Redo+Cut+Copy\n"
-      "Layer\n"
-      "Image\n"
-      "Font\n"
-      "Window\n"
-      "Filter\n");
+      "(A)File+Load[LOAD]+Save[SAVE]\n"
+      "(B)Edit+Undo+Redo[REDO]+Cut[CUT]+Copy[COPY]\n"
+      "(C)Layer\n"
+      "(D)Image\n"
+      "(E)Font\n"
+      "(F)Window\n"
+      "(G)Filter\n");
 }

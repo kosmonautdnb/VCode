@@ -125,6 +125,7 @@ int VTree::update() {
       vClippy->init(1280,720);
       vClippy->setRect(0,0,frameBufferWidth,frameBufferHeight);
       vClippy->doModal();
+      setKeyboardFocus(this);
     }
     if (key == VK_F3) {
       vText->init(stringFromFile(fileName,true),fileName);

@@ -8,22 +8,20 @@ class CMnuBar : public VBase {
 public:
   String text;
 
-  int mouseOverX;
-  int mouseOverY;
-  int mouseClickedX;
-  int mouseClickedY;
+  String clickedFunctionName;
   int mouseSelectedOn;
   int cursorX;
   int cursorY;
-  
+  int selectedX;
+  int selectedY;   
+
   CMnuBar() : VBase() {
+    clickedFunctionName = "";
+    mouseSelectedOn = -1;
     cursorX = -1;
     cursorY = -1;
-    mouseOverX = -1;
-    mouseOverY = -1;
-    mouseClickedX = -1;
-    mouseClickedY = -1;
-    mouseSelectedOn = -1;
+    selectedX = -1;
+    selectedY = -1;
   }
 
   virtual ~CMnuBar() {
@@ -32,13 +30,12 @@ public:
   virtual void draw();
   virtual int update();
   virtual void reset() {
+    clickedFunctionName = "";
+    mouseSelectedOn = -1;
     cursorX = -1;
     cursorY = -1;
-    mouseOverX = -1;
-    mouseOverY = -1;
-    mouseClickedX = -1;
-    mouseClickedY = -1;
-    mouseSelectedOn = -1;
+    selectedX = -1;
+    selectedY = -1;
   }
 
   void init(const String &_text);

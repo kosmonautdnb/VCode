@@ -2,6 +2,7 @@
 #define __VCLIPPY_HPP__
 
 #include "vbase.hpp"
+#include "vfleslct.hpp"
 #include "c_layers.hpp"
 #include "c_mnubar.hpp"
 
@@ -10,15 +11,18 @@ public:
 
   CLayerStack *cLayerStack;
   CMnuBar *cMnuBar;
+  VFleSlct *vFleSlct;
 
   VClippy() : VBase() {
     cLayerStack = new CLayerStack();
     cLayerStack->layers.push_back(new CLayer());
     cMnuBar = new CMnuBar();
+    vFleSlct = new VFleSlct();
   }
   virtual ~VClippy() {
     delete cLayerStack;
     delete cMnuBar;
+    delete vFleSlct;
   }
 
   virtual setRect(int x0, int y0, int x1, int y1) {VBase::setRect(x0,y0,x1,y1);}

@@ -45,6 +45,14 @@
 #define VK_F8_SHIFT (91*256)
 #define VK_F9_SHIFT (92*256)
 #define VK_F10_SHIFT (93*256)
+#define VK_A_ALT (30*256)
+#define VK_B_ALT (48*256)
+#define VK_C_ALT (46*256)
+#define VK_D_ALT (32*256)
+#define VK_E_ALT (18*256)
+#define VK_F_ALT (33*256)
+#define VK_G_ALT (34*256)
+#define VK_H_ALT (35*256)
 
 #define VK_TAB 9
 #define VK_TAB_SHIFT (15*256)

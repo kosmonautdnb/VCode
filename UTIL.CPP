@@ -1,5 +1,6 @@
 #include "util.hpp"
 #include "types.hpp"
+#include "constant.hpp"
 #include "dos.hpp"
 #include <i86.h>
 #include <direct.h>
@@ -277,4 +278,27 @@ void saveScreenShot(const char *fileName, unsigned int *data, int width,int heig
   l.height = height;
   savePNG(&l,fileName);
   fileWasWritten = true;
+}
+
+int mapAltKey(int key) {
+  int altKeyMapped = VK_NONE;
+  switch(key) {
+    case 'a':
+    case 'A': altKeyMapped = VK_A_ALT; break;
+    case 'b':
+    case 'B': altKeyMapped = VK_B_ALT; break;
+    case 'c':
+    case 'C': altKeyMapped = VK_C_ALT; break;
+    case 'd':
+    case 'D': altKeyMapped = VK_D_ALT; break;
+    case 'e':
+    case 'E': altKeyMapped = VK_E_ALT; break;
+    case 'f':
+    case 'F': altKeyMapped = VK_F_ALT; break;
+    case 'g':
+    case 'G': altKeyMapped = VK_G_ALT; break;
+    case 'h':
+    case 'H': altKeyMapped = VK_H_ALT; break;
+  }
+  return altKeyMapped;
 }
