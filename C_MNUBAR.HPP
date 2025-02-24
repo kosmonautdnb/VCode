@@ -14,6 +14,7 @@ public:
   int cursorY;
   int selectedX;
   int selectedY;   
+  bool mouseOverItem;
 
   CMnuBar() : VBase() {
     clickedFunctionName = "";
@@ -22,6 +23,7 @@ public:
     cursorY = -1;
     selectedX = -1;
     selectedY = -1;
+    mouseOverItem = false;
   }
 
   virtual ~CMnuBar() {

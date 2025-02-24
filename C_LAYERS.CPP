@@ -1,17 +1,34 @@
 #include "C_Layers.hpp"
 #include <string.h>
 #include "blit.hpp"
+#include <math.h>
+
+void CLayer::init(uint32_t *data, int _width, int _height) {
+  if (image != NULL) free(image);
+  width = _width;
+  height = _height;
+  image = (void*)malloc(width*height*4);
+  memcpy(image,data,width*height*4);
+  xpos = 0;  
+  ypos = 0;  
+  mulX = 1;
+  mulY = 1;
+}
 
 void CLayer::blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, int dst_x0, int dst_y0, int dst_x1, int dst_y1, int src_x0, int src_y0, int src_x1, int src_y1) {
   uint32_t *im = (uint32_t*)image;
-  int o = opacity*255;
+  int o = opacity*255; 
+  src_x0 -= (int)floor(xpos);
+  src_x1 -= (int)floor(xpos);
+  src_y0 -= (int)floor(ypos);
+  src_y1 -= (int)floor(ypos);
   dst_x1 = (dst_x1-dst_x0)*mulX+dst_x0;
   dst_y1 = (dst_y1-dst_y0)*mulY+dst_y0;
   for (int y = dst_y0; y < dst_y1; y++) {
-    int sy = (src_y1-src_y0)*(y-dst_y0)/(dst_y1-dst_y0)+src_y0 - ypos;
+    int sy = (src_y1-src_y0)*(y-dst_y0)/(dst_y1-dst_y0)+src_y0;
     if (y < 0 || sy < 0 || y >= destHeight || sy >= height) continue;
     for (int x = dst_x0; x < dst_x1; x++) {
-      int sx = (src_x1-src_x0)*(x-dst_x0)/(dst_x1-dst_x0)+src_x0 - xpos;
+      int sx = (src_x1-src_x0)*(x-dst_x0)/(dst_x1-dst_x0)+src_x0;
       if (x < 0 || sx < 0 || x >= destWidth || sx >= width) continue;
       uint32_t srcRGBA = im[sx+sy*width];
       int srcR = srcRGBA & 255;
@@ -82,6 +99,17 @@ void CLayer::reCanvas(int x0, int y0, int x1, int y1) {
 }
 
 void CLayerStack::blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, int dst_x0, int dst_y0, int dst_x1, int dst_y1, int src_x0, int src_y0, int src_x1, int src_y1) {
+  for (int y = 0; y < destHeight; y++) {
+    for (int x = 0; x < destWidth; x++) {
+      uint32_t col = ((x+y) & 7) ? 0xff000000:0xff808080;
+      dest[x+y*destWidth]=col;
+    }
+  }
+  float zoom2 = pow(2.f,zoom);
+  src_x0 *= zoom2;
+  src_y0 *= zoom2;
+  src_x1 *= zoom2;
+  src_y1 *= zoom2;
   for (int i = 0; i < layers.size(); i++) {
     CLayer *l = layers[i];
     l->blitTo32Bit(dest,destWidth,destHeight,dst_x0,dst_y0,dst_x1,dst_y1,src_x0,src_y0,src_x1,src_y1);
@@ -102,17 +130,47 @@ void CLayerStack::reCanvas(int x0, int y0, int x1, int y1) {
 
 void CLayerStack::drawAtXY(int x, int y) {
   if (image == NULL) return;
-  int height2 = height;
   int width2 = width;
-  int xa = 0;
-  int ya = 0;
-  if (x < 0) {xa=-x;x = 0;width2+=xa;}
-  if (y < 0) {ya=-y;y = 0;height2+=ya;}
-  if (x + width2>frameBufferWidth) width2 = frameBufferWidth-x;
-  if (y + height2>frameBufferHeight) height2 = frameBufferHeight-y;
+  int height2 = height;
   for (int y2 = 0; y2 < height2; y2++) {
-    for (int x2 = 0; x2 < width2; x2++) {
-      frameBuffer[x2+y2*frameBufferWidth] = image[(x2+xa)+(y2+ya)*width];
+    int y3 = y2 + ypos; if (y3 < 0 || y3 >= frameBufferHeight) continue;
+    int y4 = (int)(y2); if (y4 < 0 || y4 >= height) continue;
+    for (int x2 = 0; x2 < width; x2++) {
+      int x3 = x2 + xpos; if (x3 < 0 || x3 >= frameBufferWidth) continue;
+      int x4 = (int)(x2); if (x4 < 0 || x4 >= width) continue;
+      frameBuffer[x3+y3*frameBufferWidth] = image[x4+y4*width];
+    }
+  }
+}
+
+void CLayerStack::reBlit() {
+  blitTo32Bit(image, width, height, 0,0,width,height, 0,0,width,height);
+}
+
+void CLayerStack::doublePixels(bool _doublePixels) {
+  for(int i = 0; i < layers.size(); i++) {
+    if (layers[i] != NULL) layers[i]->mulX=_doublePixels?2:1;
+  }
+}
+
+void CLayerStack::newStack(int _width, int _height) {
+  for(int i = 0; i < layers.size(); i++) {
+    if (layers[i] != NULL) delete layers[i];
+  }
+  layers.clear();
+  layers.push_back(new CLayer());
+  width = _width;
+  height = _height;
+  if (image != NULL) free(image);
+  image = (uint32_t*)malloc(width*height*4);
+}
+
+void CLayerStack::moveLayers(int moveX, int moveY) {
+  float zoom2 = pow(2.f,zoom);
+  for(int i = 0; i < layers.size(); i++) {
+    if (layers[i] != NULL) {
+      layers[i]->xpos += moveX*zoom2;
+      layers[i]->ypos += moveY*zoom2;
     }
   }
 }

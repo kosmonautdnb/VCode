@@ -31,6 +31,7 @@ int VBase::doModal() {
   popRect();
   popCapturedFrameBuffer();
   currentToolString = "";
+  if (restoreKeyboardFocus!=NULL) setKeyboardFocus(restoreKeyboardFocus);
   return state;
 }
 
@@ -45,4 +46,9 @@ bool hasKeyboardFocus(VBase *window) {
 bool VBase::mouseIn()
 {
   return mouseOver(Rect(position,size));
+}
+
+void VBase::captureKeyboard() {
+  restoreKeyboardFocus = keyboardFocus;
+  setKeyboardFocus(this);
 }

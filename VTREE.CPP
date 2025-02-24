@@ -122,8 +122,9 @@ int VTree::update() {
       vDisAsm->doModal();
     }
     if (key == VK_F2_SHIFT) {
-      vClippy->init(1280,720);
+      vClippy->init(lastPathName,frameBufferWidth,frameBufferHeight);
       vClippy->setRect(0,0,frameBufferWidth,frameBufferHeight);
+      vClippy->load(fileName);
       vClippy->doModal();
       setKeyboardFocus(this);
     }

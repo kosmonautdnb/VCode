@@ -4,6 +4,8 @@
 #include "constants.hpp"
 #include "input.hpp"
 
+extern VBase *keyboardFocus;
+
 void VTxtLine::draw() {
   static int time=0; time++;
   pushRect(position.x,position.y,position.x+size.width,position.y+size.height);
@@ -30,6 +32,7 @@ void VTxtLine::draw() {
 }
 
 int VTxtLine::update() {
+  if (keyboardFocus!=this) return 0;
   bool valid = (key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z') || (key >= '0' && key <= '9');
   switch(key) {
     case '!':
@@ -131,6 +134,8 @@ int VTxtLine::update() {
 
 void VTxtLine::init(const String &_text) {
   text = _text;
+  restoreKeyboardFocus = keyboardFocus;
+  setKeyboardFocus(this);
   cursorX = _text.length();
   scrollX = 0;
 }

@@ -14,7 +14,7 @@ void savePaletteHeaderFile(const char *headerFileName, unsigned int *palette) {
   }
 }
 
-void loadPNG(ImageLayer *layer, const char *fileName) {
+bool loadPNG(ImageLayer *layer, const char *fileName) {
   int       i,x,y,width,height;
   unsigned int c;
   FILE      *fp;            // File pointer
@@ -29,7 +29,7 @@ void loadPNG(ImageLayer *layer, const char *fileName) {
 
   // Open the PNG file...
   if ((fp = fopen(fileName, "rb")) == NULL) {
-    return;
+    return false;
   }
 
   // Setup the PNG data structures...
@@ -38,8 +38,7 @@ void loadPNG(ImageLayer *layer, const char *fileName) {
 
   if (setjmp(pp->jmpbuf))
   {
-	  int debug = 1;
-	  return;
+	    return false;
   }
 
   // Initialize the PNG read "engine"...
@@ -138,6 +137,7 @@ void loadPNG(ImageLayer *layer, const char *fileName) {
     }
   }
   delete[] array;
+  return true;
 }
 
 void pngabort(const char * s, ...)
@@ -150,7 +150,7 @@ void pngabort(const char * s, ...)
     abort();
 }
 
-void savePNG(ImageLayer *layer, const char* fileName)
+bool savePNG(ImageLayer *layer, const char* fileName)
 {
   png_structp png_ptr;
   png_infop info_ptr;
@@ -161,32 +161,33 @@ void savePNG(ImageLayer *layer, const char* fileName)
   int i,flipped = 0;
   
   FILE *fp = fopen(fileName, "wb");
-  	if (!fp)
-    pngabort("[write_png_file] File %s could not be opened for writing", fileName);
+  	if (!fp) {
+    return false;
+  }
       
   png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
   	if (!png_ptr) {
     	fclose(fp);
-    pngabort("[write_png_file] png_create_write_struct failed");
+    return false;
   	}
 
   	info_ptr = png_create_info_struct(png_ptr);
   	if (!info_ptr) {
     	fclose(fp);
-    pngabort("[write_png_file] png_create_info_struct failed");
+    return false;
   	}
   
   	if (setjmp(png_jmpbuf(png_ptr))) {
     	fclose(fp);
-    pngabort("[write_png_file] Error during init_io");
+    return false;
   	}
 
   	png_init_io(png_ptr, fp);
 
   if (setjmp(png_jmpbuf(png_ptr))) {
     	fclose(fp);
-    pngabort("[write_png_file] Error during writing header");
+    return false;
   }
 
   width   = layer->width;
@@ -199,7 +200,7 @@ void savePNG(ImageLayer *layer, const char* fileName)
 
   if (setjmp(png_jmpbuf(png_ptr))) {
     	fclose(fp);
-    pngabort("[write_png_file] Error during writing bytes");
+    return false;
   	}
 
   array = new unsigned char[(width * height + 1) * 4];
@@ -219,12 +220,16 @@ void savePNG(ImageLayer *layer, const char* fileName)
   
   	png_write_image(png_ptr, row_pointers);
 
-  if (setjmp(png_jmpbuf(png_ptr)))
-    pngabort("[write_png_file] Error during end of write");
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    delete[] row_pointers;
+    delete[] array;
+    return false;
+  }
 
   	png_write_end(png_ptr, NULL);
 
   delete[] row_pointers;
   delete[] array;
   fclose(fp);
+  return true;
 }

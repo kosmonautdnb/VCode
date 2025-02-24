@@ -6,6 +6,8 @@
 #include "util.hpp"
 
 void CMnuBar::draw() {
+  if (!clickedFunctionName.empty())
+    return;
   pushRect(position,size);
   drawBox(position.x,position.y,position.x+size.width,position.y+CHAR_HEIGHT,COLOR_TEXTBACKGROUND);
   Point pos = position;
@@ -16,7 +18,7 @@ void CMnuBar::draw() {
   bool specialKeyStart = false;
   int altKey = VK_NONE;
   int lastSelectedXY=0;
-  bool mouseBOverItem = false;
+  mouseOverItem = false;
   for (int i = 0; i < text.length(); i++) {
     char c = text[i];
     if (c == '+') {
@@ -37,12 +39,13 @@ void CMnuBar::draw() {
         if (selectedX == cursorX) {
           lastSelectedXY=cursorY;
           bool mOver = mouseOver(Rect(lpos.x,p2.y,p2.x+String::chr(c).pixelWidth()+1,p2.y+CHAR_HEIGHT));
-          if (mOver)
+          if (mOver) {
             selectedY = cursorY;
+            mouseOverItem = true;
+          }
           if (selectedY==cursorY) {
             if (mouseB == 1  || key == VK_ENTER) {
               mouseSelectedOn = cursorY+cursorX*256;
-              if (mOver) mouseBOverItem=true;
             } else {
               if (mouseSelectedOn == cursorY+cursorX*256) {
                 thisItemSelected=true;
@@ -66,8 +69,7 @@ void CMnuBar::draw() {
     if (c == '\n') {cursorX++;pos.x += 10; lpos = pos; continue;}
     if (mouseOver(Rect(lpos.x,pos.y,pos.x+String::chr(c).pixelWidth()+1,pos.y+CHAR_HEIGHT))) {
       selectedX = cursorX;
-      if (mouseB==1)
-        mouseBOverItem = true;
+      mouseOverItem = true;
     }
     unsigned int bgColor = COLOR_TEXTBACKGROUND;
     if (selectedX == cursorX) bgColor = COLOR_SELECTION;
@@ -75,19 +77,18 @@ void CMnuBar::draw() {
     drawChar(pos.x,pos.y,c,COLOR_TEXT);
   }
   if (selectedY>lastSelectedXY) selectedY=lastSelectedXY;
-  if (mouseB==1&&!mouseBOverItem) 
+  if (mouseB==1&&!mouseOverItem) 
   {
     mouseSelectedOn=-1;
     selectedX=-1;
     selectedY=-1;
     clickedFunctionName="";
-  } else {
-    if (mouseB==1) mouseB=0;
   }
   popRect();
 }
 
 int CMnuBar::update() {
+  if (!clickedFunctionName.empty()) {selectedX=-1;selectedY=-1;return 0;}
   if (selectedX != -1) {
     if (key == VK_DOWN) {selectedY++; key = VK_NONE;}
     if (key == VK_UP) {selectedY--;; key = VK_NONE;}
@@ -97,6 +98,7 @@ int CMnuBar::update() {
     if (selectedX<0) selectedX = 0;
     if (key == VK_ESCAPE) {selectedX = -1; key = VK_NONE;}
   }
+  if (selectedX!=-1) return 1;
   return 0;
 }
 

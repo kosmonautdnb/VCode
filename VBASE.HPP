@@ -11,8 +11,9 @@ public:
   Point position;
   Size size;
   String name;
+  VBase *restoreKeyboardFocus;
 
-  VBase() {position=Point(0,0); size = Size(0,0);}
+  VBase() {position=Point(0,0); size = Size(0,0); restoreKeyboardFocus=NULL;}
   virtual ~VBase() {;}
 
   void setRect(int x0, int y0, int x1, int y1) {position.x=x0;position.y=y0;size.width=x1-x0;size.height=y1-y0;}
@@ -24,6 +25,7 @@ public:
   virtual int doModal();
 
   virtual bool mouseIn();
+  void captureKeyboard();
 };
 
 extern VBase *keyboardFocus;

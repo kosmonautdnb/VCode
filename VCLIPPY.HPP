@@ -12,12 +12,19 @@ public:
   CLayerStack *cLayerStack;
   CMnuBar *cMnuBar;
   VFleSlct *vFleSlct;
+  bool doublePixels;
+  bool lockedMouse;
+  String currentPath;
+  int lastMouseX;
+  int lastMouseY;
 
   VClippy() : VBase() {
     cLayerStack = new CLayerStack();
     cLayerStack->layers.push_back(new CLayer());
     cMnuBar = new CMnuBar();
     vFleSlct = new VFleSlct();
+    doublePixels=false;
+    lockedMouse=false;
   }
   virtual ~VClippy() {
     delete cLayerStack;
@@ -35,7 +42,12 @@ public:
   virtual int doModal() {
         return VBase::doModal();
   }
-  void init(int width, int height);
+  String getMenuString();
+  void init(const String &path, int width, int height);
+  
+  void load(const String &fileName);
+
+  void toolMoveLayers();
 };
 
 #endif //__VCLIPPY_HPP__

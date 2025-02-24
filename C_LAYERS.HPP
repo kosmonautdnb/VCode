@@ -16,8 +16,8 @@ public:
     LAYERTYPE_RASTER = 1
   };
   void *image;
-  int xpos;
-  int ypos;
+  float xpos;
+  float ypos;
   uint32_t width;
   uint32_t height;
   int mulX;
@@ -43,6 +43,7 @@ public:
     if (image != NULL) {free(image); image = NULL;}
   }
 
+  void init(uint32_t *data, int _width, int _height);
   void blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, int dst_x0, int dst_y0, int dst_x1, int dst_y1, int src_x0, int src_y0, int src_x1, int src_y1);
   void reCanvas(int x0, int y0, int x1, int y1);
 };
@@ -53,11 +54,17 @@ public:
   uint32_t *image;
   uint32_t width;
   uint32_t height;
+  int xpos;
+  int ypos;
+  float zoom;
 
   CLayerStack() {
     image = NULL;
     width = 0;
     height = 0;
+    xpos = 0;
+    ypos = 0;
+    zoom = 0;
   }
 
   virtual ~CLayerStack() {
@@ -67,6 +74,11 @@ public:
   void blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, int dst_x0, int dst_y0, int dst_x1, int dst_y1, int src_x0, int src_y0, int src_x1, int src_y1);
   void reCanvas(int x0, int y0, int x1, int y1);
   void drawAtXY(int x, int y);
+
+  void reBlit();
+  void doublePixels(bool _doublePixels);
+  void newStack(int _width, int _height);
+  void moveLayers(int moveX, int moveY);
 };
 
 #endif //__C_LAYERS_HPP__

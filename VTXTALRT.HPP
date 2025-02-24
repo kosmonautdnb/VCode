@@ -27,6 +27,7 @@ public:
 
   static int box(String &returned,const String &message,const Array<VButton*> &buttons) {
     VTxtAlrt *txtalrt = new VTxtAlrt();
+    txtalrt->captureKeyboard();
     txtalrt->init(message,buttons);
     txtalrt->vTxtLine->init(returned);
     int r = 0;
