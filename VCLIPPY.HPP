@@ -13,6 +13,9 @@ public:
   CMnuBar *cMnuBar;
   VFleSlct *vFleSlct;
   bool doublePixels;
+  bool gridOn;
+  int gridWidth;
+  int gridHeight;
   bool lockedMouse;
   String currentPath;
   int lastMouseX;
@@ -20,11 +23,15 @@ public:
 
   VClippy() : VBase() {
     cLayerStack = new CLayerStack();
-    cLayerStack->layers.push_back(new CLayer());
     cMnuBar = new CMnuBar();
     vFleSlct = new VFleSlct();
     doublePixels=false;
+    gridOn = false;
+    gridWidth=8;
+    gridHeight=8;
     lockedMouse=false;
+    lastMouseX=0;
+    lastMouseY=0;
   }
   virtual ~VClippy() {
     delete cLayerStack;
@@ -38,6 +45,15 @@ public:
   virtual void draw();
   virtual int update();
   virtual void reset() {
+    cLayerStack->reset();
+    doublePixels=false;
+    gridOn = false;
+    gridWidth=8;
+    gridHeight=8;
+    lockedMouse=false;
+    lastMouseX=0;
+    lastMouseY=0;
+    cMnuBar->reset();
   }
   virtual int doModal() {
         return VBase::doModal();

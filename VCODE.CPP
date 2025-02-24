@@ -256,8 +256,8 @@ int VCode::update() {
       if (selectionEnd>text.length()) selectionEnd = text.length();
       if (selectionStart>text.length()) selectionStart = text.length();
       clipBoard_string=text.substr(selectionStart,selectionEnd);
-      selectionStart = -1;
-      selectionEnd = -1;
+      //selectionStart = -1;
+      //selectionEnd = -1;
       key = VK_NONE;
     }
   }

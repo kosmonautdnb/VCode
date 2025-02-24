@@ -6,22 +6,21 @@
 #include "input.hpp"
 #include "pngload.hpp"
 
+extern bool showAppTime;
+
 void VClippy::draw() {
   pushRect(position,size);
-  drawBox(position.x,position.y,position.x+size.width,position.y+size.height,COLOR_TEXTBACKGROUND);
+  drawBox(position.x,position.y,position.x+size.width,position.y+size.height,0xff300060);
   cLayerStack->drawAtXY(0,0);
   cMnuBar->setRect(position.x,position.y,position.x+size.width,position.y+size.height);
   cMnuBar->text = getMenuString();
-  if (!lockedMouse) 
+  if (!lockedMouse)
     cMnuBar->draw();
-  String status = "";
-  drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
-  drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();
 }
 
 int VClippy::update() {
-  if (!lockedMouse) 
+  if (!lockedMouse)
       if (cMnuBar->update()!=0) {
         lastMouseX = mouseX;
         lastMouseY = mouseY;
@@ -56,19 +55,46 @@ int VClippy::update() {
     cLayerStack->reBlit();
   }
 
-  if (key == VK_ESCAPE) {
-    int a = VAlert::box("Exit Clippy?","YES","NO");
-    if (a == 1)
-      key = VK_ESCAPE;
-  }
-
-  if (key == '+') {
-    cLayerStack->zoom += 0.25f;
+  if (cMnuBar->clickedFunctionName == "SWITCHGRID") {
+    gridOn = !gridOn;
+    cLayerStack->enableGrid(gridOn,gridWidth,gridHeight);
     cLayerStack->reBlit();
   }
 
+  showAppTime = false;
+  if (key == VK_ESCAPE || cMnuBar->clickedFunctionName=="EXIT") {
+    int a = VAlert::box("Exit Clippy?","YES","NO");
+    if (a == 1) {
+      key = VK_ESCAPE;
+      showAppTime = true;
+    }
+  }
+
   if (key == '-') {
-    cLayerStack->zoom -= 0.25f;
+    cLayerStack->addZoom(0.25f,mouseX,mouseY);
+    cLayerStack->reBlit();
+  }
+
+  if (key == '+') {
+    cLayerStack->addZoom(-0.25f,mouseX,mouseY);
+    cLayerStack->reBlit();
+  }
+
+  if (key == 'a' || cMnuBar->clickedFunctionName=="ROTATE90") {
+    cLayerStack->layers[0]->selected = true;
+    cLayerStack->rotateLayers(90.f);
+    cLayerStack->reBlit();
+  }
+
+  if (cMnuBar->clickedFunctionName=="MIRRORX") {
+    cLayerStack->layers[0]->selected = true;
+    cLayerStack->mirrorLayers(-1,1);
+    cLayerStack->reBlit();
+  }
+
+  if (cMnuBar->clickedFunctionName=="MIRRORY") {
+    cLayerStack->layers[0]->selected = true;
+    cLayerStack->mirrorLayers(1,-1);
     cLayerStack->reBlit();
   }
 
@@ -79,19 +105,25 @@ int VClippy::update() {
 }
 
 String VClippy::getMenuString() {
-  String r = "(A)File+Load[LOAD]+Save[SAVE]\n";
-  r+= "(B)Edit+Undo+Redo[REDO]+Cut[CUT]+Copy[COPY]\n";
+  String r = "(A)File+Load[LOAD]+Save[SAVE]+Exit[EXIT]\n";
+  r+= "(B)Edit+Undo+Redo[REDO]+Cut[CUT]+Copy[COPY]+----------"
+  "+Rotate 90 Derees[ROTATE90]"
+  "+Flip horizontaly[MIRRORX]"
+  "+Flip verticaly[MIRRORY]"
+  "\n";
   r+= "(C)Layer\n";
   r+= "(D)Image\n";
   r+= "(E)Font\n";
   r+= "(F)Window";
-  if (!doublePixels) r += "+DoubledWidth[DOUBLEPIXELS]\n";
-  else r += "+NormalWidth[SINGLEPIXELS]\n";
+  if (!doublePixels) r += "+Doubled width[DOUBLEPIXELS]";  else r += "+Normal width[SINGLEPIXELS]";
+  if (!gridOn) r += "+Grid on[SWITCHGRID]"; else r += "+Grid off[SWITCHGRID]\n";
+  r+= "\n";
   r+= "(G)Filter\n";
   return r;
 }
 
 void VClippy::init(const String &path, int width, int height) {
+  reset();
   currentPath = path;
   cLayerStack->newStack(width,height);
   cLayerStack->reBlit();
@@ -114,11 +146,20 @@ void VClippy::toolMoveLayers() {
     lockedMouse = true;
   }
   if (mouseB == 0) {
+    if (lockedMouse) {
+      cLayerStack->finishMoveLayers();
+      cLayerStack->reBlit();
+    }
     lockedMouse = false;
-  } 
+  }
 
   if (mouseB == 1) {
-    cLayerStack->moveLayers(mouseX-lastMouseX,mouseY-lastMouseY);
-    cLayerStack->reBlit();
+    if (shiftKey) {
+      cLayerStack->moveStack(mouseX-lastMouseX,mouseY-lastMouseY);
+    } else {
+      cLayerStack->layers[0]->selected = true;
+      cLayerStack->moveLayers(mouseX-lastMouseX,mouseY-lastMouseY);
+      cLayerStack->reBlit();
+    }
   }
 }

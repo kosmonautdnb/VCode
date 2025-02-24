@@ -38,6 +38,7 @@ public:
     cursorY = -1;
     selectedX = -1;
     selectedY = -1;
+    mouseOverItem = false;
   }
 
   void init(const String &_text);

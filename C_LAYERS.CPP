@@ -9,27 +9,33 @@ void CLayer::init(uint32_t *data, int _width, int _height) {
   height = _height;
   image = (void*)malloc(width*height*4);
   memcpy(image,data,width*height*4);
-  xpos = 0;  
-  ypos = 0;  
+  xpos = 0;
+  ypos = 0;
   mulX = 1;
   mulY = 1;
 }
 
 void CLayer::blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, int dst_x0, int dst_y0, int dst_x1, int dst_y1, int src_x0, int src_y0, int src_x1, int src_y1) {
   uint32_t *im = (uint32_t*)image;
-  int o = opacity*255; 
+  int o = opacity*255;
   src_x0 -= (int)floor(xpos);
   src_x1 -= (int)floor(xpos);
   src_y0 -= (int)floor(ypos);
   src_y1 -= (int)floor(ypos);
-  dst_x1 = (dst_x1-dst_x0)*mulX+dst_x0;
-  dst_y1 = (dst_y1-dst_y0)*mulY+dst_y0;
   for (int y = dst_y0; y < dst_y1; y++) {
-    int sy = (src_y1-src_y0)*(y-dst_y0)/(dst_y1-dst_y0)+src_y0;
-    if (y < 0 || sy < 0 || y >= destHeight || sy >= height) continue;
+    if (y < 0|| y >= destHeight) continue;
+    int sy2 = (src_y1-src_y0)*(y-dst_y0)/(dst_y1-dst_y0)+src_y0;
+    sy2 -= height/2;
     for (int x = dst_x0; x < dst_x1; x++) {
-      int sx = (src_x1-src_x0)*(x-dst_x0)/(dst_x1-dst_x0)+src_x0;
-      if (x < 0 || sx < 0 || x >= destWidth || sx >= width) continue;
+      if (x < 0 || x >= destWidth) continue;
+      int sx2 = (src_x1-src_x0)*(x-dst_x0)/(dst_x1-dst_x0)+src_x0;
+      sx2 -= width/2;
+      int sx = (sx2 * matrix[0] + sy2 * matrix[1])/mulX; 
+      int sy = (sx2 * matrix[2] + sy2 * matrix[3])/mulY; 
+      sx += width/2;
+      sy += height/2;
+      if (sx < 0 || sx >= width) continue;
+      if (sy < 0 || sy >= height) continue;
       uint32_t srcRGBA = im[sx+sy*width];
       int srcR = srcRGBA & 255;
       int srcG = (srcRGBA>>8) & 255;
@@ -145,6 +151,21 @@ void CLayerStack::drawAtXY(int x, int y) {
 
 void CLayerStack::reBlit() {
   blitTo32Bit(image, width, height, 0,0,width,height, 0,0,width,height);
+  if (gridOn && gridWidth > 0 && gridHeight > 0) {
+    for (int y = 0; y < height; y++) {
+      bool gridY = (y % gridHeight)==gridHeight-1;
+      for (int x = 0; x < width; x++) {
+        bool gridX = (x % gridWidth)==gridWidth-1;
+        if (gridX || gridY) {
+          const unsigned int rgba = image[x+y*width];
+          int r = rgba & 255;
+          r += 64;
+          if (r > 255) r = 255;
+          image[x+y*width] |= (rgba & 0xffffff00)|r;
+        }
+      }
+    }
+  }
 }
 
 void CLayerStack::doublePixels(bool _doublePixels) {
@@ -165,12 +186,82 @@ void CLayerStack::newStack(int _width, int _height) {
   image = (uint32_t*)malloc(width*height*4);
 }
 
+void CLayerStack::moveStack(int moveX, int moveY) {
+  xpos += moveX;
+  ypos += moveY;
+}
+
 void CLayerStack::moveLayers(int moveX, int moveY) {
   float zoom2 = pow(2.f,zoom);
   for(int i = 0; i < layers.size(); i++) {
-    if (layers[i] != NULL) {
+    if (layers[i] != NULL && layers[i]->selected) {
       layers[i]->xpos += moveX*zoom2;
       layers[i]->ypos += moveY*zoom2;
     }
   }
+}
+
+void CLayerStack::finishMoveLayers() {
+  for(int i = 0; i < layers.size(); i++) {
+    if (layers[i] != NULL) {
+      layers[i]->xpos = floor(layers[i]->xpos);
+      layers[i]->ypos = floor(layers[i]->ypos);
+    }
+  }
+}
+
+void CLayerStack::rotateLayers(float angle) {
+  for(int i = 0; i < layers.size(); i++) {
+    if (layers[i] != NULL && layers[i]->selected) {
+      float mat1[4]; memcpy(mat1,layers[i]->matrix,sizeof(mat1));
+      float mat2[4];
+      mat2[0]=cos(angle/360.f*2.f*3.1415927);
+      mat2[1]=sin(angle/360.f*2.f*3.1415927);
+      mat2[2]=-sin(angle/360.f*2.f*3.1415927);
+      mat2[3]=cos(angle/360.f*2.f*3.1415927);
+      for (int i0=0;i0<2;i0++) {
+        for (int i1=0;i1<2;i1++) {
+          float a = 0.f;
+          for (int i2=0;i2<2;i2++) {
+            a+=mat1[i2+i1*2]*mat2[i0+i2*2];
+          }
+          if (a > 0.5) a = 1.f; else
+          if (a < -0.5) a = -1.f; else
+          a = 0.f;
+          layers[i]->matrix[i0+i1*2]=a;
+        }
+      }
+    }
+  }
+}
+
+void CLayerStack::mirrorLayers(float x, float y) {
+  for(int i = 0; i < layers.size(); i++) {
+    if (layers[i] != NULL && layers[i]->selected) {
+      layers[i]->matrix[0] *= x;
+      layers[i]->matrix[1] *= y;
+      layers[i]->matrix[2] *= x;
+      layers[i]->matrix[3] *= y;
+    }
+  }
+}
+
+void CLayerStack::addZoom(float zoomAdd, int mouseX, int mouseY) {
+  float zoom1 = pow(2.f,zoom);
+  zoom += zoomAdd;
+  float zoom2 = pow(2.f,zoom);
+  for(int i = 0; i < layers.size(); i++) {
+    if (layers[i] != NULL) {
+      layers[i]->xpos -= (mouseX-xpos)*zoom1;
+      layers[i]->ypos -= (mouseY-ypos)*zoom1;
+      layers[i]->xpos += (mouseX-xpos)*zoom2;
+      layers[i]->ypos += (mouseY-ypos)*zoom2;
+    }
+  }
+}
+
+void CLayerStack::enableGrid(bool _gridOn, int _gridWidth, int _gridHeight) {
+  gridOn = _gridOn;
+  gridWidth = _gridWidth;
+  gridHeight = _gridHeight;
 }
