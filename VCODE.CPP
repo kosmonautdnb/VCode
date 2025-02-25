@@ -264,21 +264,21 @@ int VCode::update() {
   if (key == VK_V_CTRL && strgKey && cursorI>=0) {
     expand();
 
-      if (selectionStart>=0&&selectionEnd>=0) {
-        if (selectionStart>selectionEnd) {
-          int t = selectionStart;
-          selectionStart = selectionEnd;
-          selectionEnd = t;
-        }
-        if (selectionEnd>text.length()) selectionEnd = text.length();
-        if (selectionStart>text.length()) selectionStart = text.length();
-        if (cursorI > selectionStart & cursorI < selectionEnd) cursorI = selectionStart;
-        if (cursorI >= selectionEnd) cursorI -= selectionEnd-selectionStart;
-        text.erase(selectionStart,selectionEnd-selectionStart);
-        colors.erase(selectionStart,selectionEnd-selectionStart);
-        selectionStart = -1;
-        selectionEnd = -1;
-      }
+      //if (selectionStart>=0&&selectionEnd>=0) {
+      //  if (selectionStart>selectionEnd) {
+      //    int t = selectionStart;
+      //    selectionStart = selectionEnd;
+      //    selectionEnd = t;
+      //  }
+      //  if (selectionEnd>text.length()) selectionEnd = text.length();
+      //  if (selectionStart>text.length()) selectionStart = text.length();
+      //  if (cursorI > selectionStart & cursorI < selectionEnd) cursorI = selectionStart;
+      //  if (cursorI >= selectionEnd) cursorI -= selectionEnd-selectionStart;
+      //  text.erase(selectionStart,selectionEnd-selectionStart);
+      //  colors.erase(selectionStart,selectionEnd-selectionStart);
+      //  selectionStart = -1;
+      //  selectionEnd = -1;
+      //}
 
     text.insert(cursorI,clipBoard_string);
     colors.insert(cursorI,clipBoard_string);

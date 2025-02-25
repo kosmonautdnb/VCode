@@ -14,8 +14,7 @@ void VClippy::draw() {
   cLayerStack->drawAtXY(0,0);
   cMnuBar->setRect(position.x,position.y,position.x+size.width,position.y+size.height);
   cMnuBar->text = getMenuString();
-  if (!lockedMouse)
-    cMnuBar->draw();
+  cMnuBar->draw();
   popRect();
 }
 
@@ -27,7 +26,7 @@ int VClippy::update() {
         return 0;
       }
   toolMoveLayers();
-  if (cMnuBar->clickedFunctionName == "LOAD") {
+  if (function == "LOAD") {
     vFleSlct->init(currentPath);
     vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
     vFleSlct->modeLoading = true;
@@ -35,7 +34,7 @@ int VClippy::update() {
     load(vFleSlct->fileNameSelected);
   }
 
-  if (cMnuBar->clickedFunctionName == "SAVE") {
+  if (function == "SAVE") {
     vFleSlct->init(currentPath);
     vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
     vFleSlct->modeLoading = false;
@@ -43,26 +42,26 @@ int VClippy::update() {
     String fileToSave = toLower(vFleSlct->fileNameSelected);
   }
 
-  if (cMnuBar->clickedFunctionName == "DOUBLEPIXELS") {
+  if (function == "DOUBLEPIXELS") {
     doublePixels = true;
     cLayerStack->doublePixels(doublePixels);
     cLayerStack->reBlit();
   }
 
-  if (cMnuBar->clickedFunctionName == "SINGLEPIXELS") {
+  if (function == "SINGLEPIXELS") {
     doublePixels = false;
     cLayerStack->doublePixels(doublePixels);
     cLayerStack->reBlit();
   }
 
-  if (cMnuBar->clickedFunctionName == "SWITCHGRID") {
+  if (function == "SWITCHGRID") {
     gridOn = !gridOn;
     cLayerStack->enableGrid(gridOn,gridWidth,gridHeight);
     cLayerStack->reBlit();
   }
 
   showAppTime = false;
-  if (key == VK_ESCAPE || cMnuBar->clickedFunctionName=="EXIT") {
+  if (key == VK_ESCAPE || function == "EXIT") {
     int a = VAlert::box("Exit Clippy?","YES","NO");
     if (a == 1) {
       key = VK_ESCAPE;
@@ -80,24 +79,25 @@ int VClippy::update() {
     cLayerStack->reBlit();
   }
 
-  if (key == 'a' || cMnuBar->clickedFunctionName=="ROTATE90") {
+  if (key == 'a' || function=="ROTATE90") {
     cLayerStack->layers[0]->selected = true;
     cLayerStack->rotateLayers(90.f);
     cLayerStack->reBlit();
   }
 
-  if (cMnuBar->clickedFunctionName=="MIRRORX") {
+  if (function=="MIRRORX") {
     cLayerStack->layers[0]->selected = true;
     cLayerStack->mirrorLayers(-1,1);
     cLayerStack->reBlit();
   }
 
-  if (cMnuBar->clickedFunctionName=="MIRRORY") {
+  if (function=="MIRRORY") {
     cLayerStack->layers[0]->selected = true;
     cLayerStack->mirrorLayers(1,-1);
     cLayerStack->reBlit();
   }
 
+  function = cMnuBar->clickedFunctionName; // one frame delay for redraw menubar
   cMnuBar->clickedFunctionName = "";
   lastMouseX = mouseX;
   lastMouseY = mouseY;
@@ -105,20 +105,20 @@ int VClippy::update() {
 }
 
 String VClippy::getMenuString() {
-  String r = "(A)File+Load[LOAD]+Save[SAVE]+Exit[EXIT]\n";
-  r+= "(B)Edit+Undo+Redo[REDO]+Cut[CUT]+Copy[COPY]+----------"
-  "+Rotate 90 Derees[ROTATE90]"
-  "+Flip horizontaly[MIRRORX]"
-  "+Flip verticaly[MIRRORY]"
+  String r = "(f)File+(L)Load[LOAD]+(S)Save[SAVE]+(Q)Exit[EXIT]\n";
+  r+= "Edit+Undo+Redo[REDO]+Cut[CUT]+Copy[COPY]+----------"
+  "+(R)Rotate 90 Degrees[ROTATE90]"
+  "+(H)Flip horizontaly[MIRRORX]"
+  "+(V)Flip verticaly[MIRRORY]"
   "\n";
-  r+= "(C)Layer\n";
-  r+= "(D)Image\n";
-  r+= "(E)Font\n";
-  r+= "(F)Window";
+  r+= "Layer\n";
+  r+= "Image\n";
+  r+= "Text\n";
+  r+= "Window";
   if (!doublePixels) r += "+Doubled width[DOUBLEPIXELS]";  else r += "+Normal width[SINGLEPIXELS]";
-  if (!gridOn) r += "+Grid on[SWITCHGRID]"; else r += "+Grid off[SWITCHGRID]\n";
+  if (!gridOn) r += "+Grid on[SWITCHGRID]"; else r += "+Grid off[SWITCHGRID]";
   r+= "\n";
-  r+= "(G)Filter\n";
+  r+= "Effects\n";
   return r;
 }
 

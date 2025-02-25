@@ -20,6 +20,7 @@ public:
   String currentPath;
   int lastMouseX;
   int lastMouseY;
+  String function;
 
   VClippy() : VBase() {
     cLayerStack = new CLayerStack();
@@ -53,6 +54,7 @@ public:
     lockedMouse=false;
     lastMouseX=0;
     lastMouseY=0;
+    function="";
     cMnuBar->reset();
   }
   virtual int doModal() {

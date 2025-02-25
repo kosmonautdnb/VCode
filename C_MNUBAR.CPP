@@ -6,98 +6,117 @@
 #include "util.hpp"
 
 void CMnuBar::draw() {
-  if (!clickedFunctionName.empty())
-    return;
+  textToItems();
   pushRect(position,size);
   drawBox(position.x,position.y,position.x+size.width,position.y+CHAR_HEIGHT,COLOR_TEXTBACKGROUND);
   Point pos = position;
-  Point lpos = pos;
-  cursorX = 0;
-  cursorY = 0;
-  clickedFunctionName="";
-  bool specialKeyStart = false;
-  int altKey = VK_NONE;
-  int lastSelectedXY=0;
-  mouseOverItem = false;
-  for (int i = 0; i < text.length(); i++) {
-    char c = text[i];
-    if (c == '+') {
-      i++;
-      cursorY++;
-      Point p2 = lpos;
+  mouseOverX = -1;
+  mouseOverY = -1;
+  for (int x = 0; x < menu.size(); x++) {
+    CMnuTab *tab = &menu[x];
+    String tabText = tab->name;
+    uint32_t colB = COLOR_WHITE;
+    uint32_t colT = COLOR_BLACK;
+    if (x == selectedX) {
+      colB=COLOR_BLACK;
+      colT=COLOR_WHITE;
+      Array<CMnuItem> *itms = &menu[x].items;
+      int y;
+      int maxWidth = 0;
+      for (y = 0; y < itms->size(); y++) 
+        if ((*itms)[y].name.pixelWidth() > maxWidth) maxWidth = (*itms)[y].name.pixelWidth();
+      Point p2 = pos;
       p2.y += CHAR_HEIGHT;
-      bool nameStarted = false;
-      String name;
-      bool thisItemSelected=false;
-      for(;i<text.length();i++) {
-        c=text[i];
-        if (c=='+') {p2.x = lpos.x; p2.y += CHAR_HEIGHT; cursorY++;thisItemSelected=false; continue;}
-        if (c=='[') {nameStarted = true;name="";continue;}
-        if (c==']') {if (nameStarted) {if(thisItemSelected) clickedFunctionName=name;nameStarted=false;};continue;}
-        if (nameStarted) {name+=String::chr(c);continue;}
-        if (c=='\n') {cursorY=0;break;}
-        if (selectedX == cursorX) {
-          lastSelectedXY=cursorY;
-          bool mOver = mouseOver(Rect(lpos.x,p2.y,p2.x+String::chr(c).pixelWidth()+1,p2.y+CHAR_HEIGHT));
-          if (mOver) {
-            selectedY = cursorY;
-            mouseOverItem = true;
-          }
-          if (selectedY==cursorY) {
-            if (mouseB == 1  || key == VK_ENTER) {
-              mouseSelectedOn = cursorY+cursorX*256;
-            } else {
-              if (mouseSelectedOn == cursorY+cursorX*256) {
-                thisItemSelected=true;
-                mouseSelectedOn = -1;
-              }
-            }
-          }
-          unsigned int bgColor = COLOR_TEXTBACKGROUND;
-          if (selectedY == cursorY) bgColor = COLOR_SELECTION;
-          drawBox(p2.x,p2.y,p2.x+String::chr(c).pixelWidth()+1,p2.y+CHAR_HEIGHT,bgColor);
-          drawChar(p2.x,p2.y,c,COLOR_TEXT);
+      for (y = 0; y < itms->size(); y++) {
+        CMnuItem *itm = &(*itms)[y];
+        drawBox(p2.x-1,p2.y,p2.x+maxWidth+1,p2.y+CHAR_HEIGHT+1,COLOR_WHITE);
+        p2.y += CHAR_HEIGHT;
+      }
+      p2 = pos;
+      p2.y += CHAR_HEIGHT;
+      for (y = 0; y < itms->size(); y++) {
+        uint32_t colB = COLOR_WHITE;
+        uint32_t colT = COLOR_BLACK;
+        CMnuItem *itm = &(*itms)[y];
+        bool mse=mouseOver(Rect(p2.x,p2.y,p2.x+maxWidth,p2.y+CHAR_HEIGHT));
+        if (mse) {
+          mouseOverX=x;
+          mouseOverY=y;
         }
+        if (mse||selectedY==y) {
+          colB = COLOR_BLACK;
+          colT = COLOR_WHITE;
+          drawBox(p2.x-1,p2.y,p2.x+maxWidth+1,p2.y+CHAR_HEIGHT,colB);
+        }
+        drawString(p2.x,p2.y,itm->name,colT);
+        p2.y += CHAR_HEIGHT;
       }
     }
-    if (c == ')') specialKeyStart = false;
-    if (specialKeyStart) {
-      altKey = c;
-      if (key == mapAltKey(altKey)) {selectedX = cursorX;selectedY=1;}
+    bool mse=mouseOver(Rect(pos.x,pos.y,pos.x+tabText.pixelWidth(),pos.y+CHAR_HEIGHT));
+    if (mse) {
+      colB=COLOR_BLACK;
+      colT=COLOR_WHITE;
+      mouseOverX=x;
+      mouseOverY=-1;
     }
-    if (c == '(') specialKeyStart = true;
-    if (c == '\n') {cursorX++;pos.x += 10; lpos = pos; continue;}
-    if (mouseOver(Rect(lpos.x,pos.y,pos.x+String::chr(c).pixelWidth()+1,pos.y+CHAR_HEIGHT))) {
-      selectedX = cursorX;
-      mouseOverItem = true;
-    }
-    unsigned int bgColor = COLOR_TEXTBACKGROUND;
-    if (selectedX == cursorX) bgColor = COLOR_SELECTION;
-    drawBox(pos.x,pos.y,pos.x+String::chr(c).pixelWidth()+1,pos.y+CHAR_HEIGHT,bgColor);
-    drawChar(pos.x,pos.y,c,COLOR_TEXT);
-  }
-  if (selectedY>lastSelectedXY) selectedY=lastSelectedXY;
-  if (mouseB==1&&!mouseOverItem) 
-  {
-    mouseSelectedOn=-1;
-    selectedX=-1;
-    selectedY=-1;
-    clickedFunctionName="";
+    drawBox(pos.x,pos.y,pos.x + tabText.pixelWidth(), pos.y + CHAR_HEIGHT, colB);
+    drawString(pos.x,pos.y,tabText,colT);
+    pos.x += tabText.pixelWidth() + 10;
   }
   popRect();
 }
 
+bool hotKeyPressed(const String &hotKey) {
+  if (hotKey.empty()) return false;
+  if (toLower(hotKey) == "esc") return key == VK_ESCAPE;
+  return key == hotKey[0];
+}
+
 int CMnuBar::update() {
-  if (!clickedFunctionName.empty()) {selectedX=-1;selectedY=-1;return 0;}
+  if (!clickedFunctionName.empty()) {return 0;}
+
+  // hotKeys
+  for (int x = 0; x < menu.size(); x++) {
+    if (hotKeyPressed(menu[x].hotKey)) {selectedX = x; selectedY = -1; key = VK_ENTER;}
+    for (int y = 0; y < menu[x].items.size(); y++) {
+      if (hotKeyPressed(menu[x].items[y].hotKey)) {selectedX = x; selectedY = y; key = VK_ENTER;}
+    }
+  }
+
+  // mouse
+  if (mouseB==1) {
+    if (mouseOverX!=-1) {
+      selectedX = mouseOverX;
+      selectedY = mouseOverY;
+    } else {
+      selectedX = -1;
+      selectedY = -1;
+    }
+  }
+
+  // cursor
   if (selectedX != -1) {
     if (key == VK_DOWN) {selectedY++; key = VK_NONE;}
     if (key == VK_UP) {selectedY--;; key = VK_NONE;}
-    if (key == VK_RIGHT) {selectedX++;selectedY=1; key = VK_NONE;}
-    if (key == VK_LEFT) {selectedX--;selectedY=1; key = VK_NONE;}
-    if (selectedY<1) selectedY = 1;
+    if (key == VK_RIGHT) {selectedY=-1;selectedX++;key = VK_NONE;}
+    if (key == VK_LEFT) {selectedY=-1;selectedX--;key = VK_NONE;}
     if (selectedX<0) selectedX = 0;
+    if (selectedX>=menu.size()) selectedX = menu.size()-1;
+    if (selectedX<menu.size()&&selectedX!=-1) 
+      if (selectedY>=menu[selectedX].items.size()) 
+        selectedY=menu[selectedX].items.size()-1;
+    if (selectedY<0) selectedY = -1;
     if (key == VK_ESCAPE) {selectedX = -1; key = VK_NONE;}
+    if (key == VK_ENTER || mouseB==1) {
+      if (selectedY>=0) {
+        clickedFunctionName = menu[selectedX].items[selectedY].functionName;
+        selectedX = -1;
+        selectedY = -1;
+        key = VK_NONE;
+      }
+    }
   }
+
   if (selectedX!=-1) return 1;
   return 0;
 }
@@ -105,4 +124,86 @@ int CMnuBar::update() {
 void CMnuBar::init(const String &_text) {
   text = _text;
   reset();
+}
+
+void CMnuBar::textToItems() {
+
+  menu.clear();
+  menu.push_back(CMnuTab());
+  int id = 0;
+
+  for (int i = 0; i < text.length(); i++) {
+    char c = text[i];
+
+    if (c == '+') {
+
+      i++;
+      menu.back().items.push_back(CMnuItem());
+      CMnuItem  *menuItem = &(menu.back().items.back());
+      id++;menuItem->id = id;
+
+      for(;i<text.length();i++) {
+        c=text[i];
+        if (c == '+') {
+          menu.back().items.push_back(CMnuItem());
+          menuItem = &(menu.back().items.back());
+          id++;menuItem->id = id;
+          continue;
+        }
+        if (c == '[') {
+          i++;
+          String *functionName = &(menuItem->functionName);
+          for(;i<text.length();i++) {
+            c=text[i];
+            if (c == ']') {
+              break;
+            }
+            *functionName+=String::chr(c);
+          }
+          continue;
+        }
+        if (c == '(') {
+          i++;
+          String *hotKey = &(menuItem->hotKey);
+          for(;i<text.length();i++) {
+            c=text[i];
+            if (c == ')') {
+              break;
+            }
+            *hotKey+=String::chr(c);
+          }
+          menuItem->name += "[" + menuItem->hotKey + "]";
+          continue;
+        }
+        if (c == '\n') {break;}
+        String *name = &(menuItem->name);
+        *name+=String::chr(c);
+      }
+
+    }
+
+    if (c == '\n') {
+      menu.push_back(CMnuTab());
+      continue;
+    }
+
+    if (c == '(') {
+      i++;
+      String *hotKey = &(menu.back().hotKey);
+      for(;i<text.length();i++) {
+        c=text[i];
+        if (c == ')') {
+          break;
+        }
+        *hotKey+=String::chr(c);
+      }
+      menu.back().name += "["+menu.back().hotKey+"]";
+      continue;
+    }
+
+    menu.back().name += String::chr(c);
+
+  }
+
+  menu.pop_back();
 }
