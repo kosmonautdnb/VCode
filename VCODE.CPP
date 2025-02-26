@@ -7,6 +7,7 @@
 #include "util.hpp"
 #include "valert.hpp"
 #include "vtxtalrt.hpp"
+#include "vga.hpp"
 
 void VCode::draw() {
   pushRect(position,size);
@@ -55,7 +56,11 @@ void VCode::draw() {
   while(pos.y < position.y+size.height) {
     String lineNr = String(line+1);
     int col = COLOR_LINENUMBERS;
-    if (line == cursorY) col = COLOR_RED;
+    if (line == cursorY) {
+        col = COLOR_RED;
+        if (cursorPos.x-position.x>=size.width-64)
+          col = COLOR_TEXTBACKGROUND;
+    }
     drawString(position.x+size.width-lineNr.pixelWidth(),pos.y,lineNr, col);
     pos.y += CHAR_HEIGHT;
     line++;
@@ -467,8 +472,7 @@ void VCode::init(const String &_text, const String &_fileName) {
 
 void VCode::drawCursor() {
   if (cursorI != -1) {
-    static int i = 0;i++;
-    if (i & 8) {
+    if (frameCounter & 8) {
       if (!overwriteMode) {
         drawBox(cursorPos.x,cursorPos.y,cursorPos.x+1,cursorPos.y+CHAR_HEIGHT,COLOR_CURSOR);
         drawBox(cursorPos.x+1,cursorPos.y,cursorPos.x+2,cursorPos.y+CHAR_HEIGHT,COLOR_RED);

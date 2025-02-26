@@ -62,10 +62,6 @@ public:
     delete vClippy;
   }
 
-  virtual setRect(int x0, int y0, int x1, int y1) {VStrLst::setRect(x0,y0,x1,y1);}
-  virtual setRect(const Point &p0, const Size &size) {VStrLst::setRect(p0,size);}
-  virtual setRect(const Point &p0, const Point &p1) {VStrLst::setRect(p0,p1);}
-
   virtual void draw();
   virtual int update();
 

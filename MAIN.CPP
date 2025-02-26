@@ -112,6 +112,7 @@ void graphicsMode320x200x256() {
   setBiosGraphicsMode(0x13);
   allocFrameBuffer(320,200);
   randomPalette();
+  plus4Palette();
 }
 
 void graphicsMode640x480x16() {
@@ -131,6 +132,7 @@ bool setupVesa() {
   if (vesa_modeInfo.bpp == 32 &&  vesa_modeInfo.linearFrameBuffer != NULL) {
     vesa_setMode(mode);
     vesa_setAsRenderer(vesa_modeInfo);
+    plus4Palette();
     return true;
   }
   return false;

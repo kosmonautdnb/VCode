@@ -5,6 +5,7 @@
 #include "valert.hpp"
 #include "input.hpp"
 #include "pngload.hpp"
+#include "vga.hpp"
 
 extern bool showAppTime;
 
@@ -15,16 +16,29 @@ void VClippy::draw() {
   cMnuBar->setRect(position.x,position.y,position.x+size.width,position.y+size.height);
   cMnuBar->text = getMenuString();
   cMnuBar->draw();
+  cWPal->draw();
+  cWZoom->draw();
   popRect();
 }
 
 int VClippy::update() {
-  if (!lockedMouse)
+  if (!lockedMouse) {
       if (cMnuBar->update()!=0) {
         lastMouseX = mouseX;
         lastMouseY = mouseY;
         return 0;
       }
+      if (cWPal->update()!=0) {
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+        return 0;
+      }
+      if (cWZoom->update()!=0) {
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+        return 0;
+      }
+  }
   toolMoveLayers();
   if (function == "LOAD") {
     vFleSlct->init(currentPath);
@@ -40,6 +54,12 @@ int VClippy::update() {
     vFleSlct->modeLoading = false;
     vFleSlct->doModal();
     String fileToSave = toLower(vFleSlct->fileNameSelected);
+  }
+
+  if (function == "PALED") {
+    cWPalEd->init(currentPath,palette[cWPal->foregroundColor]);
+    cWPalEd->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
+    cWPalEd->doModal();
   }
 
   if (function == "DOUBLEPIXELS") {
@@ -97,6 +117,13 @@ int VClippy::update() {
     cLayerStack->reBlit();
   }
 
+  cWPal->mouseOverColor=cLayerStack->getPixel(mouseX,mouseY);
+  for (int y = 0; y < CWZOOMY; y++) {
+    for (int x = 0; x < CWZOOMX; x++) {
+      cWZoom->zoom[x+y*CWZOOMX] = cLayerStack->getPixel(mouseX+x-(CWZOOMX-1)/2,mouseY+y-(CWZOOMY-1)/2);
+    }   
+  }
+
   function = cMnuBar->clickedFunctionName; // one frame delay for redraw menubar
   cMnuBar->clickedFunctionName = "";
   lastMouseX = mouseX;
@@ -110,6 +137,7 @@ String VClippy::getMenuString() {
   "+(R)Rotate 90 Degrees[ROTATE90]"
   "+(H)Flip horizontaly[MIRRORX]"
   "+(V)Flip verticaly[MIRRORY]"
+  "+(P)Palettte[PALED]"
   "\n";
   r+= "Layer\n";
   r+= "Image\n";
@@ -128,6 +156,8 @@ void VClippy::init(const String &path, int width, int height) {
   cLayerStack->newStack(width,height);
   cLayerStack->reBlit();
   cMnuBar->init(getMenuString());
+  cWPal->setRect(frameBufferWidth*3/4,frameBufferHeight*3/4,frameBufferWidth,frameBufferHeight);
+  cWZoom->setRect(frameBufferWidth*7/8,frameBufferHeight*4/8,frameBufferWidth,frameBufferHeight*5/8);
 }
 
 void VClippy::load(const String &fileName) {

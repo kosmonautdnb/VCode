@@ -265,3 +265,11 @@ void CLayerStack::enableGrid(bool _gridOn, int _gridWidth, int _gridHeight) {
   gridWidth = _gridWidth;
   gridHeight = _gridHeight;
 }
+
+uint32_t CLayerStack::getPixel(int mouseX, int mouseY) {
+  mouseX -= xpos;
+  mouseY -= ypos;
+  uint32_t k = 0x00000000;
+  blitTo32Bit(&k,1,1, 0,0,1,1, mouseX,mouseY,mouseX+1,mouseY+1);
+  return k;
+}

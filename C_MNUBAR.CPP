@@ -68,7 +68,9 @@ void CMnuBar::draw() {
 
 bool hotKeyPressed(const String &hotKey) {
   if (hotKey.empty()) return false;
-  if (toLower(hotKey) == "esc") return key == VK_ESCAPE;
+  String lower = toLower(hotKey);
+  if (lower == "esc") return key == VK_ESCAPE;
+  if (lower == "altf") return key == VK_F_ALT;
   return key == hotKey[0];
 }
 

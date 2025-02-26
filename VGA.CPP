@@ -4,7 +4,9 @@
 #include <i86.h>
 #include <conio.h>
 #include <stdlib.h>
+#include "p4pal.hpp"
 
+int frameCounter = 0;
 int paletteCount = -1;
 unsigned int palette[256] = {0};
 unsigned int *linearFrameBuffer = NULL;
@@ -80,6 +82,12 @@ void randomPalette() {
       b = r;
     }
     setPalette(i,r|(g<<8)|(b<<16)|0xff000000);
+  }
+}
+
+void plus4Palette() {
+  for (int i = 0; i < sizeof(plus4PaletteStandard)/4; i++) {
+    setPalette(i,plus4PaletteStandard[i]);
   }
 }
 
@@ -178,6 +186,7 @@ __inline unsigned int switchRB(unsigned int rgba) {
 void saveScreenShot(const char *fileName, unsigned int *data, int width,int height);
 
 void frameBufferToScreen(unsigned int *frameBuffer) {
+  frameCounter++;
   if (key == VK_P_CTRL) {
     saveScreenShot("scrnsht.png",frameBuffer,frameBufferWidth,frameBufferHeight);
   }

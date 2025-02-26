@@ -107,6 +107,7 @@ public:
   void mirrorLayers(float x, float y);
   void addZoom(float zoomAdd, int mouseX, int mouseY);
   void enableGrid(bool _gridOn, int _gridX, int _gridY);
+  uint32_t getPixel(int mouseX, int mouseY);
 };
 
 #endif //__C_LAYERS_HPP__

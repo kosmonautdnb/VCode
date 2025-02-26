@@ -3,11 +3,11 @@
 #include "colors.hpp"
 #include "constants.hpp"
 #include "input.hpp"
+#include "vga.hpp" 
 
 extern VBase *keyboardFocus;
 
 void VTxtLine::draw() {
-  static int time=0; time++;
   pushRect(position.x,position.y,position.x+size.width,position.y+size.height);
   drawBox(position.x,position.y,position.x+size.width,position.y+size.height, COLOR_HEADERLINE);
   Point pos;
@@ -24,7 +24,7 @@ void VTxtLine::draw() {
   if (cursorPos.x>position.x+size.width-2) scrollX += cursorPos.x-(position.x+size.width-2);
   if (cursorPos.x<position.x+2) scrollX -= (position.x+2)-cursorPos.x;
   if (scrollX<0) scrollX = 0;
-  if (time & 8) {
+  if (hasKeyboardFocus(this) && (frameCounter & 8)) {
     drawBox(cursorPos.x,cursorPos.y,cursorPos.x+1,cursorPos.y+CHAR_HEIGHT,COLOR_CURSOR);
     drawBox(cursorPos.x+1,cursorPos.y,cursorPos.x+2,cursorPos.y+CHAR_HEIGHT,COLOR_RED);
   }
@@ -32,6 +32,7 @@ void VTxtLine::draw() {
 }
 
 int VTxtLine::update() {
+  if (mouseIn() && mouseB==1) setKeyboardFocus(this);
   if (keyboardFocus!=this) return 0;
   bool valid = (key >= 'a' && key <= 'z') || (key >= 'A' && key <= 'Z') || (key >= '0' && key <= '9');
   switch(key) {
