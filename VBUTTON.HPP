@@ -7,16 +7,13 @@
 class VButton : public VBase {
 public:
   String text;
-  bool mousePressed;
-  bool mouseReleased;
   bool wasClicked;
   bool selected;
 
   VButton() : VBase() {
     text = "";
-    mousePressed = false;
-    mouseReleased = false;
     wasClicked = false;
+    selected = false;
   }
   virtual ~VButton() {;}
 

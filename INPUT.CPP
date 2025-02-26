@@ -6,6 +6,7 @@
 int mouseX = 0;
 int mouseY = 0;
 int mouseB = 0;
+int lastMouseB = 0;
 int key = 0;
 bool shiftKey = false;
 bool strgKey = false;
@@ -35,6 +36,7 @@ void updateMouse() {
     int386(0x33, &regs, &regs);
     mouseX = regs.x.ecx & 0xffff;
     mouseY = regs.x.edx & 0xffff;
+    lastMouseB = mouseB;
     mouseB = regs.x.ebx & 0xffff;
 }
 

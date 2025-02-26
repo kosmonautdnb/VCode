@@ -11,6 +11,7 @@
 
 class CWPalEd : public CWBase {
 public:
+  String clipBoard;
   int startColor;
   int endColor;
   VHSlider *slider_R;
@@ -33,7 +34,8 @@ public:
   String function;
   String currentPath;
   VFleSlct *vFleSlct;
-  VButton *vButtonMakeGradient;
+  VButton *vButtonFlip;
+  VButton *vButtonCopy;
 
   CWPalEd() : CWBase() {
     name = "Palette editor";
@@ -57,7 +59,8 @@ public:
     mouseOverColorIndex = 0;
     cMnuBar = new CMnuBar();
     vFleSlct = new VFleSlct();
-    vButtonMakeGradient = new VButton();
+    vButtonFlip = new VButton();
+    vButtonCopy = new VButton();
   }
   virtual ~CWPalEd() {
     delete slider_R;
@@ -72,7 +75,8 @@ public:
     delete enter_RGBA;
     delete cMnuBar;
     delete vFleSlct;
-    delete vButtonMakeGradient;
+    delete vButtonFlip;
+    delete vButtonCopy;
   }
 
   virtual void draw();
@@ -93,6 +97,7 @@ public:
 
   void loadPalette(const String &fileName);
   void savePalette(const String &fileName);
+  void paletteFromPicture(const String &fileName);
 };
 
 #endif //__C_WPALED_HPP__

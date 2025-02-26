@@ -7,6 +7,7 @@
 #include "util.hpp"
 #include "string.hpp"
 #include <math.h>
+#include "pngload.hpp"
 
 static float sin2(float a) {
   a /= 2.f * 3.1415927f;
@@ -75,8 +76,12 @@ void CWPalEd::draw() {
   drawBox(position.x+1,position.y+16*mul+CHAR_HEIGHT*2, position.x+1+12,position.y+16*mul+CHAR_HEIGHT*2+12,palette[startColor]);
   
   if (startColor != endColor) { 
-    vButtonMakeGradient->setRect(position.x+1+12+4,3+position.y+16*mul+CHAR_HEIGHT*2-2,position.x+1+12+4+vButtonMakeGradient->text.pixelWidth()+4,3+position.y+16*mul+CHAR_HEIGHT*3+2);
-    vButtonMakeGradient->draw();
+    int x = position.x+1+12+4;
+    vButtonFlip->setRect(x,3+position.y+16*mul+CHAR_HEIGHT*2-2,x+vButtonFlip->text.pixelWidth()+4,3+position.y+16*mul+CHAR_HEIGHT*3+2);
+    vButtonFlip->draw();
+    x += vButtonFlip->text.pixelWidth()+4+4;
+    vButtonCopy->setRect(x,3+position.y+16*mul+CHAR_HEIGHT*2-2,x+vButtonCopy->text.pixelWidth()+4,3+position.y+16*mul+CHAR_HEIGHT*3+2);
+    vButtonCopy->draw();
   }
 
   mouseOverColorIndex = -1;
@@ -84,11 +89,10 @@ void CWPalEd::draw() {
     mouseOverColorIndex = (mouseX-position.x)/mul+(mouseY-position.y)/mul*16;
   }
 
+  int px = position.x+16*mul+4;
   int py = position.y+16*mul;
   int s = size.height-(py-position.y)-2;
   py -= 8;
-  int px = position.x+1+12+4+vButtonMakeGradient->text.pixelWidth()+4+2;
-  if (px < position.x+16*mul+4) px = position.x+16*mul+4;
   int ld = 256*256*3;
   int lx = 0; 
   int ly = 0; 
@@ -207,34 +211,18 @@ int CWPalEd::update() {
   }
 
   if (startColor!=endColor) {
-    vButtonMakeGradient->update();
-    if (vButtonMakeGradient->clicked()) {
-      vButtonMakeGradient->wasClicked = false;
-      int startColor2 = startColor;
-      int endColor2 = endColor;
-      if (startColor2>endColor2) {
-        int t = startColor2;
-        startColor2 = endColor2;
-        endColor2 = t;
-      }
-      float r0 = palette[startColor2] & 255;
-      float g0 = (palette[startColor2]>>8) & 255;
-      float b0 = (palette[startColor2]>>16) & 255;
-      float a0 = (palette[startColor2]>>24) & 255;
-      float r1 = palette[endColor2] & 255;
-      float g1 = (palette[endColor2]>>8) & 255;
-      float b1 = (palette[endColor2]>>16) & 255;
-      float a1 = (palette[endColor2]>>24) & 255;
-      for (int i = 0; i <= endColor2-startColor2; i++) {
-        float ri = (float)i / (endColor2-startColor2);
-        int r = (int)((r1-r0)*ri+r0);
-        int g = (int)((g1-g0)*ri+g0);
-        int b = (int)((b1-b0)*ri+b0);
-        int a = (int)((a1-a0)*ri+a0);
-        int32_t rgba = r|(g<<8)|(b<<16)|(a<<24);
-        setColor(rgba);
-        setPalette(i+startColor2,rgba);
-      }
+    vButtonFlip->update();
+    vButtonCopy->update();
+    if (vButtonFlip->clicked()) {
+      vButtonFlip->wasClicked=false;
+      uint32_t t = palette[startColor];
+      setPalette(startColor,palette[endColor]);
+      setPalette(endColor,t);
+      setColor(palette[startColor]);
+    }
+    if (vButtonCopy->clicked()) {
+      vButtonCopy->wasClicked=false;
+      setPalette(endColor,palette[startColor]);
     }
   }
 
@@ -312,13 +300,154 @@ int CWPalEd::update() {
     setPalette(startColor,rgba);
   }
 
+  if (function == "COPY") {
+    int startColor2 = startColor;
+    int endColor2 = endColor;
+    if (startColor2>endColor2) {
+      int t = startColor2;
+      startColor2 = endColor2;
+      endColor2 = t;
+    }
+    clipBoard.resize((endColor2+1-startColor2)*4);
+    memcpy(&(clipBoard[0]),&palette[startColor2],clipBoard.length());
+  }
+
+  if (function == "ERASE") {
+    int startColor2 = startColor;
+    int endColor2 = endColor;
+    if (startColor2>endColor2) {
+      int t = startColor2;
+      startColor2 = endColor2;
+      endColor2 = t;
+    }
+    for (int i = startColor2; i<256; i++) {
+      if (i+endColor2+1-startColor2<256)
+        setPalette(i,palette[i+endColor2+1-startColor2]);
+      else
+        setPalette(i,0xff000000);
+    }
+    startColor=startColor2;
+    endColor=startColor2;
+  }
+
+  if (function == "PASTE") {
+    for (int i = startColor; i<startColor+clipBoard.length()/4&&i<256; i++) {
+      setPalette(i,((uint32_t*)(&clipBoard[0]))[i-startColor]);
+    }
+  }
+
+  if (function == "INSERT") {
+    for (int i = 255; i>=startColor; i--) {
+      int i2 = i+clipBoard.length()/4;
+      if (i2<256)
+        setPalette(i2,palette[i]);
+    }
+    for (int j = 0; j < clipBoard.length()/4; j++)
+      if (j+startColor<256)
+        setPalette(j+startColor,((uint32_t*)(&clipBoard[0]))[j]);
+  }
+
   if (function == "LOAD") {
     vFleSlct->init(currentPath);
     vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
     vFleSlct->modeLoading = true;
     vFleSlct->doModal();
     loadPalette(vFleSlct->fileNameSelected);
-    setColor(palette[startColor]);
+  }
+
+  if (function == "PALFROMPICTURE") {
+    vFleSlct->init(currentPath);
+    vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
+    vFleSlct->modeLoading = true;
+    vFleSlct->doModal();
+    paletteFromPicture(vFleSlct->fileNameSelected);
+    function = "SORTUP";
+  }
+
+  if (function == "SORTUP") {
+    int startColor2 = startColor;
+    int endColor2 = endColor;
+    if (startColor2>endColor2) {
+      int t = startColor2;
+      startColor2 = endColor2;
+      endColor2 = t;
+    }
+    for(int i = startColor2; i <= endColor2; i++) {
+      for(int j = i + 1; j <= endColor2; j++) {
+        uint32_t rgba = palette[i];
+        int r = rgba & 255;        
+        int g = (rgba>>8) & 255;        
+        int b = (rgba>>16) & 255;        
+        int h1 = r*r*0.25*0.25+g*g*0.6*0.6+b*b*0.15*0.15;
+        uint32_t rgba2 = palette[j];
+        int r2 = rgba2 & 255;        
+        int g2 = (rgba2>>8) & 255;        
+        int b2 = (rgba2>>16) & 255;        
+        int h2 = r2*r2*0.25*0.25+g2*g2*0.6*0.6+b2*b2*0.15*0.15;
+        if (h2 < h1) {
+          uint32_t t = palette[i];
+          setPalette(i,palette[j]);
+          setPalette(j,t);
+        }
+      }
+    }
+  }                                                 
+
+  if (function == "SORTDOWN") {
+    int startColor2 = startColor;
+    int endColor2 = endColor;
+    if (startColor2>endColor2) {
+      int t = startColor2;
+      startColor2 = endColor2;
+      endColor2 = t;
+    }
+    for(int i = startColor2; i <= endColor2; i++) {
+      for(int j = i + 1; j <= endColor2; j++) {
+        uint32_t rgba = palette[i];
+        int r = rgba & 255;        
+        int g = (rgba>>8) & 255;        
+        int b = (rgba>>16) & 255;        
+        int h1 = r*r*0.25*0.25+g*g*0.6*0.6+b*b*0.15*0.15;
+        uint32_t rgba2 = palette[j];
+        int r2 = rgba2 & 255;        
+        int g2 = (rgba2>>8) & 255;        
+        int b2 = (rgba2>>16) & 255;        
+        int h2 = r2*r2*0.25*0.25+g2*g2*0.6*0.6+b2*b2*0.15*0.15;
+        if (h2 > h1) {
+          uint32_t t = palette[i];
+          setPalette(i,palette[j]);
+          setPalette(j,t);
+        }
+      }
+    }
+  }                                                 
+
+  if (function == "MAKEGRADIENT") {
+    int startColor2 = startColor;
+    int endColor2 = endColor;
+    if (startColor2>endColor2) {
+      int t = startColor2;
+      startColor2 = endColor2;
+      endColor2 = t;
+    }
+    float r0 = palette[startColor2] & 255;
+    float g0 = (palette[startColor2]>>8) & 255;
+    float b0 = (palette[startColor2]>>16) & 255;
+    float a0 = (palette[startColor2]>>24) & 255;
+    float r1 = palette[endColor2] & 255;
+    float g1 = (palette[endColor2]>>8) & 255;
+    float b1 = (palette[endColor2]>>16) & 255;
+    float a1 = (palette[endColor2]>>24) & 255;
+    for (int i = 0; i <= endColor2-startColor2; i++) {
+      float ri = (float)i / (endColor2-startColor2);
+      int r = (int)((r1-r0)*ri+r0);
+      int g = (int)((g1-g0)*ri+g0);
+      int b = (int)((b1-b0)*ri+b0);
+      int a = (int)((a1-a0)*ri+a0);
+      int32_t rgba = r|(g<<8)|(b<<16)|(a<<24);
+      setColor(rgba);
+      setPalette(i+startColor2,rgba);
+    }
   }
 
   if (function == "SAVE") {
@@ -369,9 +498,11 @@ void CWPalEd::init(const String &path, int selectedColor) {
   slider_A->init(0,0,255);
   slider_Intens->init(0,0,1);
   setColor(palette[startColor]);
-  String r = "(AltF)File+(L)Load[LOAD]+(S)Save[SAVE]+(Q)Exit[EXIT]\n";
+  String r = "(AltF)File+(l)Load[LOAD]+(s)Save[SAVE]+(q)Exit[EXIT]\n";
+  r += "(t)Tools+Palette from picture[PALFROMPICTURE]+Make gradient[MAKEGRADIENT]+Sort up[SORTUP]+Sort down[SORTDOWN]+Copy[COPY]+Erase[ERASE]+Paste[PASTE]+Insert[INSERT]\n";
   cMnuBar->init(r);
-  vButtonMakeGradient->init("Make gradient");
+  vButtonFlip->init("Flip");
+  vButtonCopy->init("Copy");
 }
 
 void CWPalEd::loadPalette(const String &path) {
@@ -387,4 +518,97 @@ void CWPalEd::savePalette(const String &path) {
   palString.resize(256*4);
   memcpy(&(palString[0]),palette,256*4);
   stringToFile(palString,path,false);
+}
+
+void CWPalEd::paletteFromPicture(const String &fileName) {
+  int startColor2 = startColor;
+  int endColor2 = endColor;
+  if (startColor2>endColor2) {
+    int t = startColor2;
+    startColor2 = endColor2;
+    endColor2 = t;
+  }
+
+  if (getExtension(toLower(fileName))==".png") {
+    ImageLayer l;
+    if (loadPNG(&l, fileName.c_str())) {
+      int colorCount = endColor2-startColor2;
+      Array<Array<unsigned int> > kMeansParticles;
+      Array<float> kMeansCenters_r;
+      Array<float> kMeansCenters_g;
+      Array<float> kMeansCenters_b;
+      kMeansParticles.resize(colorCount);
+      kMeansCenters_r.resize(colorCount);
+      kMeansCenters_g.resize(colorCount);
+      kMeansCenters_b.resize(colorCount);
+      for(int i = 0; i < colorCount; i++) {
+        kMeansCenters_r[i]=(rand()&1023)/4.f;
+        kMeansCenters_g[i]=(rand()&1023)/4.f;
+        kMeansCenters_b[i]=(rand()&1023)/4.f;
+        kMeansParticles[i].clear();
+      }
+      for(int j = 0; j < 32; j++) {
+        for(int i = 0; i < colorCount; i++) {
+          kMeansParticles[i].clear();
+        }
+        for (int k = 0; k < l.width*l.height; k++) {
+          uint32_t rgba = l.data[k];
+          int r = rgba & 255;        
+          int g = (rgba>>8) & 255;        
+          int b = (rgba>>16) & 255;        
+          int center=0;
+          float ld = 256*256*4;
+          for (int v = 0; v < kMeansCenters_r.size(); v++) {
+            float r2 = kMeansCenters_r[v];        
+            float g2 = kMeansCenters_g[v];        
+            float b2 = kMeansCenters_b[v];        
+            float d = (r2-r)*(r2-r)+(g2-g)*(g2-g)+(b2-b)*(b2-b);
+            if (d < ld) {
+              ld = d;
+              center=v;
+            }
+          }
+          kMeansParticles[center].push_back(rgba);
+        }
+        for (int w = kMeansCenters_r.size()-1; w >= 0; w--) {
+          float r = 0;
+          float g = 0;
+          float b = 0;
+          int s = kMeansParticles[w].size();
+          for (int u = 0; u < s; u++) {
+            uint32_t rgba2 = kMeansParticles[w][u];
+            int r2 = rgba2 & 255;        
+            int g2 = (rgba2>>8) & 255;        
+            int b2 = (rgba2>>16) & 255;        
+            r += r2;
+            g += g2;
+            b += b2;
+          }
+          if (s>0) {
+            r/=(float)s;
+            g/=(float)s;
+            b/=(float)s;
+            kMeansCenters_r[w]=r;
+            kMeansCenters_g[w]=g;
+            kMeansCenters_b[w]=b;
+          } else {
+            kMeansCenters_r.erase(w,1);
+            kMeansCenters_g.erase(w,1);
+            kMeansCenters_b.erase(w,1);
+          }
+        }
+      }
+      for (int w = 0; w < kMeansCenters_r.size(); w++) {
+        int r = kMeansCenters_r[w];
+        int g = kMeansCenters_g[w];
+        int b = kMeansCenters_b[w];
+        uint32_t rgba = r|(g<<8)|(b<<16)|0xff000000;
+        setPalette(w+startColor2,rgba);
+      }
+      if (startColor<endColor) 
+        endColor=startColor+kMeansCenters_r.size()-1;
+      else
+        startColor=endColor+kMeansCenters_r.size()-1;
+    }
+  }
 }

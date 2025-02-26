@@ -4,6 +4,7 @@
 extern int mouseX;
 extern int mouseY;
 extern int mouseB;
+extern int lastMouseB;
 extern int key;
 extern bool shiftKey;
 extern bool strgKey;

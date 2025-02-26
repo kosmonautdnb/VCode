@@ -148,9 +148,12 @@ int main(int argc, const char *argv[])
   disableControlBreak();
 
   const bool force320x200 = true;
+  const bool force640x480 = false;
   if (force320x200) {
       graphicsMode320x200x256();
-  } else {
+  }else if (force640x480) {
+      graphicsMode640x480x16();
+  }else {
     if (!setupVesa()) {
       //graphicsMode320x200x256();
       graphicsMode640x480x16();

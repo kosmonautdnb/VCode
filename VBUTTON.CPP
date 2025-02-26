@@ -16,17 +16,8 @@ void VButton::draw() {
 }
 
 int VButton::update() {
-  if (mouseIn()) {
-    if (mouseB==1) {
-      mousePressed = true;
-    } else {
-      if (mousePressed) mouseReleased = true;
-    }
-    if (mousePressed && mouseReleased)
+  if (mouseIn()&&lastMouseB==1&&mouseB==0) {
       wasClicked = true;
-  } else {
-    mousePressed = false;
-    mouseReleased = false;
   }
   if (selected && key == VK_ENTER)
     wasClicked = true;

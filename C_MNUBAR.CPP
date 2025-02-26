@@ -109,7 +109,7 @@ int CMnuBar::update() {
         selectedY=menu[selectedX].items.size()-1;
     if (selectedY<0) selectedY = -1;
     if (key == VK_ESCAPE) {selectedX = -1; key = VK_NONE;}
-    if (key == VK_ENTER || mouseB==1) {
+    if (key == VK_ENTER || (lastMouseB==1&&mouseB==0)) {
       if (selectedY>=0) {
         clickedFunctionName = menu[selectedX].items[selectedY].functionName;
         selectedX = -1;

@@ -82,6 +82,8 @@ int VStrLst::update() {
     if (mouseB == 1) {
       scrollY = (mouseY-position.y)*textLastLine*CHAR_HEIGHT/size.height;
     }
+  } else {
+    if (mouseIn()&&lastMouseB==1&&mouseB==0) key = VK_ENTER;
   }
   if (hasKeyboardFocus(this)) {
     int selectedLineBefore = selectedLine;

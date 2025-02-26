@@ -41,6 +41,17 @@ public:
     data = data2;
     allocatedSize = numElements;
   }
+
+  void erase(int64_t pos, int64_t count) {
+    int64_t i;
+    for (i = pos+count; i < usedSize; i++) {
+      data[i-count]=data[i];    
+    }
+    for (i = usedSize-count; i < usedSize; i++) {
+      data[i]=T();    
+    }
+    usedSize-=count;
+  }
   
   void resize(int64_t numElements) {
     if (numElements<allocatedSize) {
