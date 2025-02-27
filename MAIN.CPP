@@ -117,8 +117,9 @@ void graphicsMode640x480x16() {
 bool setupVesa() {
   VbeInfoBlock vesa_info;
   VbeModeInfo vesa_modeInfo;
-  //int mode = VESA_1024x768x24;
-  int mode = VESA_640x480x24;
+  int mode = vesa_getMode(640,480,32,true);
+  if (mode < 0) 
+    return false;
   vesa_getInfo(vesa_info);
   if (false) {printf("VESAINFO:\n%s\n",vesa_getInfoString(vesa_info).c_str());exit(0);}
   vesa_getModeInfo(mode,vesa_modeInfo);

@@ -9,12 +9,14 @@ public:
   float vmin;
   float vmax;
   float lastValue;
+  bool grabbed;
 
   VHSlider() : VBase() {
     value = 0;
     lastValue = 0;
     vmin = 0;
     vmax = 0;
+    grabbed = false;
   }
   virtual ~VHSlider() {;}
 

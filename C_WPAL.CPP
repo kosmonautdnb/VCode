@@ -44,7 +44,7 @@ int CWPal::update() {
     foregroundColor = getPaletteIndex(mouseOverColor);
     return 1;
   }
-  if (lastMouseB==2&&mouseB==0)  {
+  if (mouseIn()&&lastMouseB==2&&mouseB==0)  {
     foregroundColor = getPaletteIndex(mouseOverColor);
     rightClicked = true;
     return 0;

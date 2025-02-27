@@ -15,13 +15,17 @@ void VHSlider::draw() {
 
 int VHSlider::update() {
   lastValue=value;
-  if (mouseIn()) {
+  if (grabbed) {
     if (mouseB==1) {
       int mouseDX = mouseX-position.x;
       value = mouseDX*(vmax-vmin)/(size.width-1)+vmin;
     }
   }
-  return 0;
+  if (mouseIn()&&mouseB==1&&lastMouseB==0)
+    grabbed = true;
+  if (mouseB!=1)
+    grabbed = false;
+  return grabbed ? 1 : 0;
 }
 
 

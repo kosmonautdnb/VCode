@@ -52,6 +52,15 @@ public:
     }
     usedSize-=count;
   }
+
+  void insert(const T &element, int64_t pos) {
+    resize(usedSize+1);
+    int64_t i;
+    for (i = usedSize-1; i > pos; i--) {
+      data[i]=data[i-1];    
+    }
+    data[pos]=element;    
+  }
   
   void resize(int64_t numElements) {
     if (numElements<allocatedSize) {

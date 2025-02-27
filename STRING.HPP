@@ -1,4 +1,4 @@
-#ifndef __STRING_HPP__
+#ifndef __STRING_HPP__       
 #define __STRING_HPP__
 
 #include <string.h>
@@ -229,6 +229,18 @@ public:
     return k;
   }
   
+  static String flt(float v) {
+    String k;
+    k.resize(16);
+    sprintf(&(k[0]),"%f",v);
+    k.resize(strlen(k.c_str()));
+    return k;
+  }
+
+  float toFloat() {
+    return atof(c_str());
+  }  
+
   char *c_str() const {
     return data;
   }

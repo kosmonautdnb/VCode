@@ -47,10 +47,10 @@ void setupMouse() {
     union REGS regs;
     regs.x.eax = 0x07;
     regs.x.ecx = 0;
-    regs.x.edx = frameBufferWidth;
+    regs.x.edx = frameBufferWidth-1;
     int386(0x33, &regs, &regs);
     regs.x.eax = 0x08;
     regs.x.ecx = 0;
-    regs.x.edx = frameBufferHeight;
+    regs.x.edx = frameBufferHeight-1;
     int386(0x33, &regs, &regs);
 }

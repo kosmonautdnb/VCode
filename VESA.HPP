@@ -65,5 +65,6 @@ void vesa_getModeInfo(int mode, VbeModeInfo &data);
 String vesa_getModeInfoString(const VbeModeInfo &data, bool compact);
 void vesa_setAsRenderer(const VbeModeInfo &data);
 void vesa_setMode(int mode);
+int vesa_getMode(int width, int height, int bitsPerPixel, bool linearFramebuffer);
 
 #endif // __VESA_HPP__

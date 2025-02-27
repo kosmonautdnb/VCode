@@ -18,6 +18,7 @@ void VClippy::draw() {
   cMnuBar->draw();
   cWPal->draw();
   cWZoom->draw();
+  cWLayer->draw();
   popRect();
 }
 
@@ -38,17 +39,30 @@ int VClippy::update() {
         lastMouseY = mouseY;
         return 0;
       }
+      if (cWLayer->update()!=0) {
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+        return 0;
+      }
   }
-  toolMoveLayers();
-  if (function == "LOAD") {
+  //toolMoveLayers();
+  if (function == "LOADPNG") {
     vFleSlct->init(currentPath);
     vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
     vFleSlct->modeLoading = true;
     vFleSlct->doModal();
-    load(vFleSlct->fileNameSelected);
+    load(vFleSlct->fileNameSelected,-1);
   }
 
-  if (function == "SAVE") {
+  if (function == "LOADPNGINTOLAYER") {
+    vFleSlct->init(currentPath);
+    vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
+    vFleSlct->modeLoading = true;
+    vFleSlct->doModal();
+    load(vFleSlct->fileNameSelected,cWLayer->currentLayer);
+  }
+
+  if (function == "SAVEPNG") {
     vFleSlct->init(currentPath);
     vFleSlct->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
     vFleSlct->modeLoading = false;
@@ -137,7 +151,7 @@ int VClippy::update() {
 }
 
 String VClippy::getMenuString() {
-  String r = "(f)File+(L)Load[LOAD]+(S)Save[SAVE]+(Q)Exit[EXIT]\n";
+  String r = "(f)File+(L)Load PNG[LOADPNG]+Load PNG into layer[LOADPNGINTOLAYER]+(S)Save PNG[SAVEPNG]+(Q)Exit[EXIT]\n";
   r+= "Edit+Undo+Redo[REDO]+Cut[CUT]+Copy[COPY]+----------"
   "+(R)Rotate 90 Degrees[ROTATE90]"
   "+(H)Flip horizontaly[MIRRORX]"
@@ -163,16 +177,25 @@ void VClippy::init(const String &path, int width, int height) {
   cMnuBar->init(getMenuString());
   cWPal->setRect(frameBufferWidth*3/4,frameBufferHeight*3/4,frameBufferWidth,frameBufferHeight);
   cWZoom->setRect(frameBufferWidth*7/8,frameBufferHeight*4/8,frameBufferWidth,frameBufferHeight*5/8);
+  cWLayer->setRect(frameBufferWidth*6/8,frameBufferHeight*1/8,frameBufferWidth,frameBufferHeight*3/8);
+  cWLayer->init();
 }
 
-void VClippy::load(const String &fileName) {
+void VClippy::load(const String &fileName, int layerNr) {
   if (getExtension(toLower(fileName))==".png") {
     ImageLayer l;
     if (loadPNG(&l, fileName.c_str())) {
-      cLayerStack->newStack(cLayerStack->width,cLayerStack->height);
-      cLayerStack->layers[0]->init(l.data,l.width,l.height);
-      cLayerStack->reBlit();
+      if (layerNr < 0) {
+        cLayerStack->newStack(cLayerStack->width,cLayerStack->height);
+        cLayerStack->layers.push_back(new CLayer());
+        layerNr = 0;
+      }
+      if (layerNr < cLayerStack->layers.size()) {
+        cLayerStack->layers[layerNr]->init(l.data,l.width,l.height);
+        cLayerStack->reBlit();
+      }
     }
+    delete[] l.data;
   }
 }
 

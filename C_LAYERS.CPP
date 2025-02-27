@@ -4,15 +4,23 @@
 #include <math.h>
 
 void CLayer::init(uint32_t *data, int _width, int _height) {
-  if (image != NULL) free(image);
+  if (image != NULL) delete[] image;
   width = _width;
   height = _height;
-  image = (void*)malloc(width*height*4);
-  memcpy(image,data,width*height*4);
+  image = (void*)new uint32_t[width*height];
+  if (data!=NULL)
+    memcpy(image,data,width*height*4);
+  else {
+    uint32_t *d = (uint32_t*)image;
+    for (int i = 0; i < _width*_height; i++) d[i] = 0xff000000;
+  }
   xpos = 0;
   ypos = 0;
   mulX = 1;
   mulY = 1;
+  opacity = 1.f;
+  layerType = LAYERTYPE_RASTER;
+  layerFunction = LAYERFUNCTION_ALPHA;
 }
 
 void CLayer::blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, int dst_x0, int dst_y0, int dst_x1, int dst_y1, int src_x0, int src_y0, int src_x1, int src_y1) {
@@ -51,10 +59,10 @@ void CLayer::blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, 
         } break;
         case LAYERFUNCTION_ALPHA: {
           uint32_t dstRGBA = dest[x+y*destWidth];
-          int dstR = srcRGBA & 255;
-          int dstG = (srcRGBA>>8) & 255;
-          int dstB = (srcRGBA>>16) & 255;
-          int dstA = (srcRGBA>>24) & 255;
+          int dstR = dstRGBA & 255;
+          int dstG = (dstRGBA>>8) & 255;
+          int dstB = (dstRGBA>>16) & 255;
+          int dstA = (dstRGBA>>24) & 255;
           int o2 = srcA*o;
           r = (((srcR - dstR)*o2)>>16)+dstR;
           g = (((srcG - dstG)*o2)>>16)+dstG;
@@ -79,14 +87,14 @@ void CLayer::reCanvas(int x0, int y0, int x1, int y1) {
   int dWidth=x1-x0;
   int dHeight=y1-y0;
   if (image == NULL) {
-    image = (void*)malloc(dWidth*dHeight*4);
+    image = (void*)new uint32_t[dWidth*dHeight];
     uint32_t *im = (uint32_t*)image;
     for (int i = 0; i < dWidth*dHeight; i++) im[i] = 0xff000000;
   } else {
-    uint32_t *m = (uint32_t*)malloc(width*height*4);
+    uint32_t *m = (uint32_t*)new uint32_t[width*height];
     memcpy(m, image, width*height*4);
-    free(image);
-    image = malloc(dWidth*dHeight*4);
+    delete[] image;
+    image = (void*)new uint32_t[dWidth*dHeight];
     uint32_t *im = (uint32_t*)image;
     for (int i = 0; i < dWidth*dHeight; i++) im[i] = 0xff000000;
     for (int y = 0; y < height; y++) {
@@ -96,7 +104,7 @@ void CLayer::reCanvas(int x0, int y0, int x1, int y1) {
         im[x+y*dWidth]=m[x+y*width];
       }
     }
-    free(m);
+    delete[] m;
   }
   width = dWidth;
   height = dHeight;
@@ -118,7 +126,8 @@ void CLayerStack::blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHei
   src_y1 *= zoom2;
   for (int i = 0; i < layers.size(); i++) {
     CLayer *l = layers[i];
-    l->blitTo32Bit(dest,destWidth,destHeight,dst_x0,dst_y0,dst_x1,dst_y1,src_x0,src_y0,src_x1,src_y1);
+    if (l->visible)
+      l->blitTo32Bit(dest,destWidth,destHeight,dst_x0,dst_y0,dst_x1,dst_y1,src_x0,src_y0,src_x1,src_y1);
   }
 }
 
@@ -127,10 +136,10 @@ void CLayerStack::reCanvas(int x0, int y0, int x1, int y1) {
     CLayer *l = layers[i];
     l->reCanvas(x0,y0,x1,y1);
   }
-  if (image != NULL) free(image);
+  if (image != NULL) delete[] image;
   width = x1 - x0;
   height = y1 - y0;
-  image = (uint32_t*)malloc(width * height * 4);
+  image = (uint32_t*)new uint32_t[width * height];
   blitTo32Bit(image, width, height, 0,0,width,height, 0,0,width,height);
 }
 
@@ -179,11 +188,10 @@ void CLayerStack::newStack(int _width, int _height) {
     if (layers[i] != NULL) delete layers[i];
   }
   layers.clear();
-  layers.push_back(new CLayer());
   width = _width;
   height = _height;
-  if (image != NULL) free(image);
-  image = (uint32_t*)malloc(width*height*4);
+  if (image != NULL) delete[] image;
+  image = (uint32_t*)new uint32_t[width*height];
 }
 
 void CLayerStack::moveStack(int moveX, int moveY) {

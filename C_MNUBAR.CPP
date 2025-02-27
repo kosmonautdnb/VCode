@@ -75,6 +75,7 @@ bool hotKeyPressed(const String &hotKey) {
 }
 
 int CMnuBar::update() {
+  if (menu.empty()) return 0;
   if (!clickedFunctionName.empty()) {return 0;}
 
   // hotKeys

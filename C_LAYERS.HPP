@@ -3,10 +3,12 @@
 
 #include "types.hpp"
 #include "array.hpp"
+#include "string.hpp"
 #include <stdlib.h>
 
 class CLayer {
 public:
+  String name;
   enum LayerFunction {
     LAYERFUNCTION_NONE = 0,
     LAYERFUNCTION_ALPHA = 1
@@ -26,6 +28,7 @@ public:
   uint32_t layerFunction;
   float opacity;
   bool selected;
+  bool visible;
   float matrix[2*2];   
 
   CLayer() {
@@ -44,10 +47,13 @@ public:
     layerFunction = LAYERFUNCTION_NONE;
     opacity = 0.f;
     selected = false;
+    visible = true;
+    static int counter = 0; counter++;
+    name = String("Layer ") + counter;
   }
 
   virtual ~CLayer() {
-    if (image != NULL) {free(image); image = NULL;}
+    if (image != NULL) {delete[] image; image = NULL;}
   }
 
   void init(uint32_t *data, int _width, int _height);
@@ -82,7 +88,9 @@ public:
   }
 
   virtual ~CLayerStack() {
-    if (image != NULL) {free(image); image = NULL;}
+    if (image != NULL) {delete[] image; image = NULL;}
+    for (int i = 0; i < layers.size(); i++) 
+      delete layers[i];
   }
 
   void reset() {

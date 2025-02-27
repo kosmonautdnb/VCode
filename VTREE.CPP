@@ -124,7 +124,7 @@ int VTree::update() {
     if (key == VK_F2_SHIFT) {
       vClippy->init(lastPathName,frameBufferWidth,frameBufferHeight);
       vClippy->setRect(0,0,frameBufferWidth,frameBufferHeight);
-      vClippy->load(fileName);
+      vClippy->load(fileName,-1);
       vClippy->doModal();
       setKeyboardFocus(this);
     }

@@ -125,3 +125,16 @@ void vesa_setMode(int mode) {
   DPMI_int386(0x10,&regs,&regs);
 }
 
+int vesa_getMode(int width, int height, int bitsPerPixel, bool linearFramebuffer) {
+  VbeInfoBlock info;
+  vesa_getInfo(info);
+  Array<int> list = vesa_getVideoModes(info);
+  for (int i = 0; i < list.size(); i++) {
+    VbeModeInfo modeInfo;
+    vesa_getModeInfo(list[i], modeInfo);
+    if (modeInfo.width==width&&modeInfo.height==height&&modeInfo.bpp==bitsPerPixel&&modeInfo.linearFrameBuffer!=0x00) {
+      return list[i];
+    }
+  }
+  return -1;
+}

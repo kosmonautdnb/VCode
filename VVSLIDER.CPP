@@ -15,13 +15,17 @@ void VVSlider::draw() {
 
 int VVSlider::update() {
   lastValue=value;
-  if (mouseIn()) {
+  if (grabbed) {
     if (mouseB==1) {
       int mouseDY = mouseY-position.y;
       value = mouseDY*(vmax-vmin)/(size.height-1)+vmin;
     }
   }
-  return 0;
+  if (mouseIn()&&mouseB==1&&lastMouseB==0)
+    grabbed = true;
+  if (mouseB!=1)
+    grabbed = false;
+  return grabbed ? 1 : 0;
 }
 
 
