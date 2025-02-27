@@ -56,7 +56,7 @@ unsigned char getPaletteIndex(unsigned int rgba) {
   const int b = rgba & 255;rgba>>=8;
   int ld = 256*256*4;
   int ri = 0;
-  for (int i = 0; i < paletteCount; i++) {
+  for (int i = 0; i < 256; i++) {
     unsigned int pal = palette[i];
     const int r2 = pal & 255;pal >>= 8;
     const int g2 = pal & 255;pal >>= 8;
@@ -69,6 +69,27 @@ unsigned char getPaletteIndex(unsigned int rgba) {
   }
   return ri;
 }
+
+unsigned char getPaletteIndex16(unsigned int rgba) {
+  const int r = rgba & 255;rgba>>=8;
+  const int g = rgba & 255;rgba>>=8;
+  const int b = rgba & 255;rgba>>=8;
+  int ld = 256*256*4;
+  int ri = 0;
+  for (int i = 0; i < 16; i++) {
+    unsigned int pal = palette[i];
+    const int r2 = pal & 255;pal >>= 8;
+    const int g2 = pal & 255;pal >>= 8;
+    const int b2 = pal & 255;pal >>= 8;
+    const int d = (r2-r)*(r2-r)+(g2-g)*(g2-g)+(b2-b)*(b2-b);
+    if (d < ld) {
+      ld = d;
+      ri = i;
+    }
+  }
+  return ri;
+}
+
 
 void randomPalette() {
   paletteCount = 256;
@@ -132,7 +153,7 @@ void frameBufferToScreen16Colors(unsigned int *frameBuffer) {
     for (y = 0; y < height; y++) {
       unsigned int *read = &frameBuffer[y * frameBufferHeight/height * frameBufferWidth];
       for (x = 0; x < width; x++) {
-        *b2++=getPaletteIndex(read[x*frameBufferWidth/width]);
+        *b2++=getPaletteIndex16(read[x*frameBufferWidth/width]);
       }
     }
 

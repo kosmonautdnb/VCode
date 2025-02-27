@@ -9,6 +9,7 @@ void CWBase::draw() {
   drawBox(position.x-1,position.y-CHAR_HEIGHT-1,position.x+size.width+1,position.y+size.height+1,mode == MODE_NONE ? COLOR_WHITE : COLOR_WINDOW_MODIFY);
   pushRect(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y);
   drawString(position.x,position.y-CHAR_HEIGHT,name,COLOR_WINDOW_HANDLE);
+  drawString(position.x+size.width-String("X").pixelWidth(),position.y-CHAR_HEIGHT,"x",COLOR_RED);
   popRect();
   popRect();
 }
@@ -21,6 +22,12 @@ int CWBase::update() {
   if (mouseOver(Rect(position.x+size.width-k,position.y+size.height-k,position.x+size.width+k,position.y+size.height+k))) {
     if (mouseB == 1) mode = MODE_RESIZE;
   }
+
+  if (mouseOver(Rect(position.x+size.width-String("x").pixelWidth(),position.y-CHAR_HEIGHT,position.x+size.width,position.y))) {
+    if (lastMouseB==1 && mouseB == 0) 
+      key = VK_ESCAPE;
+  }
+
   switch(mode) {
     case MODE_MOVE: {
       if (mouseB != 1) mode = MODE_NONE;

@@ -84,19 +84,12 @@ public:
   virtual void draw();
   virtual int update();
   virtual void reset() {
-    startColor = 0;
-    endColor = 0;
-    red = 0;
-    green = 0;
-    blue = 0;
-    alpha = 0;
-    rgba = 0;
     mouseOverColorIndex = 0;
     mouseOverColor = 0;
   }
 
   void setColor(int color);
-  void init(const String &path, int selectedColor);
+  void init(const String &path, int selectedColorIndex);
 
   void loadPalette(const String &fileName);
   void savePalette(const String &fileName);

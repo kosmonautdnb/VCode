@@ -56,8 +56,13 @@ int VClippy::update() {
     String fileToSave = toLower(vFleSlct->fileNameSelected);
   }
 
+  if (cWPal->rightClicked) {
+    cWPal->rightClicked=false;
+    function="PALED";
+  }
+
   if (function == "PALED") {
-    cWPalEd->init(currentPath,palette[cWPal->foregroundColor]);
+    cWPalEd->init(currentPath,cWPal->foregroundColor);
     cWPalEd->setRect(frameBufferWidth/4,frameBufferHeight/4,frameBufferWidth*3/4,frameBufferHeight*3/4);
     cWPalEd->doModal();
   }

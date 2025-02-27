@@ -8,10 +8,12 @@ public:
 
   int foregroundColor;
   int mouseOverColor;
+  bool rightClicked;
 
   CWPal() : CWBase() {
     foregroundColor = 0;
     mouseOverColor = 0;
+    rightClicked = false;
     name = "Palette";
   }
   virtual ~CWPal() {
@@ -22,6 +24,7 @@ public:
   virtual void reset() {
     foregroundColor = 0;
     mouseOverColor = 0;
+    rightClicked = false;
   }
 };
 

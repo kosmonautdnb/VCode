@@ -9,6 +9,10 @@
 #include <math.h>
 #include "pngload.hpp"
 
+uint32_t swapRB(uint32_t rgba) {
+  return (rgba&0xff00ff00)|((rgba&0xff)<<16)|((rgba>>16)&0xff);
+}
+
 static float sin2(float a) {
   a /= 2.f * 3.1415927f;
   a = fmod(a+100.f,1.f);
@@ -54,7 +58,7 @@ static uint32_t getCol2(float h,float s,float l) {
 
 void CWPalEd::draw() {
   String n = name;
-  if (mouseOverColor != 0x00) name += " #" + String::hex(mouseOverColor,8);
+  if (mouseOverColor != 0x00) name += " #" + String::hex(swapRB(mouseOverColor),8);
   CWBase::draw();
   name = n;
   position.y += CHAR_HEIGHT;
@@ -166,7 +170,7 @@ void CWPalEd::draw() {
   if (mouseX>=px2&&mouseY>=py2&&mouseX<px2+s2&&mouseY<py2+s2) {
       float xf = (float)(mouseX-px2)/s2;
       float yf = (float)(mouseY-py2)/s2;
-      uint32_t rgba=getCol2(xf,yf,1.f-slider_Intens->value);
+      uint32_t rgba=getCol2(xf,yf,slider_Intens->value);
       if (mouseB==1) {
         setColor(rgba);
         setPalette(startColor,rgba);
@@ -197,7 +201,7 @@ void CWPalEd::draw() {
   drawString(enter_G->position.x + enter_G->size.width + 1,enter_G->position.y+1,"Green:"+String(green),COLOR_BLACK);
   drawString(enter_B->position.x + enter_B->size.width + 1,enter_B->position.y+1,"Blue:"+String(blue),COLOR_BLACK);
   drawString(enter_A->position.x + enter_A->size.width + 1,enter_A->position.y+1,"Alpha:"+String(alpha),COLOR_BLACK);
-  drawString(enter_RGBA->position.x + enter_RGBA->size.width + 1,enter_RGBA->position.y+1,"ABGR",COLOR_BLACK);
+  drawString(enter_RGBA->position.x + enter_RGBA->size.width + 1,enter_RGBA->position.y+1,"ARGB",COLOR_BLACK);
   popRect();
   position.y -= CHAR_HEIGHT;
   size.height += CHAR_HEIGHT;
@@ -264,7 +268,7 @@ int CWPalEd::update() {
   if (slider_R->hasChanged()) {
     int k = (int)slider_R->value;
     rgba &= 0xffffff00;
-    rgba |= k << 0;
+    rgba |= k;
     setColor(rgba);
     setPalette(startColor,rgba);
   }
@@ -298,13 +302,13 @@ int CWPalEd::update() {
     green = enter_G->text.fromHex() & 255;
     blue = enter_B->text.fromHex() & 255;
     alpha = enter_A->text.fromHex() & 255;
-    rgba = enter_RGBA->text.fromHex() & 0xffffffff;
+    rgba = swapRB(enter_RGBA->text.fromHex()) & 0xffffffff;
     if (hasKeyboardFocus(enter_R)) rgba = (rgba & 0xffffff00)|(red<<0);
     if (hasKeyboardFocus(enter_G)) rgba = (rgba & 0xffff00ff)|(green<<8);
     if (hasKeyboardFocus(enter_B)) rgba = (rgba & 0xff00ffff)|(blue<<16);
     if (hasKeyboardFocus(enter_A)) rgba = (rgba & 0x00ffffff)|(alpha<<24);
     if (hasKeyboardFocus(enter_RGBA)) {
-      red = rgba & 255;
+      red = (rgba>>0) & 255;
       green = (rgba>>8) & 255;
       blue = (rgba>>16) & 255;
       alpha = (rgba>>24) & 255;
@@ -497,16 +501,17 @@ void CWPalEd::setColor(int color) {
   enter_G->text = String::hex(green,2);
   enter_B->text = String::hex(blue,2);
   enter_A->text = String::hex(alpha,2);
-  enter_RGBA->text = String::hex(rgba,8);
+  enter_RGBA->text = String::hex(swapRB(rgba),8);
   slider_R->value = red;
   slider_G->value = green;
   slider_B->value = blue;
   slider_A->value = alpha;
 }
 
-void CWPalEd::init(const String &path, int selectedColor) {
+void CWPalEd::init(const String &path, int selectedColorIndex) {
   currentPath = path;
-  startColor = getPaletteIndex(selectedColor);
+  startColor = selectedColorIndex;
+  endColor = selectedColorIndex;
   enter_R->init("00");
   enter_G->init("00");
   enter_B->init("00");

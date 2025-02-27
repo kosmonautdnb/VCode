@@ -117,7 +117,8 @@ void graphicsMode640x480x16() {
 bool setupVesa() {
   VbeInfoBlock vesa_info;
   VbeModeInfo vesa_modeInfo;
-  int mode = VESA_1024x768x24;
+  //int mode = VESA_1024x768x24;
+  int mode = VESA_640x480x24;
   vesa_getInfo(vesa_info);
   if (false) {printf("VESAINFO:\n%s\n",vesa_getInfoString(vesa_info).c_str());exit(0);}
   vesa_getModeInfo(mode,vesa_modeInfo);
@@ -140,11 +141,11 @@ int main(int argc, const char *argv[])
   currentWorkingDirectory = getCWD();
   disableControlBreak();
 
-  const bool force320x200 = true;
-  const bool force640x480 = false;
-  if (force320x200) {
+  const bool force320x200x256 = false;
+  const bool force640x480x16 = false;
+  if (force320x200x256) {
       graphicsMode320x200x256();
-  }else if (force640x480) {
+  }else if (force640x480x16) {
       graphicsMode640x480x16();
   }else {
     if (!setupVesa()) {

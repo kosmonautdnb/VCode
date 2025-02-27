@@ -49,6 +49,8 @@ public:
       String desc = undoDescs[undoPos-1];
       int64_t start = undoStart[undoPos-1];
       int64_t end = undoEnd[undoPos-1];
+      if (start<undoMemoryPosition-undoMemory.size()) 
+        return NIL;
       s.resize(end-start);
       for (int64_t i = 0; i < end-start; i++) {
         s[i]=getByte(i+start);
@@ -64,6 +66,8 @@ public:
       String desc = undoDescs[undoPos+1];
       int64_t start = undoStart[undoPos+1];
       int64_t end = undoEnd[undoPos+1];
+      if (start<undoMemoryPosition-undoMemory.size()) 
+        return NIL;
       s.resize(end-start);
       for (int64_t i = 0; i < end-start; i++) {
         s[i]=getByte(i+start);

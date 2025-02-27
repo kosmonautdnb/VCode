@@ -3,12 +3,12 @@
 #include "colors.hpp"
 #include "constants.hpp"
 #include "input.hpp"
+#include "vga.hpp"
 
 void VButton::draw() {
-  static int time=0; time++;
   pushRect(position.x,position.y,position.x+size.width,position.y+size.height);
   unsigned int col = mouseIn() ? COLOR_MOUSEOVERLINE:COLOR_WHITE;
-  if (selected&&(time&8)) col = COLOR_SCROLL;
+  if (selected&&(frameCounter&8)) col = COLOR_SCROLL;
   drawBox(position.x,position.y,position.x+size.width,position.y+size.height,col);
   drawRectangle(position.x,position.y,position.x+size.width,position.y+size.height,COLOR_BLACK);
   drawString(position.x+(size.width-text.pixelWidth())/2,position.y+size.height/2-CHAR_HEIGHT/2,text,COLOR_RED);
