@@ -168,6 +168,14 @@ void VCode::expand() {
 }
 
 int VCode::update() {
+  if (key == VK_U_CTRL) {
+    if (shiftKey) 
+      doRedo();
+    else
+      doUndo();
+    return 0;
+  }
+
   int lastY = textPos.y;
   if (cursorY < topLine) textPos.y -= (topLine-cursorY)*CHAR_HEIGHT;
   if (cursorY > bottomLine) textPos.y+=(cursorY-bottomLine)*CHAR_HEIGHT;
@@ -181,6 +189,7 @@ int VCode::update() {
 
   if (strgKey) {
     if (key==VK_L_CTRL && (!fileName.empty())) {
+      addUndo();
       cursorRequiresI=cursorI;
       text = stringFromFile(fileName,true);
       originalText = text;
@@ -221,7 +230,6 @@ int VCode::update() {
   if (key == VK_F3) {
     find(toFind,findAddress+1);
   }
-
   if (shiftKey) {
     if (key == VK_LEFT_CTRL || key == VK_RIGHT_CTRL || key == VK_POS1||key == VK_END||key == VK_UP||key == VK_DOWN||key == VK_LEFT||key==VK_RIGHT||key==VK_PAGEUP||key==VK_PAGEDOWN) {
       if (shiftReleased) selectionStart = cursorI;
@@ -237,6 +245,7 @@ int VCode::update() {
   }
   if (selectionStart>=0&&selectionEnd>=0) {
     if (key == VK_ENTF || key == VK_DELETE || key == VK_X_CTRL) {
+      addUndo();
       if (selectionStart>selectionEnd) {
         int t = selectionStart;
         selectionStart = selectionEnd;
@@ -267,6 +276,7 @@ int VCode::update() {
     }
   }
   if (key == VK_V_CTRL && strgKey && cursorI>=0) {
+    addUndo();
     expand();
 
       //if (selectionStart>=0&&selectionEnd>=0) {
@@ -358,6 +368,7 @@ int VCode::update() {
   } else {
     if (cursorI != -1) {
       if (key == VK_ENTF && cursorI<text.length()) {
+          addUndo();
           expand();
           text.erase(cursorI,1);
           colors.erase(cursorI,1);
@@ -366,6 +377,7 @@ int VCode::update() {
       else
       if (key == VK_DELETE) {
         if (cursorI>0 && cursorI<=text.length()) {
+          addUndo();
           expand();
           text.erase(cursorI-1,1);
           colors.erase(cursorI-1,1);
@@ -375,6 +387,7 @@ int VCode::update() {
       }
       else
       if (key == VK_TAB||key == VK_TAB_SHIFT) {
+        addUndo();
         expand();
         if (selectionStart>=0&&selectionEnd>=0) {
           int searchStart = selectionStart;
@@ -426,6 +439,7 @@ int VCode::update() {
       }
       else
       if (key == VK_ENTER) {
+        addUndo();
         expand();
         text.insert(cursorI,'\n');
         colors.insert(cursorI,'\n');
@@ -435,6 +449,7 @@ int VCode::update() {
       }
       else
       if (key < 128 && key >= ' ') {
+        addUndo();
         expand();
         if (overwriteMode&&text[cursorI]!='\n') {
           text[cursorI] = key;
@@ -464,6 +479,7 @@ int VCode::update() {
 void VCode::init(const String &_text, const String &_fileName) {
   fileName = _fileName;
   text = _text;
+  addUndo();
   originalText = _text;
   colors = _text;
   updateSyntaxHiLight(text,colors,toFind);
@@ -512,4 +528,26 @@ bool VCode::find(const String &search, unsigned int address) {
     findAddress = 0;
   }
   return false;
+}
+
+void VCode::addUndo() {
+  undo->addUndo(text,String(cursorI));
+}
+
+void VCode::doUndo() {
+  String desc = undo->doUndo(text);
+  colors = text;
+  updateSyntaxHiLight(text,colors,toFind);
+  cursorRequiresI = desc.toInt();
+  selectionStart = -1;
+  selectionEnd = -1;
+}
+
+void VCode::doRedo() {
+  String desc = undo->doRedo(text);
+  colors = text;
+  updateSyntaxHiLight(text,colors,toFind);
+  cursorRequiresI = desc.toInt();
+  selectionStart = -1;
+  selectionEnd = -1;
 }

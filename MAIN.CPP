@@ -33,8 +33,6 @@ void displayFileSelector() {
     treeRight->searchText = getName(fileNameToLoad)+getExtension(fileNameToLoad);
     treeRight->searchTextUpdated();
   }
-  bool altPressed = false;
-  bool altCanceled = false;
   bool grabbed=false;
   do {
     updateMouse();
@@ -53,15 +51,9 @@ void displayFileSelector() {
         grabbed = false;
     }
 
-    if (key == VK_NONE && altKey) altPressed = true;
-    if (key != VK_NONE && altPressed && altKey) altCanceled = true;
     bool doSwitch = false;
-    if (!altKey) {
-      if (altPressed && (!altCanceled)) {
-        doSwitch=true;
-      }
-      altCanceled = false;
-      altPressed = false;
+    if (altKey && shiftKey) {doSwitch=true;
+      while(altKey && shiftKey) updateKeyboard();
     }
     if (treeLeft->treeMode==VTree::TREEMODE_FILETREE&&treeRight->treeMode==VTree::TREEMODE_FILETREE)
       if (key == VK_TAB)
@@ -113,6 +105,7 @@ void graphicsMode320x200x256() {
   allocFrameBuffer(320,200);
   randomPalette();
   plus4Palette();
+  egaPalette(128,true);
 }
 
 void graphicsMode640x480x16() {

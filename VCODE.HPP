@@ -8,6 +8,9 @@
 #include "blit.hpp"
 #include "vga.hpp"
 #include "syntax.hpp"
+#include "undo.hpp"
+
+#define VCODE_UNDOMEMORY_SIZE (1024*1024*4)
 
 class VCode : public VBase {
 public:
@@ -34,6 +37,7 @@ public:
   int displayOutline;
   String toFind;
   unsigned int findAddress;
+  Undo *undo;   
 
   VCode() : VBase() {
     name = "Edit";
@@ -61,12 +65,16 @@ public:
     initSyntaxHiLighting();
     toFind = "";
     findAddress = 0;
+    undo = new Undo(VCODE_UNDOMEMORY_SIZE);
   }
-  virtual ~VCode() {;}
+  virtual ~VCode() {
+    delete undo;
+  }
 
   virtual void draw();
   virtual int update();
   virtual void reset() {
+    undo->reset();
     textPos = Point(0,0);
     cursorX = 0;
     cursorY = 0;
@@ -96,6 +104,10 @@ public:
   void expand();
   void drawCursor();
   bool find(const String &search, unsigned int address);
+
+  void addUndo();
+  void doRedo();
+  void doUndo();
 };
 
 #endif //__VCODE_HPP__

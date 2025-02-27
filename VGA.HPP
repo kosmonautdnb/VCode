@@ -12,6 +12,7 @@ void setPalette(int index, unsigned int color);
 unsigned char getPaletteIndex(unsigned int rgba);
 void randomPalette();
 void plus4Palette();
+void egaPalette(int startColor, bool setColors);
 void palette16Colors();
 void setLinearFrameBuffer32Bit(unsigned int *frameBuffer);
 void setBanking32Bit();

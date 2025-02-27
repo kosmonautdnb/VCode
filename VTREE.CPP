@@ -21,7 +21,7 @@ void VTree::draw() {
       drawBox(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y,COLOR_HEADERLINE);
       popRect();
     }
-    String status = "ESC for exit. ALT instead of TAB.";
+    String status = "ESC for exit. ALT+Shift instead of TAB.";
     drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
     drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
     vCode->setRect(this->position,this->size);

@@ -53,7 +53,10 @@ static uint32_t getCol2(float h,float s,float l) {
 }
 
 void CWPalEd::draw() {
+  String n = name;
+  if (mouseOverColor != 0x00) name += " #" + String::hex(mouseOverColor,8);
   CWBase::draw();
+  name = n;
   position.y += CHAR_HEIGHT;
   size.height -= CHAR_HEIGHT;
   pushRect(position,size);
@@ -66,10 +69,9 @@ void CWPalEd::draw() {
   }
   int c0 = startColor;
   int c1 = endColor;
-  drawRectangle(position.x+(c0&15)*mul-1,position.y+(c0/16)*mul-1,position.x+(c0&15)*mul+mul+1,position.y+(c0/16)*mul+mul+1,COLOR_WHITE);
   drawRectangle(position.x+(c0&15)*mul-2,position.y+(c0/16)*mul-2,position.x+(c0&15)*mul+mul+2,position.y+(c0/16)*mul+mul+2,COLOR_RED);
   drawRectangle(position.x+(c1&15)*mul-1,position.y+(c1/16)*mul-1,position.x+(c1&15)*mul+mul+1,position.y+(c1/16)*mul+mul+1,COLOR_RED);
-  drawRectangle(position.x+(c1&15)*mul-2,position.y+(c1/16)*mul-2,position.x+(c1&15)*mul+mul+2,position.y+(c1/16)*mul+mul+2,COLOR_WHITE);
+  drawRectangle(position.x+(c0&15)*mul-1,position.y+(c0/16)*mul-1,position.x+(c0&15)*mul+mul+1,position.y+(c0/16)*mul+mul+1,COLOR_WHITE);
 
   drawString(position.x+1,position.y+16*mul,"Start:$"+String::hex(c0,2),COLOR_BLACK);
   drawString(position.x+1,position.y+16*mul+CHAR_HEIGHT,"End:$"+String::hex(c1,2),COLOR_BLACK);
@@ -177,11 +179,11 @@ void CWPalEd::draw() {
   slider_B->setRect(position.x+17*mul,position.y+CHAR_HEIGHT*4,position.x+17*mul+k,position.y+CHAR_HEIGHT*5+1);
   slider_A->setRect(position.x+17*mul,position.y+CHAR_HEIGHT*6,position.x+17*mul+k,position.y+CHAR_HEIGHT*7+1);
   k+=4;
-  enter_R->setRect(k+position.x+17*mul,position.y+CHAR_HEIGHT*0,k+position.x+17*mul+CHAR_HEIGHT*2,position.y+CHAR_HEIGHT*1+1);
-  enter_G->setRect(k+position.x+17*mul,position.y+CHAR_HEIGHT*2,k+position.x+17*mul+CHAR_HEIGHT*2,position.y+CHAR_HEIGHT*3+1);
-  enter_B->setRect(k+position.x+17*mul,position.y+CHAR_HEIGHT*4,k+position.x+17*mul+CHAR_HEIGHT*2,position.y+CHAR_HEIGHT*5+1);
-  enter_A->setRect(k+position.x+17*mul,position.y+CHAR_HEIGHT*6,k+position.x+17*mul+CHAR_HEIGHT*2,position.y+CHAR_HEIGHT*7+1);
-  enter_RGBA->setRect(position.x+17*mul,position.y+CHAR_HEIGHT*8,position.x+17*mul+CHAR_HEIGHT*7,position.y+CHAR_HEIGHT*9+1);
+  enter_R->setRect(k+position.x+17*mul,position.y+CHAR_HEIGHT*0,k+position.x+17*mul+CHAR_HEIGHT*2+1,position.y+CHAR_HEIGHT*1+1);
+  enter_G->setRect(k+position.x+17*mul,position.y+CHAR_HEIGHT*2,k+position.x+17*mul+CHAR_HEIGHT*2+1,position.y+CHAR_HEIGHT*3+1);
+  enter_B->setRect(k+position.x+17*mul,position.y+CHAR_HEIGHT*4,k+position.x+17*mul+CHAR_HEIGHT*2+1,position.y+CHAR_HEIGHT*5+1);
+  enter_A->setRect(k+position.x+17*mul,position.y+CHAR_HEIGHT*6,k+position.x+17*mul+CHAR_HEIGHT*2+1,position.y+CHAR_HEIGHT*7+1);
+  enter_RGBA->setRect(position.x+17*mul,position.y+CHAR_HEIGHT*8,position.x+17*mul+CHAR_HEIGHT*7+1,position.y+CHAR_HEIGHT*9+1);
   slider_R->draw();
   slider_G->draw();
   slider_B->draw();
@@ -208,6 +210,17 @@ int CWPalEd::update() {
   if (r) return r;
   if (cMnuBar->update()!=0) {
     return 0;
+  }
+  
+  if (!mouseIn()) {
+    mouseOverColor = lastCapturedFrameBuffer[mouseX+mouseY*frameBufferWidth];
+    if (mouseB==0x00&&lastMouseB==0x02)
+    {
+      setPalette(startColor,mouseOverColor);
+      setColor(mouseOverColor);
+    }
+  } else {
+    mouseOverColor = 0x00;
   }
 
   if (startColor!=endColor) {
@@ -328,12 +341,14 @@ int CWPalEd::update() {
     }
     startColor=startColor2;
     endColor=startColor2;
+    setColor(palette[startColor]);
   }
 
   if (function == "PASTE") {
     for (int i = startColor; i<startColor+clipBoard.length()/4&&i<256; i++) {
       setPalette(i,((uint32_t*)(&clipBoard[0]))[i-startColor]);
     }
+    setColor(palette[startColor]);
   }
 
   if (function == "INSERT") {
@@ -345,6 +360,7 @@ int CWPalEd::update() {
     for (int j = 0; j < clipBoard.length()/4; j++)
       if (j+startColor<256)
         setPalette(j+startColor,((uint32_t*)(&clipBoard[0]))[j]);
+    setColor(palette[startColor]);
   }
 
   if (function == "LOAD") {
@@ -362,6 +378,7 @@ int CWPalEd::update() {
     vFleSlct->doModal();
     paletteFromPicture(vFleSlct->fileNameSelected);
     function = "SORTUP";
+    setColor(palette[startColor]);
   }
 
   if (function == "SORTUP") {
@@ -391,6 +408,7 @@ int CWPalEd::update() {
         }
       }
     }
+    setColor(palette[startColor]);
   }                                                 
 
   if (function == "SORTDOWN") {
@@ -420,6 +438,7 @@ int CWPalEd::update() {
         }
       }
     }
+    setColor(palette[startColor]);
   }                                                 
 
   if (function == "MAKEGRADIENT") {
@@ -448,6 +467,7 @@ int CWPalEd::update() {
       setColor(rgba);
       setPalette(i+startColor2,rgba);
     }
+    setColor(palette[startColor]);
   }
 
   if (function == "SAVE") {

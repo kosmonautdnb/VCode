@@ -66,6 +66,7 @@
 #define VK_L_CTRL 12
 #define VK_F_CTRL 6
 #define VK_G_CTRL 7
+#define VK_U_CTRL 21
 #define VK_X_CTRL 24
 #define VK_PLUS_CTRL 29
 

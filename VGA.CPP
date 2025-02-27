@@ -91,47 +91,31 @@ void plus4Palette() {
   }
 }
 
+void egaPalette(int startColor, bool setColors) {
+  palette[EGA_COLOR_BLACK+startColor] = _EGA_COLOR_BLACK;
+  palette[EGA_COLOR_BLUE+startColor] = _EGA_COLOR_BLUE;
+  palette[EGA_COLOR_GREEN+startColor] = _EGA_COLOR_GREEN;
+  palette[EGA_COLOR_CYAN+startColor] = _EGA_COLOR_CYAN;
+  palette[EGA_COLOR_RED+startColor] = _EGA_COLOR_RED;
+  palette[EGA_COLOR_VIOLET+startColor] = _EGA_COLOR_VIOLET;
+  palette[EGA_COLOR_BROWN+startColor] = _EGA_COLOR_BROWN;
+  palette[EGA_COLOR_GREY_LIGHT+startColor] = _EGA_COLOR_GREY_LIGHT;
+  palette[EGA_COLOR_GREY_DARK+startColor] = _EGA_COLOR_GREY_DARK;
+  palette[EGA_COLOR_BLUE_LIGHT+startColor] = _EGA_COLOR_BLUE_LIGHT;
+  palette[EGA_COLOR_GREEN_LIGHT+startColor] = _EGA_COLOR_GREEN_LIGHT;
+  palette[EGA_COLOR_CYAN_LIGHT+startColor] = _EGA_COLOR_CYAN_LIGHT;
+  palette[EGA_COLOR_RED_LIGHT+startColor] = _EGA_COLOR_RED_LIGHT;
+  palette[EGA_COLOR_VIOLET_LIGHT+startColor] = _EGA_COLOR_VIOLET_LIGHT;
+  palette[EGA_COLOR_YELLOW+startColor] = _EGA_COLOR_YELLOW;
+  palette[EGA_COLOR_WHITE+startColor] = _EGA_COLOR_WHITE;
+  if (setColors) {
+    for (int i = 0; i < 16; i++) setPalette(i+startColor,palette[i+startColor]);
+  }
+}
+
 void palette16Colors() {
   paletteCount = 16;
-  palette[EGA_COLOR_BLACK] = _EGA_COLOR_BLACK;
-  palette[EGA_COLOR_BLUE] = _EGA_COLOR_BLUE;
-  palette[EGA_COLOR_GREEN] = _EGA_COLOR_GREEN;
-  palette[EGA_COLOR_CYAN] = _EGA_COLOR_CYAN;
-  palette[EGA_COLOR_RED] = _EGA_COLOR_RED;
-  palette[EGA_COLOR_VIOLET] = _EGA_COLOR_VIOLET;
-  palette[EGA_COLOR_BROWN] = _EGA_COLOR_BROWN;
-  palette[EGA_COLOR_GREY_LIGHT] = _EGA_COLOR_GREY_LIGHT;
-  palette[EGA_COLOR_GREY_DARK] = _EGA_COLOR_GREY_DARK;
-  palette[EGA_COLOR_BLUE_LIGHT] = _EGA_COLOR_BLUE_LIGHT;
-  palette[EGA_COLOR_GREEN_LIGHT] = _EGA_COLOR_GREEN_LIGHT;
-  palette[EGA_COLOR_CYAN_LIGHT] = _EGA_COLOR_CYAN_LIGHT;
-  palette[EGA_COLOR_RED_LIGHT] = _EGA_COLOR_RED_LIGHT;
-  palette[EGA_COLOR_VIOLET_LIGHT] = _EGA_COLOR_VIOLET_LIGHT;
-  palette[EGA_COLOR_YELLOW] = _EGA_COLOR_YELLOW;
-  palette[EGA_COLOR_WHITE] = _EGA_COLOR_WHITE;
-
-  if (false) {
-    for (int i = 0; i < 16; i++) palette[i] = getPalette(i);
-  }
-
-  if (false) {
-    setPalette(0,COLOR_BLACK);
-    setPalette(1,COLOR_WHITE);
-    setPalette(2,COLOR_RED);
-    setPalette(3,COLOR_YELLOW);
-    setPalette(4,COLOR_MENUBACKGROUND);
-    setPalette(5,COLOR_MENUTEXT);
-    setPalette(6,COLOR_SELECTEDLINE);
-    setPalette(7,COLOR_CURRENTLINE);
-    setPalette(8,COLOR_CURRENTLINESELECTED);
-    setPalette(9,COLOR_MOUSEOVERLINE);
-    setPalette(10,COLOR_HEADERLINE);
-    setPalette(11,COLOR_HEADERTEXT);
-    setPalette(12,COLOR_PROMPTTEXT);
-    setPalette(13,COLOR_STATUSBARTEXT);
-    setPalette(14,COLOR_TEXT);
-    setPalette(15,COLOR_TEXTBACKGROUND);
-  }
+  egaPalette(0,false);
 }
 
 extern unsigned int frameBufferWidth;

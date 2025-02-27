@@ -36,6 +36,7 @@ public:
   VFleSlct *vFleSlct;
   VButton *vButtonFlip;
   VButton *vButtonCopy;
+  unsigned int mouseOverColor;
 
   CWPalEd() : CWBase() {
     name = "Palette editor";
@@ -61,6 +62,7 @@ public:
     vFleSlct = new VFleSlct();
     vButtonFlip = new VButton();
     vButtonCopy = new VButton();
+    mouseOverColor = 0;
   }
   virtual ~CWPalEd() {
     delete slider_R;
@@ -90,6 +92,7 @@ public:
     alpha = 0;
     rgba = 0;
     mouseOverColorIndex = 0;
+    mouseOverColor = 0;
   }
 
   void setColor(int color);
