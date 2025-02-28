@@ -68,7 +68,7 @@ void CWPalEd::draw() {
   for (int y = 0; y < 16*mul; y++) {
     for (int x = 0; x < 16*mul; x++) {
       int index = x/mul+y/mul*16;
-      setPixel(position.x+x,position.y+y,palette[index]);
+      setPixel(position.x+x,position.y+y,palette[index]|0xff000000);
     }
   }
   int c0 = startColor;

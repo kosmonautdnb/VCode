@@ -19,6 +19,18 @@ ToolEntry toolNames[] = {
   {""}
 };
 
+static void drawRectangle2(int x0, int y0, int x1, int y1, unsigned int color1, unsigned int color2) {
+  for (int y = y0; y < y1; y++) {
+    setPixel(x0,y,color1);
+    if (x1-1>x0) setPixel(x1-1,y,color2);
+  }
+  for (int x = x0; x < x1; x++) {
+    setPixel(x,y0,color1);
+    if (y1-1>y0) setPixel(x,y1-1,color2);
+  }
+}
+
+
 void CWTools::draw() {
   CWBase::draw();
   size.height = size.width * frameBufferWidth * CWTOOLSY / CWTOOLSX / frameBufferHeight;
@@ -53,11 +65,13 @@ void CWTools::init() {
 
 bool CWTools::paintIcon(int x0,int y0,int x1,int y1,const String &name,bool selected) {
   bool over = mouseOver(Rect(x0,y0,x1,y1));
-  drawBox(x0,y0,x1,y1,selected ? COLOR_RED:(over?COLOR_TEXT:COLOR_BLACK));
   pushRect(x0,y0,x1,y1);
+  drawBox(x0,y0,x1,y1,selected ? 0xffff50ff:(over?0xffffffc0:0xffffff40));
+  for (int i = 0; i < 2; i++)
+    drawRectangle2(x0+i,y0+i,x1-i,y1-i,0xffff40c0,COLOR_BLACK);
+  drawString(x0,y1-CHAR_HEIGHT+1,name,COLOR_BLACK);
   drawString(x0,y1-CHAR_HEIGHT,name,COLOR_WHITE);
   popRect();
-  drawRectangle(x0,y0,x1,y1,COLOR_WHITE);
   return over;
 }
 

@@ -62,6 +62,7 @@ public:
   void blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, int dst_x0, int dst_y0, int dst_x1, int dst_y1, int src_x0, int src_y0, int src_x1, int src_y1);
   void reCanvas(int x0, int y0, int x1, int y1);
   void newSize(int w, int h);
+  void setPixel(int x, int y, uint32_t color);
 };
                                               
 class CLayerStack {
@@ -119,8 +120,8 @@ public:
   void addStackZoom(float zoomAdd, int mouseX, int mouseY);
   void enableGrid(bool _gridOn, int _gridX, int _gridY);
   uint32_t getPixel(int mouseX, int mouseY);
-  void mousePosToLayerPos(float mouseX, float mouseY, CLayer *l, int &retX, int &retY);
-  void layerPosToMousePos(float layerX, float layerY, CLayer *l, float &retX, float &retY);
+  void mousePosToLayerPos(int mouseX, int mouseY, CLayer *l, int &retX, int &retY);
+  void layerPosToMousePos(int layerX, int layerY, CLayer *l, int &retX, int &retY);
 
 };
 

@@ -20,7 +20,7 @@ void CWPal::draw() {
       int x1 = position.x + (cx+1) * size.width/16;
       int y1 = position.y + (cy+1) * size.height/16;
       if (j == 0) {
-        drawBox(x0,y0,x1,y1,palette[i]);
+        drawBox(x0,y0,x1,y1,palette[i]|0xff000000);
         if (mouseOver(Rect(x0,y0,x1,y1))) {
           mouseOverColor = palette[i];
         }

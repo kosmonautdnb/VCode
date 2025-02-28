@@ -217,7 +217,7 @@ int CWLayer::update() {
 
 void CWLayer::init() {
   cMnuBar->init(
-  "Tree+Add[ADDLAYER]+Insert[INSERTLAYER]+Delete[DELETELAYER]+Duplicate[DUPLICATE]\n"
+  "Tree+Add layer[ADDLAYER]+Insert layer[INSERTLAYER]+Delete layer[DELETELAYER]+Duplicate layer[DUPLICATE]\n"
   "Layer+Size[RESIZE]+Position[POSITION]+Opacity[OPACITY]+Zoom[ZOOM]+Rename[RENAMELAYER]\n"
   );
   opacity->init(0,0,1);

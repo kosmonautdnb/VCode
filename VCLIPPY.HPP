@@ -81,6 +81,7 @@ public:
   void init(const String &path, int width, int height);
   
   void load(const String &fileName, int layerNr);
+  void save(const String &fileName, int layerNr);
 
   void toolMoveCanvas();
   void toolMoveLayers(bool update);

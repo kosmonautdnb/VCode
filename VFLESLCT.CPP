@@ -44,7 +44,7 @@ int VFleSlct::update() {
           int a = VTxtAlrt::box(file,"      Save File:      ","SAVE","Don't");
           if (a == 1) {
             key = VK_ESCAPE;
-            fileNameSelected = file;
+            fileNameSelected = lastPathName+file;
           }
         }
       }

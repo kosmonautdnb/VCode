@@ -2,6 +2,7 @@
 #define __C_WPAL_HPP__
 
 #include "c_wbase.hpp"
+#include "vga.hpp"
 
 class CWPal : public CWBase {
 public:
@@ -11,7 +12,7 @@ public:
   bool rightClicked;
 
   CWPal() : CWBase() {
-    foregroundColor = 0;
+    foregroundColor = getPaletteIndex(0xffffffff);
     mouseOverColor = 0;
     rightClicked = false;
     name = "Palette";
@@ -22,7 +23,7 @@ public:
   virtual void draw();
   virtual int update();
   virtual void reset() {
-    foregroundColor = 0;
+    foregroundColor = getPaletteIndex(0xffffffff);
     mouseOverColor = 0;
     rightClicked = false;
   }

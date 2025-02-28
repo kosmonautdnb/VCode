@@ -6,9 +6,16 @@
 
 void CWBase::draw() {
   pushRect(position.x-1,position.y-CHAR_HEIGHT-1,position.x+size.width+1,position.y+size.height+1);
-  drawBox(position.x-1,position.y-CHAR_HEIGHT-1,position.x+size.width+1,position.y+size.height+1,mode == MODE_NONE ? COLOR_WHITE : COLOR_WINDOW_MODIFY);
+  for (int y = 0; y < CHAR_HEIGHT+1; y++) {
+    for (int x = 0; x < CHAR_HEIGHT+1; x++) {
+      if (CHAR_HEIGHT-x-2-3 < y)
+        setPixel(position.x-1+x,position.y-1-CHAR_HEIGHT+y,COLOR_WHITE);
+    }
+  }
+  drawBox(position.x+CHAR_HEIGHT,position.y-CHAR_HEIGHT-1,position.x+size.width+1,position.y,COLOR_WHITE);
+  drawBox(position.x-1,position.y,position.x+size.width+1,position.y+size.height+1,mode == MODE_NONE ? COLOR_WHITE : COLOR_WINDOW_MODIFY);
   pushRect(position.x,position.y-CHAR_HEIGHT,position.x+size.width,position.y);
-  drawString(position.x,position.y-CHAR_HEIGHT,name,COLOR_WINDOW_HANDLE);
+  drawString(position.x+CHAR_HEIGHT-3,position.y-CHAR_HEIGHT,name,COLOR_BLACK);
   drawString(position.x+size.width-String("X").pixelWidth(),position.y-CHAR_HEIGHT,"x",COLOR_RED);
   popRect();
   popRect();

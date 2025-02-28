@@ -7,6 +7,7 @@
 #include "pngload.hpp"
 #include "vtxtalrt.hpp"
 #include <math.h>
+#include "vga.hpp"
 
 extern bool showAppTime;
 
@@ -91,6 +92,9 @@ int VClippy::update() {
         if (w < 0) w = 0;
         if (h < 0) h = 0;
         cLayerStack->newStack(w,h);
+        CLayer *layer = new CLayer;
+        layer->init(NULL,w,h);
+        cLayerStack->layers.push_back(layer);
         cLayerStack->reBlit();
       }
     }
@@ -144,6 +148,7 @@ int VClippy::update() {
     vFleSlct->modeLoading = false;
     vFleSlct->doModal();
     String fileToSave = toLower(vFleSlct->fileNameSelected);
+    save(vFleSlct->fileNameSelected,-1);
   }
 
   if (cWPal->rightClicked) {
@@ -275,6 +280,32 @@ void VClippy::load(const String &fileName, int layerNr) {
   }
 }
 
+void VClippy::save(const String &fileName, int layerNr) {
+  if (getExtension(toLower(fileName))==".png") {
+    ImageLayer l;
+    int a = 0;
+    if (layerNr<0) {
+      bool gridOn = cLayerStack->gridOn;
+      cLayerStack->gridOn = false;
+      cLayerStack->reBlit();
+      cLayerStack->gridOn = gridOn;
+      l.width = cLayerStack->width;
+      l.height = cLayerStack->height;
+      l.data = cLayerStack->image;
+      a = 1;
+      FILE *o = fopen(fileName.c_str(),"rb");
+      if (o != NULL) {
+        fclose(o);
+        a = VAlert::box("Overwrite:"+fileName.last(20),"YES","Don't");
+      }
+    }
+    if (a == 1) {
+      savePNG(&l, fileName.c_str());
+    }
+  }
+  cLayerStack->reBlit();
+}
+
 void VClippy::toolMoveCanvas() {
   if (mouseB==1 && ctrlKey)
     cLayerStack->moveStack(mouseX-lastMouseX,mouseY-lastMouseY);
@@ -293,19 +324,35 @@ void VClippy::toolMoveLayers(bool update) {
 }
 
 void VClippy::toolPen(bool update) {
+  if (cWLayer->currentLayer>=cLayerStack->layers.size()) 
+    return;
+  CLayer *l = cLayerStack->layers[cWLayer->currentLayer];
+  int mx,my;
+  cLayerStack->mousePosToLayerPos(mouseX,mouseY,l,mx,my);
+  if (mx<0||my<0||mx>=l->width||my>=l->height) return;
+
   if (!update) {
-    if (cWLayer->currentLayer<cLayerStack->layers.size()) {
-      CLayer *l = cLayerStack->layers[cWLayer->currentLayer];
-      int mx,my;
-      cLayerStack->mousePosToLayerPos(mouseX,mouseY,l,mx,my);
-      if (mx<0||my<0||mx>=l->width||my>=l->height) return;
-      float kx0,ky0;
-      cLayerStack->layerPosToMousePos(mx,my,l,kx0,ky0);
-      float kx1,ky1;
-      cLayerStack->layerPosToMousePos(mx+1,my+1,l,kx1,ky1);
-      if (kx0>kx1) {float t = kx0; kx0=kx1; kx1 = t;kx0+=1;kx1+=1;}
-      if (ky0>ky1) {float t = ky0; ky0=ky1; ky1 = t;ky0+=1;ky1+=1;}
-      drawRectangle(kx0-1,ky0-1,kx1+1,ky1+1,COLOR_WHITE);
+    int kx0,ky0;
+    cLayerStack->layerPosToMousePos(mx,my,l,kx0,ky0);
+    int kx1,ky1;
+    cLayerStack->layerPosToMousePos(mx+1,my+1,l,kx1,ky1);
+    if (kx0>kx1) {float t = kx0; kx0=kx1; kx1 = t;kx0+=1;kx1+=1;}
+    if (ky0>ky1) {float t = ky0; ky0=ky1; ky1 = t;ky0+=1;ky1+=1;}
+    drawRectangle(kx0-1,ky0-1,kx1,ky1,COLOR_WHITE);
+  } else {
+    if (mouseB==1 && !shiftKey && !altKey && !ctrlKey) {
+      int mx2,my2;
+      cLayerStack->mousePosToLayerPos(lastMouseX,lastMouseY,l,mx2,my2);
+      int d = abs(mx2-mx);
+      if (abs(my2-my)>d) d = abs(my2-my);
+      l->setPixel(mx2,my2,palette[cWPal->foregroundColor]);
+      for (int i = 0; i < d; i++) {
+        int x = (mx2-mx)*i/d+mx;
+        int y = (my2-my)*i/d+my;
+        l->setPixel(x,y,palette[cWPal->foregroundColor]);
+      }
+      cLayerStack->reBlit();
     }
   }
+
 }

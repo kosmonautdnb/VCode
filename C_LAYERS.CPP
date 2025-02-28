@@ -12,7 +12,7 @@ void CLayer::init(uint32_t *data, int _width, int _height) {
     memcpy(image,data,width*height*4);
   else {
     uint32_t *d = (uint32_t*)image;
-    for (int i = 0; i < _width*_height; i++) d[i] = 0xff000000;
+    for (int i = 0; i < _width*_height; i++) d[i] = 0x00000000;
   }
   xpos = 0;
   ypos = 0;
@@ -43,8 +43,8 @@ void CLayer::blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, 
       if (x < 0 || x >= destWidth) continue;
       int sx2 = (src_x1-src_x0)*(x-dst_x0)/(dst_x1-dst_x0)+src_x0;
       sx2 -= width/2;
-      int sx = (sx2 * matrix[0] + sy2 * matrix[1])/mulX; 
-      int sy = (sx2 * matrix[2] + sy2 * matrix[3])/mulY; 
+      int sx = (int)floor((sx2 * matrix[0] + sy2 * matrix[1])/mulX); 
+      int sy = (int)floor((sx2 * matrix[2] + sy2 * matrix[3])/mulY); 
       sx += width/2;
       sy += height/2;
       if (sx < 0 || sx >= width) continue;
@@ -97,7 +97,7 @@ void CLayer::newSize(int w, int h) {
   uint32_t *newCanvas = new uint32_t[w*h>0?w*h:1];
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      uint32_t col = 0xff000000;
+      uint32_t col = 0x00000000;
       if (x < width && y < height) 
         col = ((uint32_t*)image)[x+y*width];
       newCanvas[x+y*w] = col;
@@ -107,6 +107,13 @@ void CLayer::newSize(int w, int h) {
   image = (void*)newCanvas;
   width=w;
   height=h;
+}
+
+
+void CLayer::setPixel(int x, int y, uint32_t color) {
+  if (x>=0&&y>=0&&x<width&&y<height) {
+    ((uint32_t*)image)[x+y*width]=color;
+  }
 }
 
 
@@ -139,13 +146,13 @@ void CLayerStack::reCanvas(int x0, int y0, int x1, int y1) {
 void CLayerStack::drawAtXY(int x, int y) {
   if (image == NULL) return;
   float zoom2 = pow(2.f,zoom);
-  int width2 = width;
-  int height2 = height;
-  for (int y2 = 0; y2 < height2*zoom2; y2++) {
-    int y3 = y2 + ypos; if (y3 < 0 || y3 >= frameBufferHeight) continue;
+  int width2 = width*zoom2;
+  int height2 = height*zoom2;
+  for (int y2 = 0; y2 < height2; y2++) {
+    int y3 = (int)floor(y2 + ypos); if (y3 < 0 || y3 >= frameBufferHeight) continue;
     int y4 = (int)floor((float)y2/zoom2); if (y4 < 0 || y4 >= height) continue;
-    for (int x2 = 0; x2 < width*zoom2; x2++) {
-      int x3 = x2 + xpos; if (x3 < 0 || x3 >= frameBufferWidth) continue;
+    for (int x2 = 0; x2 < width2; x2++) {
+      int x3 = (int)floor(x2 + xpos); if (x3 < 0 || x3 >= frameBufferWidth) continue;
       int x4 = (int)floor((float)x2/zoom2); if (x4 < 0 || x4 >= width) continue;
       frameBuffer[x3+y3*frameBufferWidth] = image[x4+y4*width];
     }
@@ -287,22 +294,22 @@ void CLayerStack::enableGrid(bool _gridOn, int _gridWidth, int _gridHeight) {
 }
 
 uint32_t CLayerStack::getPixel(int mouseX, int mouseY) {
-  mouseX -= xpos;
-  mouseY -= ypos;
-  mouseX /= pow(2.f,zoom);
-  mouseY /= pow(2.f,zoom);
+  mouseX = floor(mouseX-xpos);
+  mouseY = floor(mouseY-ypos);
+  mouseX = floor(mouseX/pow(2.f,zoom));
+  mouseY = floor(mouseY/pow(2.f,zoom));
   uint32_t k = 0x00000000;
   blitTo32Bit(&k,1,1, 0,0,1,1, mouseX,mouseY,mouseX+1,mouseY+1);
   return k;
 }
 
 
-void CLayerStack::mousePosToLayerPos(float mouseX, float mouseY, CLayer *l, int &retX, int &retY) {
+void CLayerStack::mousePosToLayerPos(int mouseX, int mouseY, CLayer *l, int &retX, int &retY) {
   float zoomS = pow(2.f,zoom);
   float xposS = xpos;
   float yposS = ypos;
-  float x0 = (mouseX-xposS)/zoomS;
-  float y0 = (mouseY-yposS)/zoomS;
+  int x0 = (int)floor(floor(mouseX-xposS)/zoomS);
+  int y0 = (int)floor(floor(mouseY-yposS)/zoomS);
   float zoomL = 1.f/pow(2.f,l->zoom);
   x0*=zoomL;
   y0*=zoomL;
@@ -310,37 +317,33 @@ void CLayerStack::mousePosToLayerPos(float mouseX, float mouseY, CLayer *l, int 
   y0-=l->ypos;
   x0-=l->width/2;
   y0-=l->height/2;
-  float x1 = (x0 * l->matrix[0] + y0 * l->matrix[1])/l->mulX; 
-  float y1 = (x0 * l->matrix[2] + y0 * l->matrix[3])/l->mulY; 
-  x0 = x1;
-  y0 = y1;
-  x0 += l->width/2;
-  y0 += l->height/2;
-  retX = (int)floor(x0);
-  retY = (int)floor(y0);
+  int x1 = (int)floor((x0 * l->matrix[0] + y0 * l->matrix[1])/l->mulX); 
+  int y1 = (int)floor((x0 * l->matrix[2] + y0 * l->matrix[3])/l->mulY); 
+  x1 += l->width/2;
+  y1 += l->height/2;
+  retX = x1;
+  retY = y1;
 }
 
-void CLayerStack::layerPosToMousePos(float layerX, float layerY, CLayer *l, float &retX, float &retY) {
-  layerX -= l->width/2;
-  layerY -= l->height/2;
-  layerX *= l->mulX;
-  layerY *= l->mulY;
-  float x0 = (layerX * l->matrix[0] + layerY * l->matrix[2]); 
-  float y0 = (layerX * l->matrix[1] + layerY * l->matrix[3]); 
+void CLayerStack::layerPosToMousePos(int layerX, int layerY, CLayer *l, int &retX, int &retY) {
+  float x1 = layerX;
+  float y1 = layerY;
+  x1 -= l->width/2;
+  y1 -= l->height/2;
+  x1 = ceil(x1*l->mulX);
+  y1 = ceil(y1*l->mulY);
+  float x0 = ceil((x1 * l->matrix[0] + y1 * l->matrix[2])); 
+  float y0 = ceil((x1 * l->matrix[1] + y1 * l->matrix[3])); 
   x0 += l->width/2;
   y0 += l->height/2;
-  x0 += l->xpos;
-  y0 += l->ypos;
+  x0 = x0+l->xpos;
+  y0 = y0+l->ypos;
   float zoomL = 1.f/pow(2.f,l->zoom);
-  x0 /= zoomL;
-  y0 /= zoomL;
   float zoomS = pow(2.f,zoom);
-  x0 *= zoomS;
-  y0 *= zoomS;
-  float xposS = xpos;
-  float yposS = ypos;
-  x0 += xposS;
-  y0 += yposS;
-  retX = x0;
-  retY = y0;  
+  x0 = ceil(ceil(x0/zoomL)*zoomS);
+  y0 = ceil(ceil(y0/zoomL)*zoomS);
+  x0 = ceil(x0+xpos);
+  y0 = ceil(y0+ypos);
+  retX = (int)x0;
+  retY = (int)y0;  
 }
