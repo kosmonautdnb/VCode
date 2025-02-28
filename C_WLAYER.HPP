@@ -45,6 +45,8 @@ public:
   }
 
   void init();
+  void resize();
+  void rePosition();
 };
 
 #endif //__C_WLAYER_HPP__

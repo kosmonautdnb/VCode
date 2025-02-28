@@ -55,7 +55,7 @@ void VTree::draw() {
     String status = "";
     if (selecteds>0) status += "Selected:"+String(selecteds) + (selecteds == 1 ? " File " : " Files ") + sizeString(selectedBytes);
     if (status == "") {
-      if (!strgKey)
+      if (!ctrlKey)
         status = "F1Hx F2Renam F3Vw F4Edt F5Cpy F6Mve F7Nwdir F8Del F9Nfo";
       else
         status = "F4Edt(Other)";

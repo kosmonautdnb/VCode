@@ -30,6 +30,7 @@ public:
   bool selected;
   bool visible;
   float matrix[2*2];   
+  float zoom;
 
   CLayer() {
     image = NULL;
@@ -43,10 +44,11 @@ public:
     height = 0;
     mulX = 1;
     mulY = 1;
+    zoom = 0.f;
     layerType = LAYERTYPE_NONE;
     layerFunction = LAYERFUNCTION_NONE;
     opacity = 0.f;
-    selected = false;
+    selected = true;
     visible = true;
     static int counter = 0; counter++;
     name = String("Layer ") + counter;
@@ -59,6 +61,7 @@ public:
   void init(uint32_t *data, int _width, int _height);
   void blitTo32Bit(uint32_t *dest,uint32_t destWidth,uint32_t destHeight, int dst_x0, int dst_y0, int dst_x1, int dst_y1, int src_x0, int src_y0, int src_x1, int src_y1);
   void reCanvas(int x0, int y0, int x1, int y1);
+  void newSize(int w, int h);
 };
                                               
 class CLayerStack {
@@ -69,10 +72,10 @@ public:
   uint32_t height;
   float xpos;
   float ypos;
-  float zoom;
   bool gridOn;
   int gridWidth;
   int gridHeight;
+  float zoom;
   
 
   CLayerStack() {
@@ -81,7 +84,7 @@ public:
     height = 0;
     xpos = 0;
     ypos = 0;
-    zoom = 0;
+    zoom = 0.f;
     gridOn = false;
     gridWidth = 8;
     gridHeight = 8;
@@ -96,7 +99,6 @@ public:
   void reset() {
     xpos = 0;
     ypos = 0;
-    zoom = 0;
     gridOn = false;
     gridWidth = 8;
     gridHeight = 8;
@@ -114,8 +116,12 @@ public:
   void rotateLayers(float angle);
   void mirrorLayers(float x, float y);
   void addZoom(float zoomAdd, int mouseX, int mouseY);
+  void addStackZoom(float zoomAdd, int mouseX, int mouseY);
   void enableGrid(bool _gridOn, int _gridX, int _gridY);
   uint32_t getPixel(int mouseX, int mouseY);
+  void mousePosToLayerPos(float mouseX, float mouseY, CLayer *l, int &retX, int &retY);
+  void layerPosToMousePos(float layerX, float layerY, CLayer *l, float &retX, float &retY);
+
 };
 
 #endif //__C_LAYERS_HPP__

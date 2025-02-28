@@ -9,6 +9,7 @@
 #include "c_wzoom.hpp"
 #include "c_wpaled.hpp"
 #include "c_wlayer.hpp"
+#include "c_wtools.hpp"
 
 class VClippy : public VBase {
 public:
@@ -20,6 +21,7 @@ public:
   CWZoom *cWZoom;
   CWPalEd *cWPalEd;
   CWLayer *cWLayer;
+  CWTools *cWTools;
   bool doublePixels;
   bool gridOn;
   int gridWidth;
@@ -38,6 +40,7 @@ public:
     cWZoom = new CWZoom();
     cWPalEd = new CWPalEd();
     cWLayer = new CWLayer(this);
+    cWTools = new CWTools();
     doublePixels=false;
     gridOn = false;
     gridWidth=8;
@@ -54,6 +57,7 @@ public:
     delete cWZoom;
     delete cWPalEd;
     delete cWLayer;
+    delete cWTools;
   }
 
   virtual void draw();
@@ -78,7 +82,9 @@ public:
   
   void load(const String &fileName, int layerNr);
 
-  void toolMoveLayers();
+  void toolMoveCanvas();
+  void toolMoveLayers(bool update);
+  void toolPen(bool update);
 };
 
 #endif //__VCLIPPY_HPP__

@@ -9,7 +9,7 @@ int mouseB = 0;
 int lastMouseB = 0;
 int key = 0;
 bool shiftKey = false;
-bool strgKey = false;
+bool ctrlKey = false;
 bool altKey = false;
 
 void updateKeyboard() {
@@ -26,7 +26,7 @@ void updateKeyboard() {
     }
     int keyState = *((char *)0x417);
     shiftKey = (keyState & 0x03) != 0;
-    strgKey = (keyState & 0x04) != 0;
+    ctrlKey = (keyState & 0x04) != 0;
     altKey = (keyState & 0x08) != 0;
 }
 

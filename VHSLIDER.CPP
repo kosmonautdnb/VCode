@@ -19,6 +19,8 @@ int VHSlider::update() {
     if (mouseB==1) {
       int mouseDX = mouseX-position.x;
       value = mouseDX*(vmax-vmin)/(size.width-1)+vmin;
+      if (value<vmin) value = vmin;
+      if (value>vmax) value = vmax;
     }
   }
   if (mouseIn()&&mouseB==1&&lastMouseB==0)

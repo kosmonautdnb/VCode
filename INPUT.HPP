@@ -7,7 +7,7 @@ extern int mouseB;
 extern int lastMouseB;
 extern int key;
 extern bool shiftKey;
-extern bool strgKey;
+extern bool ctrlKey;
 extern bool altKey;
 
 void updateKeyboard();

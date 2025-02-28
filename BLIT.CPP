@@ -34,7 +34,7 @@ void drawMouse() {
       if (c == '1') setPixel(mouseX+x,mouseY+y,COLOR_WHITE);
     }
   }
-  drawString(mouseX+7,mouseY,String(key & 255)+":"+String(key>>8),COLOR_WHITE);
+  //drawString(mouseX+7,mouseY,String(key & 255)+":"+String(key>>8),COLOR_WHITE);
   if (showAppTime) {
     String s = currentToolString+" "+currentTimeString();
     drawStringOutlined(frameBufferWidth-s.pixelWidth(),frameBufferHeight-CHAR_HEIGHT*3/2,s,COLOR_WHITE,COLOR_BLACK);

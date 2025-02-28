@@ -19,6 +19,8 @@ int VVSlider::update() {
     if (mouseB==1) {
       int mouseDY = mouseY-position.y;
       value = mouseDY*(vmax-vmin)/(size.height-1)+vmin;
+      if (value<vmin) value = vmin;
+      if (value>vmax) value = vmax;
     }
   }
   if (mouseIn()&&mouseB==1&&lastMouseB==0)

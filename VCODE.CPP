@@ -187,7 +187,7 @@ int VCode::update() {
     }
   }
 
-  if (strgKey) {
+  if (ctrlKey) {
     if (key==VK_L_CTRL && (!fileName.empty())) {
       addUndo();
       cursorRequiresI=cursorI;
@@ -261,7 +261,7 @@ int VCode::update() {
       selectionEnd = -1;
       key = VK_NONE;
     }
-    if (key == VK_C_CTRL && strgKey) {
+    if (key == VK_C_CTRL && ctrlKey) {
       if (selectionStart>selectionEnd) {
         int t = selectionStart;
         selectionStart = selectionEnd;
@@ -275,7 +275,7 @@ int VCode::update() {
       key = VK_NONE;
     }
   }
-  if (key == VK_V_CTRL && strgKey && cursorI>=0) {
+  if (key == VK_V_CTRL && ctrlKey && cursorI>=0) {
     addUndo();
     expand();
 

@@ -89,7 +89,7 @@ int VHex::update() {
 
   int ONELINE = 16 * frameBufferWidth / 320;
 
-  if (strgKey) {
+  if (ctrlKey) {
     if (key==VK_L_CTRL && (!fileName.empty())) {
       cursorX = 0; cursorY = 0; first = false;
       text = stringFromFile(fileName,false);
