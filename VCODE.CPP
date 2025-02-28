@@ -119,6 +119,7 @@ void VCode::draw() {
         cursorX = lineX; cursorY = lineY;
       }
     }
+    unsigned int bg = getHiLightBackgroundColor(l); if (bg!=0) drawBox(pos.x,pos.y,pos.x+String::chr(c).pixelWidth()+1,pos.y+CHAR_HEIGHT,bg);
     drawChar(pos.x, pos.y, c, getHiLightColor(l));
     if (i == text.length()-1)  {eofPos = pos;}
     lineX++;
@@ -477,6 +478,7 @@ int VCode::update() {
 }
 
 void VCode::init(const String &_text, const String &_fileName) {
+  reset();
   fileName = _fileName;
   text = _text;
   addUndo();

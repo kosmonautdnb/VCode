@@ -34,6 +34,7 @@ void VText::draw() {
       case '\n': {pos.y += CHAR_HEIGHT; pos.x = position.x - textPos.x;continue;} break;
       case '\t': {pos.x = ((pos.x - (position.x - textPos.x)) / (CHAR_HEIGHT*2)+1)*(CHAR_HEIGHT*2)+(position.x-textPos.x);continue;} break;
     }
+    unsigned int bg = getHiLightBackgroundColor(colors[i]); if (bg!=0) drawBox(pos.x,pos.y,pos.x+String::chr(c).pixelWidth()+1,pos.y+CHAR_HEIGHT,bg);
     drawChar(pos.x,pos.y,c,getHiLightColor(colors[i]));
     if (pos.y > position.y + size.height) break;
   }
@@ -88,6 +89,7 @@ int VText::update() {
 }
 
 void VText::init(const String &_text, const String &_fileName) {
+  reset();
   text = _text;
   colors = _text;
   fileName = _fileName;

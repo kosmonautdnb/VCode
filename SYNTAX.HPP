@@ -19,5 +19,6 @@ extern Array<const char *> hiLightTable;
 void initSyntaxHiLighting();
 void updateSyntaxHiLight(const String &text, String &colors, const String& toFind);
 unsigned int getHiLightColor(int l);
+unsigned int getHiLightBackgroundColor(int l);
 
 #endif //__SYNTAX_HPP__

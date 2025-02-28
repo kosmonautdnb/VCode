@@ -191,3 +191,10 @@ unsigned int getHiLightColor(int l) {
   }
   return COLOR_TEXT;
 }
+
+unsigned int getHiLightBackgroundColor(int l) {
+  switch(l) {
+  case HIGHLIGHT_FIND: return COLOR_HILIGHT_FIND_BACKGROUND; break;
+  }
+  return 0;
+}
