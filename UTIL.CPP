@@ -193,7 +193,13 @@ void stringToFile(const String &string,const String &fileName, bool textFile) {
 bool copyFile(const String &destFileName, const String &sourceFileName) {
   FILE *in = fopen(dosFileName(sourceFileName).c_str(),"rb");
   if (in == NULL) return false;
-  FILE *out = fopen(dosFileName(destFileName).c_str(),"wb");
+  FILE *out = fopen(dosFileName(destFileName).c_str(),"rb");
+  if (out != NULL) {
+    fclose(out);
+    int a = VAlert::box("Overwrite file:" + destFileName.last(20), "YES","Don't");
+    if (a != 1) return false;
+  }
+  out = fopen(dosFileName(destFileName).c_str(),"wb");
   if (out == NULL) {fclose(in);return false;}
   fseek(in,0,SEEK_END);
   long fileSize = ftell(in);

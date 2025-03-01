@@ -75,7 +75,6 @@ public:
   virtual void draw();
   virtual int update();
   virtual void reset() {
-    if (undo != NULL) undo->reset();
     textPos = Point(0,0);
     cursorX = 0;
     cursorY = 0;

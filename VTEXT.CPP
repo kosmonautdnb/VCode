@@ -40,7 +40,7 @@ void VText::draw() {
   }
   if (i == text.length())
     drawStringOutlined(pos.x,pos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
-  String status = String(textPos.x/CHAR_HEIGHT+1)+" "+String(textPos.y/CHAR_HEIGHT+1);
+  String status = "CTRL<F G> "+String(textPos.x/CHAR_HEIGHT+1)+" "+String(textPos.y/CHAR_HEIGHT+1);
   status += " "+sizeString(text.length());
   status += " " + fileName.last(20);
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);

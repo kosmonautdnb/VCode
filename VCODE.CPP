@@ -146,7 +146,7 @@ void VCode::draw() {
   drawStringOutlined(eofPos.x,eofPos.y,"<EOF>",COLOR_RED,COLOR_YELLOW);
   drawCursor();
   bool updated = originalText != text;
-  String status = (updated ? ".." : "") + String("<CTRL-L/S> ") + String(cursorX+1)+" "+String(cursorY+1) + " " + fileName.last(20) + " " + sizeString(text.length());
+  String status = (updated ? ".." : "") + String("<CTRL L S F G U C V X> ") + String(cursorX+1)+" "+String(cursorY+1) + " " + fileName.last(20) + " " + sizeString(text.length());
   drawBox(position.x,position.y+size.height-CHAR_HEIGHT,position.x+size.width,position.y+size.height,COLOR_STATUSBAR);
   drawString(position.x,position.y+size.height-CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
   popRect();

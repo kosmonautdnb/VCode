@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < fileCount; i++) {
     fprintf(makeFile," @echo FILE _BUILD\\OBJ\\%s >> _BUILD\\LINK.LNK\n", files[i*2+1]);
   }
-  fprintf(makeFile," @call _BUILD\\AL.BAT _BUILD\\LINK.LNK MAIN.EXE\n", files[i*2+1]);
+  fprintf(makeFile," @call _BUILD\\AL.BAT _BUILD\\LINK.LNK VCODE.EXE\n", files[i*2+1]);
   fprintf(makeFile," @%%null\n");
   fprintf(makeFile,"\n\n");
   fprintf(makeFile,"clean: .SYMBOLIC\n");

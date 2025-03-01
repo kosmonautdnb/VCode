@@ -75,7 +75,7 @@ void VHex::draw() {
     drawChar(xp2,yp,c,col);
   }
   bool updated = originalText != text;
-  String status = (updated?"..":"")+String("<CTRL-L/S>");
+  String status = (updated?"..":"")+String("<CTRL L S F G>");
   status += " $" + String::hex(cursorX+cursorY*ONELINE,8) + " " + String(cursorX+cursorY*ONELINE);
   status += " " + String(currentHex) + " $" + String::hex(currentHex,2) + " $" + String::hex(lastHex,2) + "'" + String::chr(currentHex) + "'";
   status += " " + sizeString(text.length());
