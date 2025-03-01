@@ -1,4 +1,4 @@
-#ifndef __STRING_HPP__       
+#ifndef __STRING_HPP__                  
 #define __STRING_HPP__
 
 #include <string.h>
@@ -21,10 +21,10 @@ public:
     if (&b == this) return *this;
     if (b.data != NULL) {
             if (data != NULL) {
-              free(data);
+              delete[] data;
             }
             dataLength = b.dataLength;
-            data = (char*)malloc(dataLength);
+            data = new char[dataLength];
             memcpy(data,b.data,dataLength);
     } else {
             data = NULL;
@@ -85,7 +85,7 @@ public:
     if (b.data != NULL)
     {
       dataLength = b.dataLength;
-      data = (char*)malloc(dataLength);
+      data = new char[dataLength];
       memcpy(data,b.data,dataLength);
     } else {
       data = NULL;
@@ -96,7 +96,7 @@ public:
     if (_data != NULL)
     {
       dataLength = strlen(_data)+1;
-      data = (char*)malloc(dataLength);
+      data = new  char[dataLength];
       memcpy(data,_data,dataLength);
     } else {
       data = NULL;
@@ -116,16 +116,16 @@ public:
     } while(va>0);
     if (v < 0) {i--;b[i]='-';}
     dataLength = b.dataLength-i;
-    data = (char*)malloc(dataLength);
+    data = new char[dataLength];
     memcpy(data,b.data+i,dataLength);
   }
   
   ~String() {
-    if (data != NULL) free(data);
+    if (data != NULL) delete[] data;
   }
 
   void clear() {
-    if (data != NULL) free(data);
+    if (data != NULL) delete[] data;
     data = NULL;
     dataLength = 0;
   }
@@ -133,18 +133,18 @@ public:
   void resize(int64_t newLength) {
     if (data == NULL) {
       dataLength = newLength + 1;
-      data = (char*)malloc(dataLength);
+      data = new char[dataLength];
       data[dataLength-1] = 0;
     } else {
       if (newLength < dataLength) {
         data[newLength] = 0;
         dataLength = newLength + 1;
       } else {
-        char *data2 = (char*)malloc(newLength + 1);
+        char *data2 = new char[newLength + 1];
         memcpy(data2,data,dataLength);
         dataLength = newLength + 1;
         data2[dataLength - 1] = 0;
-        free(data);
+        delete[] data;
         data = data2;
       }
     }
@@ -253,12 +253,12 @@ public:
   void insert(int64_t pos, const String &str) {
     int64_t l = length();
     dataLength = l+str.length()+1;
-    char *newData = (char*)malloc(dataLength);
+    char *newData = new char[dataLength];
     if (pos>0)  memcpy(newData,data,pos);
     memcpy(newData+pos,str.data,str.length());
     memcpy(newData+pos+str.length(),data+pos,l-pos);
     newData[dataLength-1] = 0;
-    if (data != NULL) free(data);
+    if (data != NULL) delete[] data;
     data = newData;
   }
   

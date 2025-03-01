@@ -69,6 +69,7 @@ public:
   void searchTextUpdated();
   void overlayByFileName(const String &fileName);
   void updateSelection(const String &mask, bool doSelect);
+  void combineFiles(const String &fileName);
 };
 
 extern VTree *treeLeft;

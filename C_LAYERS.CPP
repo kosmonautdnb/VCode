@@ -332,8 +332,8 @@ void CLayerStack::layerPosToMousePos(int layerX, int layerY, CLayer *l, int &ret
   y1 -= l->height/2;
   x1 = ceil(x1*l->mulX);
   y1 = ceil(y1*l->mulY);
-  float x0 = ceil((x1 * l->matrix[0] + y1 * l->matrix[2])); 
-  float y0 = ceil((x1 * l->matrix[1] + y1 * l->matrix[3])); 
+  float x0 = ceil(((x1 * l->matrix[0]) + (y1 * l->matrix[2]))); 
+  float y0 = ceil(((x1 * l->matrix[1]) + (y1 * l->matrix[3]))); 
   x0 += l->width/2;
   y0 += l->height/2;
   x0 = x0+l->xpos;

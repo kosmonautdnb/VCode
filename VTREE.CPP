@@ -60,7 +60,7 @@ void VTree::draw() {
       else
         status = "F4Edt(Other)";
       if (shiftKey)
-        status = "F1Dis F2Pnt F4Edt(This)";
+        status = "F1Dis F2Pnt F3Cmb F4Edt(This)";
     }
     drawBox(0,position.y+size.height+1+CHAR_HEIGHT,frameBufferWidth,position.y+size.height+1+CHAR_HEIGHT*2,COLOR_STATUSBAR);
     drawString(0,position.y+size.height+1+CHAR_HEIGHT,status,COLOR_STATUSBARTEXT);
@@ -129,6 +129,13 @@ int VTree::update() {
       vClippy->load(fileName,-1);
       vClippy->doModal();
       setKeyboardFocus(this);
+    }
+    if (key == VK_F3_SHIFT) {
+      String combinedFileName;
+      int a = VTxtAlrt::box(combinedFileName,"Combined filename:","Create","Don't");
+      if (a == 1) {
+        combineFiles(combinedFileName);
+      }
     }
     if (key == VK_F3) {
       vText->init(stringFromFile(fileName,true),fileName);
@@ -327,4 +334,21 @@ void VTree::updateSelection(const String &mask, bool doSelect) {
     }
     y++;
   } while(1==1);
+}
+
+void VTree::combineFiles(const String &fileName) {
+  String result;
+  String a;
+  int y = 0;
+  a=directory->getString(4,y);
+  while(a!=NIL) {
+    if (directory->selection[y])
+      result += stringFromFile(a,false);
+    y++;
+    a=directory->getString(4,y);
+  }
+  stringToFile(result,fileName,false);
+  vCode->init(stringFromFile(fileName,true),fileName);
+  vCode->setRect(0,0,frameBufferWidth,frameBufferHeight);
+  vCode->doModal();
 }

@@ -13,27 +13,28 @@ uint32_t swapRB(uint32_t rgba) {
   return (rgba&0xff00ff00)|((rgba&0xff)<<16)|((rgba>>16)&0xff);
 }
 
-static float sin2(float a) {
-  a /= 2.f * 3.1415927f;
-  a = fmod(a+100.f,1.f);
-  if (a > 0.5) return 0.f;
-  if (a < 0.25) return a / 0.25f;
-  return 1.f-(a-0.25f)/0.25f;
+static float c(float a) {
+  a -= 60.f+180.f;
+  a = fmod(a+360.f,360.f);
+  if (a < 60.f) return a / 60.f;
+  if (a < 60.f+120.f) return 1;
+  if (a < 240.f) return 1.f-(a-(60.f+120.f))/60.f;
+  return 0;
 }
 
 static uint32_t getCol(float h,float s,float l) {
-  float r = sin2(h*2.f*3.1415927f);
-  float g = sin2(h*2.f*3.1415927f+2.f*3.1415927f/3);
-  float b = sin2(h*2.f*3.1415927f+2.f*2.f*3.1415927f/3);
-  r += s * 1.f;
-  g += s * 1.f;
-  b += s * 1.f;
+  float r = c(h*360);
+  float g = c(h*360-120);
+  float b = c(h*360-240);
+  r = r * s + 1.f-s;
+  g = g * s + 1.f-s;
+  b = b * s + 1.f-s;
   int ri = r*255.f;
   int gi = g*255.f;
   int bi = b*255.f;
-  if (ri<0)ri = 0;
-  if (gi<0)gi = 0;    
-  if (bi<0)bi = 0;
+  if (ri<0) ri = 0;
+  if (gi<0) gi = 0;    
+  if (bi<0) bi = 0;
   if (ri>255) ri = 255;
   if (gi>255) gi = 255;    
   if (bi>255) bi = 255;
@@ -47,9 +48,9 @@ static uint32_t getCol2(float h,float s,float l) {
   int ri = h*255.f;
   int gi = s*255.f;
   int bi = l*255.f;
-  if (ri<0)ri = 0;
-  if (gi<0)gi = 0;    
-  if (bi<0)bi = 0;
+  if (ri<0) ri = 0;
+  if (gi<0) gi = 0;    
+  if (bi<0) bi = 0;
   if (ri>255) ri = 255;
   if (gi>255) gi = 255;    
   if (bi>255) bi = 255;
