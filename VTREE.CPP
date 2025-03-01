@@ -122,6 +122,8 @@ int VTree::update() {
       vDisAsm->doModal();
     }
     if (key == VK_F2_SHIFT) {
+      treeLeft->cleanUp();
+      treeRight->cleanUp();
       vClippy->init(lastPathName,frameBufferWidth,frameBufferHeight);
       vClippy->setRect(0,0,frameBufferWidth,frameBufferHeight);
       vClippy->load(fileName,-1);

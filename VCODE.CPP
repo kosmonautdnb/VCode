@@ -532,11 +532,18 @@ bool VCode::find(const String &search, unsigned int address) {
   return false;
 }
 
+void VCode::allocUndo() {
+  if (undo == NULL) 
+    undo = new Undo(VCODE_UNDOMEMORY_SIZE);
+}
+
 void VCode::addUndo() {
+  allocUndo();
   undo->addUndo(text,String(cursorI));
 }
 
 void VCode::doUndo() {
+  allocUndo();
   String desc = undo->doUndo(text);
   colors = text;
   updateSyntaxHiLight(text,colors,toFind);
@@ -546,6 +553,7 @@ void VCode::doUndo() {
 }
 
 void VCode::doRedo() {
+  allocUndo();
   String desc = undo->doRedo(text);
   colors = text;
   updateSyntaxHiLight(text,colors,toFind);

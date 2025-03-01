@@ -27,6 +27,7 @@ int VBase::doModal() {
     drawMouse();
     frameBufferToScreen(frameBuffer);
   } while(key != VK_ESCAPE);
+  cleanUp();
   key = VK_NONE;
   popRect();
   popCapturedFrameBuffer();

@@ -65,16 +65,17 @@ public:
     initSyntaxHiLighting();
     toFind = "";
     findAddress = 0;
-    undo = new Undo(VCODE_UNDOMEMORY_SIZE);
+    undo = NULL;
   }
   virtual ~VCode() {
-    delete undo;
+    if (undo != NULL)
+      delete undo;
   }
 
   virtual void draw();
   virtual int update();
   virtual void reset() {
-    undo->reset();
+    if (undo != NULL) undo->reset();
     textPos = Point(0,0);
     cursorX = 0;
     cursorY = 0;
@@ -95,6 +96,12 @@ public:
     toFind = "";
     findAddress = 0;
   }
+  virtual void cleanUp() {
+    if (undo != NULL) {
+      delete undo;
+      undo = NULL;
+    }
+  }
   virtual int doModal() {
     return VBase::doModal();
   }
@@ -105,6 +112,7 @@ public:
   void drawCursor();
   bool find(const String &search, unsigned int address);
 
+  void allocUndo();
   void addUndo();
   void doRedo();
   void doUndo();

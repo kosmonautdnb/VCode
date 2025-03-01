@@ -21,7 +21,6 @@ public:
   VCode *vCode;
   VHex *vHex;
   VTxtAlrt *vTxtAlrt;
-  VText *vInfo;
   VDisAsm *vDisAsm;
   VClippy *vClippy;
   String lastMask;
@@ -42,7 +41,6 @@ public:
     vCode = new VCode();
     vHex = new VHex();
     vTxtAlrt = new VTxtAlrt();
-    vInfo = new VText();
     vDisAsm = new VDisAsm();
     vClippy = new VClippy();
     searchText = "";
@@ -57,7 +55,6 @@ public:
     delete vCode;
     delete vHex;
     delete vTxtAlrt;
-    delete vInfo;
     delete vDisAsm;
     delete vClippy;
   }

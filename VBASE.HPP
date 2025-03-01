@@ -22,6 +22,7 @@ public:
   virtual void draw() = 0;
   virtual int update() = 0;
   virtual void reset() {;}
+  virtual void cleanUp() {;}
   virtual int doModal();
 
   virtual bool mouseIn();

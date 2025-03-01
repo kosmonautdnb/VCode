@@ -12,7 +12,7 @@ public:
 
   Array() {
     usedSize = 0;
-    allocatedSize = 100;
+    allocatedSize = 5;
     data = new T[allocatedSize];
   }
 
@@ -34,6 +34,7 @@ public:
   }
   
   void reAlloc(int64_t numElements) {
+    if (numElements<2) numElements = 2; // *1.5 is a problem
     T *data2 = new T[numElements];
     for (int64_t i = 0; i < numElements; i++)
       data2[i] = i < usedSize ? data[i] : T();
