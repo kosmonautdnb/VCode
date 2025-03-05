@@ -28,9 +28,10 @@ int VPreview::update() {
       data = NULL;
     }
     String extension = toLower(getExtension(fileName));
-    if (extension == ".png") {
+    if (extension == ".png" || extension == ".tga") {
       ImageLayer layer;
-      loadPNG(&layer, fileName.c_str());
+      if (extension == ".png") loadPNG(&layer, fileName.c_str());
+      if (extension == ".tga") loadTGA(&layer, fileName.c_str());
       if (layer.width>0&&layer.height>0) {
         size.height = size.width*layer.height/layer.width;
         if (size.height==0) size.height = 1;

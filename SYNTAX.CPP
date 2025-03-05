@@ -14,6 +14,7 @@ void initSyntaxHiLighting() {
   hiLightTable.push_back("char");
   hiLightTable.push_back("float");
   hiLightTable.push_back("double");
+  hiLightTable.push_back("long");
   hiLightTable.push_back("new");
   hiLightTable.push_back("delete");
   hiLightTable.push_back("malloc");

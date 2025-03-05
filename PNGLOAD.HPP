@@ -17,5 +17,7 @@ typedef struct GreyImageLayer {
 
 bool loadPNG(struct ImageLayer *layer, const char *fileName);
 bool savePNG(struct ImageLayer *layer, const char *fileName);
+bool loadTGA(struct ImageLayer *layer, const char *fileName);
+bool saveTGA(struct ImageLayer *layer, const char *fileName);
 
 #endif //__PNGLOAD_HPP__

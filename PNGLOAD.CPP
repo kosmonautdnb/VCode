@@ -233,3 +233,128 @@ bool savePNG(ImageLayer *layer, const char* fileName)
   fclose(fp);
   return true;
 }
+
+static unsigned short getShort(unsigned char **read) {
+  unsigned short ret = *(*read) + (int)*((*read)+1)*256;
+  *read += 2;
+  return ret;
+}
+
+bool loadTGA(ImageLayer *layer, const char *fileName) {
+  FILE *in = fopen(fileName,"rb");
+  if (in == NULL) return false;
+  fseek(in,0,SEEK_END);
+  int fileLength = ftell(in);
+  fseek(in,0,SEEK_SET);
+  unsigned char *data = new unsigned char[fileLength];
+  fread(data,1,fileLength,in);
+  fclose(in);
+  unsigned char *read = data;
+  layer->width = 0;
+  layer->height = 0;
+  layer->data = NULL;
+
+  int pictureIdSize = *read++;
+  int paletteType = *read++;
+  int pictureType = *read++;
+  unsigned short paletteBegin = getShort(&read);
+  unsigned short paletteLength = getShort(&read);
+  int paletteBitSize = *read++;
+  unsigned short originX = getShort(&read);
+  unsigned short originY = getShort(&read);
+  unsigned short pictureWidth = getShort(&read);
+  unsigned short pictureHeight = getShort(&read);
+  int pictureBitSize = *read++;
+  int pictureAttribute = *read++;
+  read += pictureIdSize;
+  unsigned char *palette = read;
+  read += paletteLength*paletteBitSize/8;
+  unsigned char *image = read;
+  switch(pictureType) {
+  case 0: { // no picture data
+    } break;
+  case 1: { // palette uncompressed
+      layer->width = pictureWidth;
+      layer->height = pictureHeight;
+      layer->data = new unsigned int[layer->width*layer->height];
+      for (int y = 0; y < layer->height; y++) {
+        for (int x = 0; x < layer->width; x++) {
+          int index = image[(x+y*pictureWidth)*(pictureBitSize/8)+0];
+          int b = palette[index*(paletteBitSize/8)+0];
+          int g = palette[index*(paletteBitSize/8)+1];
+          int r = palette[index*(paletteBitSize/8)+2];
+          int a = 255; if (paletteBitSize>24) a = palette[index*(paletteBitSize/8)+3];
+          layer->data[x+y*layer->width]=r|(g<<8)|(b<<16)|(a<<24);
+        }
+      }
+    } break;
+  case 2: { // no palette uncompressed
+      layer->width = pictureWidth;
+      layer->height = pictureHeight;
+      layer->data = new unsigned int[layer->width*layer->height];
+      for (int y = 0; y < layer->height; y++) {
+        for (int x = 0; x < layer->width; x++) {
+          int b = image[(x+y*pictureWidth)*(pictureBitSize/8)+0];
+          int g = image[(x+y*pictureWidth)*(pictureBitSize/8)+1];
+          int r = image[(x+y*pictureWidth)*(pictureBitSize/8)+2];
+          int a = 255; if (pictureBitSize>24) a = image[(x+y*pictureWidth)*(pictureBitSize/8)+3];
+          layer->data[x+y*layer->width]=r|(g<<8)|(b<<16)|(a<<24);
+        }
+      }
+    } break;
+  case 9: { // palette rle
+      layer->width = pictureWidth;
+      layer->height = pictureHeight;
+      layer->data = new unsigned int[layer->width*layer->height];
+  } break;
+  case 10: { // 24-bit rle
+      layer->width = pictureWidth;
+      layer->height = pictureHeight;
+      layer->data = new unsigned int[layer->width*layer->height];
+      int rle = 0;
+      bool mode = false;
+      int repeatR;
+      int repeatG;
+      int repeatB;
+      int repeatA;
+      unsigned char *r = image;
+      for (int y = 0; y < layer->height; y++) {
+        for (int x = 0; x < layer->width; x++) {
+          if (rle ==  0) {
+            rle = (*r++);
+            mode = false;
+            if (rle & 0x80) {
+              repeatB = *r++;
+              repeatG = *r++;
+              repeatR = *r++;
+              repeatA = 255; if (pictureBitSize>24) repeatA = *r++;
+              mode = true;
+              rle &= 0x7f;
+            }
+            rle += 1;
+          }
+          int r0 = repeatR;
+          int g0 = repeatG;
+          int b0 = repeatB;
+          int a0 = repeatA;
+          if (!mode) {
+            b0 = *r++;
+            g0 = *r++;
+            r0 = *r++;
+            a0 = 255; if (pictureBitSize>24) a0 = *r++;
+          }
+          layer->data[x+y*layer->width] = r0|(g0<<8)|(b0<<16)|(a0<<24);
+          rle--;
+        }
+      }
+  } break;
+  default: {
+    } break;
+  }
+  delete[] data;
+  return true;
+}
+
+bool saveTGA(ImageLayer *layer, const char *fileName) {
+  return true;
+}

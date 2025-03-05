@@ -63,7 +63,7 @@ void vesa_getModeInfo(int mode, VbeModeInfo &data) {
   RMREGS regs;
   regs.ax = 0x4f01;
   regs.cx = mode;
-  VBE_callESDI(&regs,&data,sizeof(VbeInfoBlock));
+  VBE_callESDI(&regs,&data,sizeof(VbeModeInfo));
 }
 
 String vesa_getModeInfoString(const VbeModeInfo &data, bool compact) {
