@@ -129,14 +129,7 @@ bool loadPNG(ImageLayer *layer, const char *fileName) {
   layer->y0 = 0;
   layer->x1 = width;
   layer->y1 = height;
-  layer->data = new unsigned int[width*height];
-  for (y = 0; y < height; y++) {
-    for (x = 0; x < width; x++) {
-      c = *(unsigned int*)(&array[(x+y*width)*4]);
-      if ((unsigned int)x < layer->width && (unsigned int)y < layer->height) layer->data[x+y*layer->width] = c;
-    }
-  }
-  delete[] array;
+  layer->data = (unsigned int *)array;
   return true;
 }
 
