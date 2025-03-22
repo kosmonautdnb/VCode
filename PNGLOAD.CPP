@@ -103,14 +103,26 @@ bool loadPNG(ImageLayer *layer, const char *fileName) {
   {
     unsigned char *array2 = new unsigned char[width * height * 4];
     for (i = width * height - 1; i >= 0; i--)
-	  {
-		  array2[i*4+0] = array[i*3+0];
-		  array2[i*4+1] = array[i*3+1];
-		  array2[i*4+2] = array[i*3+2];
-		  array2[i*4+3] = 255;
-	  }
-    //for (i = 0; i < width * height * 4; i++)
-    //  array[i] = array2[i];
+  	  {
+    		  array2[i*4+0] = array[i*3+0];
+    		  array2[i*4+1] = array[i*3+1];
+    		  array2[i*4+2] = array[i*3+2];
+    		  array2[i*4+3] = 255;
+  	  }
+    memcpy(array, array2, width * height * 4);
+    delete[] array2;
+  }
+
+  if (channels == 1)
+  {
+    unsigned char *array2 = new unsigned char[width * height * 4];
+    for (i = width * height - 1; i >= 0; i--)
+  	  {
+    		  array2[i*4+0] = array[i*1+0];
+    		  array2[i*4+1] = array[i*1+0];
+    		  array2[i*4+2] = array[i*1+0];
+    		  array2[i*4+3] = 255;
+  	  }
     memcpy(array, array2, width * height * 4);
     delete[] array2;
   }

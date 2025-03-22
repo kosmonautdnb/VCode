@@ -196,6 +196,7 @@ int VCode::update() {
       originalText = text;
       colors = text;
       updateSyntaxHiLight(text,colors,toFind);
+      addUndoTop();
       return 0;
     }
     if (key==VK_S_CTRL && (!fileName.empty())) {
@@ -261,6 +262,7 @@ int VCode::update() {
       selectionStart = -1;
       selectionEnd = -1;
       key = VK_NONE;
+      addUndoTop();
     }
     if (key == VK_C_CTRL && ctrlKey) {
       if (selectionStart>selectionEnd) {
@@ -300,6 +302,7 @@ int VCode::update() {
     colors.insert(cursorI,clipBoard_string);
     updateSyntaxHiLight(text,colors,toFind);
     key = VK_NONE;
+    addUndoTop();
   }
 
   if (key == VK_ESCAPE) {}
@@ -374,6 +377,7 @@ int VCode::update() {
           text.erase(cursorI,1);
           colors.erase(cursorI,1);
           updateSyntaxHiLight(text,colors,toFind);
+          addUndoTop();
       }
       else
       if (key == VK_DELETE) {
@@ -384,6 +388,7 @@ int VCode::update() {
           colors.erase(cursorI-1,1);
           cursorRequiresI = cursorI-1;
           updateSyntaxHiLight(text,colors,toFind);
+          addUndoTop();
         }
       }
       else
@@ -432,6 +437,7 @@ int VCode::update() {
           }
           updateSyntaxHiLight(text,colors,toFind);
         }
+        addUndoTop();
       }
       else
       if (key == VK_INSERT) {
@@ -447,6 +453,7 @@ int VCode::update() {
         updateSyntaxHiLight(text,colors,toFind);
         cursorY++;
         cursorX=0;
+        addUndoTop();
       }
       else
       if (key < 128 && key >= ' ') {
@@ -460,6 +467,7 @@ int VCode::update() {
         }
         updateSyntaxHiLight(text,colors,toFind);
         cursorX++;
+        addUndoTop();
       }
     }
   }
@@ -486,6 +494,7 @@ void VCode::init(const String &_text, const String &_fileName) {
   colors = _text;
   updateSyntaxHiLight(text,colors,toFind);
   textPos = Point(0,0);
+  addUndoTop();
 }
 
 void VCode::drawCursor() {
@@ -538,6 +547,12 @@ void VCode::allocUndo() {
 }
 
 void VCode::addUndo() {
+  allocUndo();
+  undo->removeUndo(); // removes undotop
+  undo->addUndo(text,String(cursorI));
+}
+
+void VCode::addUndoTop() {
   allocUndo();
   undo->addUndo(text,String(cursorI));
 }

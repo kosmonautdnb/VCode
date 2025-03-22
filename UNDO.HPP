@@ -94,6 +94,11 @@ public:
     undoPos++;
     return true;
   }
+
+  void removeUndo() {
+    String s;
+    doUndo(s);
+  }
 };
 
 #endif //__UNDO_HPP__

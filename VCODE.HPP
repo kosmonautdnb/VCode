@@ -113,6 +113,7 @@ public:
 
   void allocUndo();
   void addUndo();
+  void addUndoTop();
   void doRedo();
   void doUndo();
 };
