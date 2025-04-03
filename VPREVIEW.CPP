@@ -20,6 +20,10 @@ void VPreview::draw() {
   }
 }
 
+extern unsigned int frameBufferWidth;
+extern unsigned int frameBufferHeight;
+double frameBufferAspect = 16.0/9.0;
+
 int VPreview::update() {
   if (lastFileName!=fileName) {
     lastFileName = fileName;
@@ -33,7 +37,8 @@ int VPreview::update() {
       if (extension == ".png") loadPNG(&layer, fileName.c_str());
       if (extension == ".tga") loadTGA(&layer, fileName.c_str());
       if (layer.width>0&&layer.height>0) {
-        size.height = size.width*layer.height/layer.width;
+        float aspect = frameBufferAspect*frameBufferHeight/frameBufferWidth;
+        size.height = size.width*layer.height/layer.width*aspect;
         if (size.height==0) size.height = 1;
         data = new unsigned int[size.width*size.height];
         unsigned int *d = data;
