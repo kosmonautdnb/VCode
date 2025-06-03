@@ -41,7 +41,7 @@ F8 Delete
 
 TAB switch between windows (ALT+Shift in side by side mode)
 
-#### Text Editor
+### Text Editor
 
 CTRL-C Copy
 
