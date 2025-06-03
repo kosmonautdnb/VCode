@@ -15,7 +15,7 @@ If vcode.exe is too slow on your compute, I can't help yet. In this case you cou
 A video on how to use this text editor:
 https://www.youtube.com/watch?v=OhpZKhp4Db8
 
-###Important Keys:
+### Important Keys:
 
 F1 Hex Editor
 
@@ -41,7 +41,7 @@ F8 Delete
 
 TAB switch between windows (ALT+Shift in side by side mode)
 
-##### Text Editor
+#### Text Editor
 
 CTRL-C Copy
 
