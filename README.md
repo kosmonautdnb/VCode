@@ -19,6 +19,8 @@ Important Keys:
 
 F1 Hex Editor
 
+Shift+F1 Hex Editor side by side
+
 F2 Rename (if this doesn't work, use ren of DOS)
 
 F4 Edit Fullscreen
@@ -26,6 +28,10 @@ F4 Edit Fullscreen
 Shift+F4 Edit in "Tab" (side by side edit)
 
 F5 Copy
+
+F6 Move Files
+
+F8 Create Folder
 
 TAB switch between windows (ALT+Shift in side by side mode)
 
