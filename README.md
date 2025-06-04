@@ -43,6 +43,8 @@ TAB switch between windows (ALT+Shift in side by side mode)
 
 ### Text Editor
 
+SHIFT Select text
+
 CTRL-C Copy
 
 CTRL-V Paste
