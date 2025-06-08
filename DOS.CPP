@@ -91,7 +91,7 @@ FileTime toFileTime(int date, int time) {
   r.month = (date >> 5) & 15;
   r.year = (date>>5>>4)-20+2000;
   r.minute = (time>>5) & 63;
-  r.second = (time) & 31; // dunno & 31?
+  r.second = ((time) & 31)*2; // dunno & 31?
   r.hour = (time>>5>>6);
   return r;
 }
