@@ -1,6 +1,6 @@
 # VCode a Text/Hex-Editor and Norton Commander for Dos (e.g. FreeDos)
 
-Actually a pretty useful text editor for FreeDos.
+Actually a pretty useful text editor for FreeDos. The Norton Commander Part is a very tiny bit buggy and doesn't support long filenames.
 
 Just try vcode.exe. If it doesn't work, check config.sys and autoexec.bat from the repository.
 
