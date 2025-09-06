@@ -13,6 +13,13 @@ VTree *treeLeft = NULL;
 VTree *treeRight = NULL;
 extern bool requestSideSwitch;
 
+char longFileName[MAX_LFN_PATH]={0};
+
+String longFileNameHere(const String &here) {
+  if (!doslfnLongPath(longFileName, here.c_str())) return here;
+  return String(longFileName);
+}
+
 void VTree::draw() {
 
   if (treeMode == TREEMODE_EDIT) {
@@ -41,7 +48,7 @@ void VTree::draw() {
     String siz = directory->getString(2,selectedLine);
     String fileName = directory->getString(4,selectedLine);
     vPreview->init(fileName);
-    drawString(0,position.y+size.height+1,searchText+">"+fileName,COLOR_PROMPTTEXT);
+    drawString(0,position.y+size.height+1,searchText+">"+longFileNameHere(fileName),COLOR_PROMPTTEXT);
     int selecteds = 0;
     int selectedBytes = 0;
     for (int i = 0; i < directory->selection.size(); i++) {
