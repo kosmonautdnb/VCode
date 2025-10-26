@@ -133,6 +133,29 @@ bool setupVesa() {
   return false;
 }
 
+void loadIni() {
+  FILE *in = fopen("c:\\vcode.ini","r");
+  if (in != NULL) {
+    char buffer[1024];
+    memset(buffer,0,1024); fscanf(in,"%s\n",buffer);
+    currentWorkingDirectory = buffer;
+    treeLeft->lastPathName = currentWorkingDirectory;
+    fclose(in);
+  }
+}
+
+void saveIni() {
+  FILE *in = fopen("c:\\vcode.ini","w");
+  if (in != NULL) {
+    fprintf(in,"%s\n",treeLeft->lastPathName.c_str());
+    fclose(in);
+  }
+}
+
+void deleteIni() {
+  removeFile("c:\\vcode.ini");
+}
+
 int main(int argc, const char *argv[])
 {
   int gfxMode = getBiosGraphicsMode();
@@ -140,6 +163,11 @@ int main(int argc, const char *argv[])
     fileNameToLoad = argv[1];
   }
   currentWorkingDirectory = getCWD();
+  if (argv[0][strlen(argv[0])-5]=='V')
+    loadIni();
+  else 
+    deleteIni();
+
   disableControlBreak();
 
   const bool force320x200x256 = false;
@@ -159,5 +187,7 @@ int main(int argc, const char *argv[])
 
   freeFrameBuffer();
   setBiosGraphicsMode(gfxMode);
+  if (argv[0][strlen(argv[0])-5]=='V')
+    saveIni();
   return 0;
 }
