@@ -148,13 +148,31 @@ Array<File> getFiles(const String &dir) {
   return ret;
 }
 
-int rtcRead(int reg) {
-  int volatile v=0;
-  for (int j=1; j < 100; j++) {v++;}
-  outp(0x70,reg & 0xff);
-  for (int i=1; i < 100; i++) {v++;}
-  return inp(0x71) & 0xff;
+#ifdef __WATCOMC__
+#pragma aux dosCLI="cli" modify[]
+#pragma aux dosSTI="sti" modify[]
+
+unsigned char dosCmosRead(unsigned char reg, bool maskNMI) {
+  dosCLI();
+  outp(0x70, reg | (maskNMI?0x80:00));
+  unsigned char r = (unsigned char)inp(0x71);
+  dosSTI();
+  return r;
 }
+
+unsigned char dosCmosUpdateInProgress() {
+  return (unsigned char)(dosCmosRead(0x0a, true) & 0x80);
+}
+
+int rtcRead(unsigned char reg) {
+  while(dosCmosUpdateInProgress()) {;}
+  return (int)dosCmosRead(reg, true);
+}
+#else
+int rtcRead(unsigned char reg) {
+  return 0;
+}
+#endif
 
 void disableControlBreak() {
   union REGS regs;

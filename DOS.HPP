@@ -43,7 +43,7 @@ String dateString(const FileTime &time);
 String sizeString(long size);
 Array<File> getFiles(const String &dir);
 
-int rtcRead(int reg);
+int rtcRead(unsigned char reg);
 void disableControlBreak();
 
 void createFolder(const String &directoryName);
