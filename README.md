@@ -1,4 +1,4 @@
-zu# VCode a Text/Hex-Editor and Norton Commander for Dos (e.g. FreeDos)
+# VCode a Text/Hex-Editor and Norton Commander for Dos (e.g. FreeDos)
 
 Actually a pretty useful text editor for FreeDos. The Norton Commander Part is a tiny bit buggy and doesn't support long filenames.
 
