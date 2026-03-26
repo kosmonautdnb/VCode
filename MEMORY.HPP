@@ -32,7 +32,7 @@ void DPMI_freeRealSeg(unsigned sel);
 short DPMI_int386(int intno, RMREGS *in, RMREGS *out);
 short DPMI_int386x(int intno, RMREGS *in, RMREGS *out, RMSREGS *sregs);
 void VBE_callESDI(RMREGS *regs, void *buffer, int size);
-uint64_t mapPhysicalToLinear(unsigned int physicalAddress, unsigned int size);
+uint32_t mapPhysicalToLinear(unsigned int physicalAddress, unsigned int size);
 bool unmapPhysical(unsigned int linearAddress);
 
 #endif //__MEMORY_HPP__

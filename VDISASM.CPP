@@ -75,13 +75,13 @@ void VDisAsm::draw() {
   popRect();
 }
 
-virtual int VDisAsm::update() {
+int VDisAsm::update() {
   if (key == VK_G_CTRL) {
     String gotoAddress = "";
     int a = VTxtAlrt::box(gotoAddress,"Goto Address(Hex):","OK","Don't");
     if (a==1) {
       textPos = Point(0,0);
-      int64_t address = gotoAddress.fromHex()-baseAddress;
+      int32_t address = gotoAddress.fromHex()-baseAddress;
       getDisassembly_6502(opcodes, baseAddress, lineNumbers, datas, data,address,data.length());
       text = opcodes;
       colors = text;
@@ -410,7 +410,7 @@ int char8(int a) {
   return a-256;
 }
 
-String getInstructionLine_6502(int64_t baseAddress, int64_t &address, const String &text) {
+String getInstructionLine_6502(int32_t baseAddress, int32_t &address, const String &text) {
   const Opcode &opc = opcodes[text[address]];
   if (text.length()<address + opcodeBytes[opc.type]) {
     address++;
@@ -435,11 +435,11 @@ String getInstructionLine_6502(int64_t baseAddress, int64_t &address, const Stri
   return instruction;
 }
 
-void getDisassembly_6502(String &opcs, int64_t baseAddress, String &adrs, String &dats, const String &text, int64_t startAddress, int64_t endAddress) {
+void getDisassembly_6502(String &opcs, int32_t baseAddress, String &adrs, String &dats, const String &text, int32_t startAddress, int32_t endAddress) {
   opcs.clear();
   adrs.clear();
   dats.clear();
-  for (int64_t i = startAddress; i < endAddress;) {
+  for (int32_t i = startAddress; i < endAddress;) {
     int iBefore = i;
     opcs += getInstructionLine_6502(baseAddress,i,text) + "\n";
     adrs += "$"+String::hex(iBefore+baseAddress,8)+"\n";

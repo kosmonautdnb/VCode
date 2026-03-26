@@ -121,7 +121,7 @@ static void ExitVBEBuf() {
   DPMI_freeRealSeg(VESABUF_sel);
 }
 
-VBE_initRMBuf() {
+void VBE_initRMBuf() {
   if (!VESABUF_sel) {
     DPMI_allocRealSeg(VESABUF_len,&VESABUF_sel,&VESABUF_rseg);
     atexit(ExitVBEBuf);
@@ -139,7 +139,7 @@ void VBE_callESDI(RMREGS *regs, void *buffer, int size) {
   //ExitVBEBuf();
 }
 
-uint64_t mapPhysicalToLinear(unsigned int physicalAddress, unsigned int size) {
+uint32_t mapPhysicalToLinear(unsigned int physicalAddress, unsigned int size) {
   union REGS r;
   r.w.ax = 0x800;
   r.w.bx = physicalAddress>>16;

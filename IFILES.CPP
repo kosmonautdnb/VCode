@@ -49,8 +49,8 @@ void IFiles::sort(int x, bool ascending) {
       }
     }
   }
-  for (i = 0; i < selection.size(); i++)
-    select(i,false);
+  {for (int i = 0; i < selection.size(); i++)
+    select(i,false);}
 }
 
 void IFiles::select(int y, bool selected) {

@@ -7,7 +7,7 @@ void CLayer::init(uint32_t *data, int _width, int _height) {
   if (image != NULL) delete[] image;
   width = _width;
   height = _height;
-  image = (void*)new uint32_t[width*height<1?1:width*height];
+  image = new uint32_t[width*height<1?1:width*height];
   if (data!=NULL)
     memcpy(image,data,width*height*4);
   else {
@@ -104,7 +104,7 @@ void CLayer::newSize(int w, int h) {
     }
   }
   delete[] image;
-  image = (void*)newCanvas;
+  image = (uint32_t*)newCanvas;
   width=w;
   height=h;
 }

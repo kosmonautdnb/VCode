@@ -108,7 +108,7 @@ String vesa_getModeInfoString(const VbeModeInfo &data, bool compact) {
 }
 
 void vesa_setAsRenderer(const VbeModeInfo &data) {
-    uint64_t lin = mapPhysicalToLinear(data.linearFrameBuffer,4096*1024-1);
+    uint32_t lin = mapPhysicalToLinear(data.linearFrameBuffer,4096*1024-1);
     paletteCount = -1;
     if (frameBuffer!=NULL)
       freeFrameBuffer();

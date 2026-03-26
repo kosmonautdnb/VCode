@@ -17,7 +17,7 @@ public:
     LAYERTYPE_NONE = 0,
     LAYERTYPE_RASTER = 1
   };
-  void *image;
+  uint32_t *image;
   float xpos;
   float ypos;
   uint32_t width;

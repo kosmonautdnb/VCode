@@ -5,13 +5,13 @@
 #include "types.hpp"
 #include "vtext.hpp"
 
-void getDisassembly_6502(String &opcs, int64_t baseAddress, String &adrs, String &dats, const String &text, int64_t startAddress, int64_t endAddress);
+void getDisassembly_6502(String &opcs, int32_t baseAddress, String &adrs, String &dats, const String &text, int32_t startAddress, int32_t endAddress);
 
 class VDisAsm : public VText {
 public:
   String data;
 
-  int64_t baseAddress;
+  int32_t baseAddress;
   String opcodes;
   String lineNumbers;
   String datas;

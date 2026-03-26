@@ -22,17 +22,17 @@ String operator+(const String &a, const char *b) {
         return a + String(b);
 }
 
-String operator+(const long a, const String &b) {
+String operator+(const int32_t a, const String &b) {
         return String(a) + b;
 }
 
-String operator+(const String &a, const long b) {
+String operator+(const String &a, const int32_t b) {
         return a + String(b);
 }
 
 String toLower(const String &v) {
   String r = v;
-  for (int64_t i = 0; i < r.length(); i++) {
+  for (int32_t i = 0; i < r.length(); i++) {
     if (r[i]>='A'&&r[i]<='Z') r[i]=r[i]-'A'+'a';
   }
   return r;

@@ -8,13 +8,13 @@
 class Undo {
 public:
   Array<unsigned char> undoMemory;
-  Array<int64_t> undoStart;
-  Array<int64_t> undoEnd;
+  Array<int32_t> undoStart;
+  Array<int32_t> undoEnd;
   Array<String> undoDescs;
   int undoPos;
-  int64_t undoMemoryPosition;
+  int32_t undoMemoryPosition;
 
-  Undo(int64_t undoMemorySize) {
+  Undo(int32_t undoMemorySize) {
     undoMemoryPosition = 0;
     undoPos=0;
     undoMemory.resize(undoMemorySize);
@@ -40,19 +40,19 @@ public:
     return addUndo(&(s[0]),s.length(),desc);
   }
 
-  unsigned char getByte(int64_t pos) {
+  unsigned char getByte(int32_t pos) {
     return undoMemory[pos % undoMemory.size()];
   }
 
   String doUndo(String &s) {
     if (undoPos>0&&undoPos<=undoStart.size()) {
       String desc = undoDescs[undoPos-1];
-      int64_t start = undoStart[undoPos-1];
-      int64_t end = undoEnd[undoPos-1];
+      int32_t start = undoStart[undoPos-1];
+      int32_t end = undoEnd[undoPos-1];
       if (start<undoMemoryPosition-undoMemory.size()) 
         return NIL;
       s.resize(end-start);
-      for (int64_t i = 0; i < end-start; i++) {
+      for (int32_t i = 0; i < end-start; i++) {
         s[i]=getByte(i+start);
       }
       undoPos--;
@@ -64,12 +64,12 @@ public:
   String doRedo(String &s) {
     if (undoPos<undoStart.size()-1) {
       String desc = undoDescs[undoPos+1];
-      int64_t start = undoStart[undoPos+1];
-      int64_t end = undoEnd[undoPos+1];
+      int32_t start = undoStart[undoPos+1];
+      int32_t end = undoEnd[undoPos+1];
       if (start<undoMemoryPosition-undoMemory.size()) 
         return NIL;
       s.resize(end-start);
-      for (int64_t i = 0; i < end-start; i++) {
+      for (int32_t i = 0; i < end-start; i++) {
         s[i]=getByte(i+start);
       }
       undoPos++;
@@ -78,7 +78,7 @@ public:
     return NIL;
   }
 
-  bool addUndo(void *data, int64_t memorySize, const String &desc) {
+  bool addUndo(void *data, int32_t memorySize, const String &desc) {
     if (undoPos>=undoStart.size()) {
       undoStart.resize(undoPos+1);
       undoEnd.resize(undoPos+1);

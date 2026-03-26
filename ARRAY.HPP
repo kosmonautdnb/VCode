@@ -7,8 +7,8 @@ template<class T>
 class Array {
 public:
   T *data;
-  int64_t usedSize;
-  int64_t allocatedSize;
+  int32_t usedSize;
+  int32_t allocatedSize;
 
   Array() {
     usedSize = 0;
@@ -18,7 +18,7 @@ public:
 
   const Array &operator=(const Array &b) {
     T *copy = new T[b.allocatedSize];
-    for (int64_t i = 0; i < b.usedSize; i++)
+    for (int32_t i = 0; i < b.usedSize; i++)
       copy[i] = b.data[i];
     if (data != NULL) delete[] data;
     data = copy;
@@ -33,18 +33,18 @@ public:
     allocatedSize = 0;
   }
   
-  void reAlloc(int64_t numElements) {
+  void reAlloc(int32_t numElements) {
     if (numElements<2) numElements = 2; // *1.5 is a problem
     T *data2 = new T[numElements];
-    for (int64_t i = 0; i < numElements; i++)
+    for (int32_t i = 0; i < numElements; i++)
       data2[i] = i < usedSize ? data[i] : T();
     delete[] data;
     data = data2;
     allocatedSize = numElements;
   }
 
-  void erase(int64_t pos, int64_t count) {
-    int64_t i;
+  void erase(int32_t pos, int32_t count) {
+    int32_t i;
     for (i = pos+count; i < usedSize; i++) {
       data[i-count]=data[i];    
     }
@@ -54,16 +54,16 @@ public:
     usedSize-=count;
   }
 
-  void insert(const T &element, int64_t pos) {
+  void insert(const T &element, int32_t pos) {
     resize(usedSize+1);
-    int64_t i;
+    int32_t i;
     for (i = usedSize-1; i > pos; i--) {
       data[i]=data[i-1];    
     }
     data[pos]=element;    
   }
   
-  void resize(int64_t numElements) {
+  void resize(int32_t numElements) {
     if (numElements<allocatedSize) {
       usedSize = numElements;
     } else {
@@ -87,7 +87,7 @@ public:
     usedSize = 0;
   }
   
-  int64_t size() {
+  int32_t size() {
     return usedSize;
   }
   
@@ -95,7 +95,7 @@ public:
     return size()==0;
   }
   
-  T &operator[](int64_t index) {
+  T &operator[](int32_t index) {
     return data[index];
   }
   

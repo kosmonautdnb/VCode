@@ -56,13 +56,13 @@ void renameFile(const String &oldFileName, const String &newFileName);
 #define MAX_LFN_PATH 260
 typedef struct {
   uint32_t attributes;
-  uint64_t creationTime;
-  uint64_t accessTime;
-  uint64_t modificationTime;
+  uint32_t creationTime;
+  uint32_t accessTime;
+  uint32_t modificationTime;
   uint32_t driveId;
-  uint64_t fileSize;
+  uint32_t fileSize;
   uint32_t linkCount;
-  uint64_t fileId;
+  uint32_t fileId;
 } LFNFILEINFO;
 bool doslfnCreateDirectory(const char *name);
 bool doslfnDeleteDirectory(const char *name);
@@ -74,12 +74,12 @@ bool doslfnRename(const char *oldName, const char *newName);
 bool doslfnLongPath(char *name, const char *fileName);
 bool doslfnShortPath(char *name, const char *fileName);
 int32_t doslfnOpen(const char *fileName, bool read);
-bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount);
-bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount);
-bool doslfnSeek(int32_t fileHandle, uint64_t pos, uint32_t seekMode);
+bool doslfnRead(int32_t fileHandle, void *dest, uint32_t byteCount);
+bool doslfnWrite(int32_t fileHandle, void *source, uint32_t byteCount);
+bool doslfnSeek(int32_t fileHandle, uint32_t pos, uint32_t seekMode);
 bool doslfnClose(int32_t fileHandle);
-uint64_t doslfnTell(int32_t fileHandle);
-uint64_t doslfnSize(int32_t fileHandle);
+uint32_t doslfnTell(int32_t fileHandle);
+uint32_t doslfnSize(int32_t fileHandle);
 LFNFILEINFO doslfnInfo(int32_t fileHandle); // maybe not supported: errno = 0x7100 in that case
 
 // lowlevel DPMI and DOS calls

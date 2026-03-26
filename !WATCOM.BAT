@@ -1,4 +1,4 @@
-SET MOPTIONS=/5r /fp3 /fp5 /otnlrm /mf /zpw /zq /zp1
+SET MOPTIONS=/W0 /5r /fp3 /fp5 /otnlrm /mf /zpw /zq /zp1
 
 DELTREE /Y OBJ
 MKDIR OBJ

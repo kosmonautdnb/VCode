@@ -394,7 +394,7 @@ int32_t doslfnOpen(const char *fileName, bool read) {
 
 #define FILEIO_BYTES 8192
 
-bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount) {
+bool doslfnRead(int32_t fileHandle, void *dest, uint32_t byteCount) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(FILEIO_BYTES);
   if (dosInterfaceMemory.ptr == NULL) return false;
 
@@ -428,7 +428,7 @@ bool doslfnRead(int32_t fileHandle, void *dest, uint64_t byteCount) {
   return true;
 }
 
-bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount) {
+bool doslfnWrite(int32_t fileHandle, void *source, uint32_t byteCount) {
   DOSPOINTER dosInterfaceMemory = dosMalloc(FILEIO_BYTES);
   if (dosInterfaceMemory.ptr == NULL) return false;
 
@@ -462,7 +462,7 @@ bool doslfnWrite(int32_t fileHandle, void *source, uint64_t byteCount) {
   return true;
 }
 
-bool doslfnSeek(int32_t fileHandle, uint64_t pos, uint32_t seekMode) {
+bool doslfnSeek(int32_t fileHandle, uint32_t pos, uint32_t seekMode) {
   REGS16 regs;
   memset(&regs,0,sizeof(regs));
   regs.ax = 0x4200+(seekMode==SEEK_SET?0:0)+(seekMode==SEEK_CUR?1:0)+(seekMode==SEEK_END?2:0);
@@ -490,17 +490,17 @@ bool doslfnClose(int32_t fileHandle) {
   return true;
 }
 
-uint64_t doslfnTell(int32_t fileHandle) {
+uint32_t doslfnTell(int32_t fileHandle) {
   FILE k;
   memset(&k,0,sizeof(FILE));
   k._handle = fileHandle;
   return ftell(&k);
 }
 
-uint64_t doslfnSize(int32_t fileHandle) {
-  uint64_t cp = doslfnTell(fileHandle);
+uint32_t doslfnSize(int32_t fileHandle) {
+  uint32_t cp = doslfnTell(fileHandle);
   doslfnSeek(fileHandle,0,SEEK_END);
-  uint64_t r = doslfnTell(fileHandle);
+  uint32_t r = doslfnTell(fileHandle);
   doslfnSeek(fileHandle,cp,SEEK_SET);
   return r;
 }
