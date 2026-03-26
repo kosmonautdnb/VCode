@@ -149,7 +149,7 @@ uint32_t mapPhysicalToLinear(unsigned int physicalAddress, unsigned int size) {
   int386(0x31,&r,&r);
   if (r.x.cflag)
     return 0;
-  return (((uint64_t)r.w.bx)<<16)+r.w.cx;
+  return (((uint32_t)r.w.bx)<<16)+r.w.cx;
 }
 
 bool unmapPhysical(unsigned int linearAddress) {
