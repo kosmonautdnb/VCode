@@ -1,15 +1,12 @@
-# VCode a Text/Hex-Editor and Norton Commander for Dos (e.g. FreeDos)
-
-Actually a pretty useful text editor for FreeDos. The Norton Commander Part is a tiny bit buggy and doesn't support long filenames.
-
-Just try vcode.exe. If it doesn't work, check config.sys and autoexec.bat from the repository.
-
-Not yet optimized for performance or storage space. On my 2010 desktop it works fine with FreeDos in all available resolutions.
-
-Currently I have stopped developing this tool, so the graphics editor and others are not ready yet. It's just a fast (yet usable) hack. I just needed a text editor as the first program to be written in DOS/WatcomC.
-
-If vcode.exe is too slow on your compute, I can't help yet. In this case you could recompile e.g. with a different graphics mode.
-
+# VCode a Text/Hex-Editor and Norton Commander for Dos (e.g. FreeDos)  
+Actually a pretty useful text editor for FreeDos. I use it almost all the time for coding on FreeDOS. However it is just a quick/fast hack.. 
+The Norton Commander Part is a tiny bit buggy and doesn't support long filenames.  
+Just try vcode.exe. If it doesn't work, check config.sys and autoexec.bat from the repository.  
+Not yet optimized for performance or storage space. On my 2010 desktop it works fine with FreeDos in all available resolutions.  
+Currently I have stopped developing this tool, so the graphics editor and others are not ready yet. It's just a fast (yet usable) hack. I just needed a text editor as the first program to be written in DOS/WatcomC.  
+  
+If vcode.exe is too slow on your compute, I can't help yet. In this case you could recompile e.g. with a different graphics mode.  
+  
 ![ScreenShot](https://raw.github.com/kosmonautdnb/WatcomC-Dos/main/DESC.PNG)
 
 A video on how to use this text editor:
@@ -57,4 +54,5 @@ CTRL-G  Goto line number
 
 CTRL-F find text (case sensitive) (use F3 to skip through the results)
 
-
+## Build
+You may use !WATCOM.BAT to build it with WatcomC11 or OpenWatcom.   
