@@ -49,7 +49,7 @@ CTRL-V Paste
 
 CTRL-U Undo (not perfectly implemented)
 
-CTRL-R Redo (not perfectly implemented)
+CTRL-U + SHIFT Redo (not perfectly implemented)
 
 CTRL-G  Goto line number
 
